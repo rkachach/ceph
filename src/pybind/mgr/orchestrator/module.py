@@ -492,12 +492,12 @@ class OrchestratorCli(OrchestratorClientMixin, MgrModule,
                 table = PrettyTable(
                     ['HOST', 'PATH', 'TYPE', 'TRANSPORT', 'RPM', 'DEVICE ID', 'SIZE',
                      'HEALTH', 'IDENT', 'FAULT',
-                     'AVAILABLE', 'AGE', 'REJECT REASONS'],
+                     'AVAILABLE', 'REFRESHED', 'REJECT REASONS'],
                     border=False)
             else:
                 table = PrettyTable(
                     ['HOST', 'PATH', 'TYPE', 'DEVICE ID', 'SIZE',
-                     'AVAILABLE', 'AGE', 'REJECT REASONS'],
+                     'AVAILABLE', 'REFRESHED', 'REJECT REASONS'],
                     border=False)
             table.align = 'l'
             table._align['SIZE'] = 'r'
