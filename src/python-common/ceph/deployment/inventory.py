@@ -3,6 +3,7 @@ try:
 except ImportError:
     pass  # for type checking
 
+from ceph.utils import datetime_now
 import json
 
 
@@ -52,6 +53,7 @@ class Device(object):
                  lvs=None,  # type: Optional[List[str]]
                  device_id=None,  # type: Optional[str]
                  lsm_data=None,  # type: Optional[Dict[str, Dict[str, str]]]
+                 created=None # type Optional[datetime.datetime]
                  ):
         self.path = path
         self.sys_api = sys_api if sys_api is not None else {}  # type: Dict[str, Any]
@@ -60,6 +62,7 @@ class Device(object):
         self.lvs = lvs
         self.device_id = device_id
         self.lsm_data = lsm_data if lsm_data is not None else {}  # type: Dict[str, Dict[str, str]]
+        self.created = datetime_now()
 
     def to_json(self):
         # type: () -> dict
