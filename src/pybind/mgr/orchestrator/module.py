@@ -527,7 +527,7 @@ class OrchestratorCli(OrchestratorClientMixin, MgrModule,
                                 display_map[led_ident],
                                 display_map[led_fail],
                                 display_map[d.available],
-                                nice_delta(now, d.created),
+                                nice_delta(now, d.created, ' ago'),
                                 ', '.join(d.rejected_reasons)
                             )
                         )
@@ -540,7 +540,7 @@ class OrchestratorCli(OrchestratorClientMixin, MgrModule,
                                 d.device_id,
                                 format_dimless(d.sys_api.get('size', 0), 5),
                                 display_map[d.available],
-                                nice_delta(now, d.created),
+                                nice_delta(now, d.created, ' ago'),
                                 ', '.join(d.rejected_reasons)
                             )
                         )
