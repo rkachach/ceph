@@ -3,7 +3,8 @@ try:
 except ImportError:
     pass  # for type checking
 
-from ceph.utils import datetime_now
+from ceph.utils import datetime_now, datetime_to_str, str_to_datetime
+import datetime
 import json
 
 
@@ -39,6 +40,7 @@ class Device(object):
         'available',
         'path',
         'sys_api',
+        'created',
         'lvs',
         'human_readable_type',
         'device_id',
@@ -53,7 +55,7 @@ class Device(object):
                  lvs=None,  # type: Optional[List[str]]
                  device_id=None,  # type: Optional[str]
                  lsm_data=None,  # type: Optional[Dict[str, Dict[str, str]]]
-                 created=None # type Optional[datetime.datetime]
+                 created=None  # type: Optional[datetime.datetime]
                  ):
         self.path = path
         self.sys_api = sys_api if sys_api is not None else {}  # type: Dict[str, Any]
@@ -62,12 +64,13 @@ class Device(object):
         self.lvs = lvs
         self.device_id = device_id
         self.lsm_data = lsm_data if lsm_data is not None else {}  # type: Dict[str, Dict[str, str]]
-        self.created = datetime_now()
+        self.created = created if created is not None else datetime_now()
 
     def to_json(self):
         # type: () -> dict
         return {
-            k: getattr(self, k) for k in self.report_fields
+            k: getattr(self, k) if k != 'created' else datetime_to_str(getattr(self, k))
+            for k in self.report_fields
         }
 
     @classmethod
@@ -75,9 +78,19 @@ class Device(object):
         # type: (Dict[str, Any]) -> Device
         if not isinstance(input, dict):
             raise ValueError('Device: Expected dict. Got `{}...`'.format(json.dumps(input)[:10]))
+
+        def convert_key(key):
+            # type: (str) -> Any
+            try:
+                if key == 'created':
+                    return str_to_datetime(input.get(key, None))
+                return input.get(key, None)
+            except Exception as e:
+                raise ValueError("redo: Invalid host "+str(input))
+
         ret = cls(
             **{
-                key: input.get(key, None)
+                key:    convert_key(key)
                 for key in Device.report_fields
                 if key != 'human_readable_type'
             }
