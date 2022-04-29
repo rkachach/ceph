@@ -6061,8 +6061,6 @@ def _parse_ipv4_route(out: str) -> Dict[str, Dict[str, Set[str]]]:
         if not m:
             continue
         net = m[0][0]
-        if '/' not in net:  # discard /32 single host nets
-            continue
         iface = m[0][1]
         ip = m[0][4]
         if net not in r:
