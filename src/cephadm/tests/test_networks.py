@@ -19,6 +19,7 @@ class TestCommandListNetworks:
             10.0.0.0/8 via 10.4.0.1 dev tun0 proto static metric 50
             10.3.0.0/21 via 10.4.0.1 dev tun0 proto static metric 50
             10.4.0.1 dev tun0 proto kernel scope link src 10.4.0.2 metric 50
+            192.168.122.1 dev ens3 proto dhcp scope link src 192.168.122.236 metric 100
             137.1.0.0/16 via 10.4.0.1 dev tun0 proto static metric 50
             138.1.0.0/16 via 10.4.0.1 dev tun0 proto static metric 50
             139.1.0.0/16 via 10.4.0.1 dev tun0 proto static metric 50
@@ -33,7 +34,6 @@ class TestCommandListNetworks:
             195.135.221.12 via 192.168.178.1 dev enxd89ef3f34260 proto static metric 100
             """),
             {
-                '10.4.0.1': {'tun0': {'10.4.0.2'}},
                 '172.17.0.0/16': {'docker0': {'172.17.0.1'}},
                 '192.168.39.0/24': {'virbr1': {'192.168.39.1'}},
                 '192.168.122.0/24': {'virbr0': {'192.168.122.1'}},
@@ -61,7 +61,6 @@ class TestCommandListNetworks:
             {
                 '10.3.64.0/24': {'eno1': {'10.3.64.23', '10.3.64.27'}},
                 '10.88.0.0/16': {'cni-podman0': {'10.88.0.1'}},
-                '172.21.3.1': {'tun0': {'172.21.3.2'}},
                 '192.168.122.0/24': {'virbr0': {'192.168.122.1'}}
             }
         ),
@@ -219,10 +218,10 @@ class TestCommandListNetworks:
     def test_parse_ipv6_route(self, test_routes, test_ips, expected):
         assert cd._parse_ipv6_route(test_routes, test_ips) == expected
 
-    @mock.patch.object(cd, 'call_throws', return_value=('10.4.0.1 dev tun0 proto kernel scope link src 10.4.0.2 metric 50\n', '', ''))
+    @mock.patch.object(cd, 'call_throws', return_value=('192.168.178.0/24 dev enxd89ef3f34260 proto kernel scope link src 192.168.178.28 metric 100\n', '', ''))
     def test_command_list_networks(self, cephadm_fs, capsys):
         with with_cephadm_ctx([]) as ctx:
             cd.command_list_networks(ctx)
             assert json.loads(capsys.readouterr().out) == {
-                '10.4.0.1': {'tun0': ['10.4.0.2']}
+                '192.168.178.0/24': {'enxd89ef3f34260': ['192.168.178.28']}
             }
