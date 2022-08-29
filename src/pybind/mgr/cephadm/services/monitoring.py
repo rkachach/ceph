@@ -365,6 +365,7 @@ class PrometheusService(CephadmService):
 
 class NodeExporterService(CephadmService):
     TYPE = 'node-exporter'
+    DEFAULT_SERVICE_PORT = 9100
 
     def prepare_create(self, daemon_spec: CephadmDaemonDeploySpec) -> CephadmDaemonDeploySpec:
         assert self.TYPE == daemon_spec.daemon_type

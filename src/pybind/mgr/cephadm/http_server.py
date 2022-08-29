@@ -20,14 +20,14 @@ def cherrypy_filter(record: logging.LogRecord) -> int:
 
 
 logging.getLogger('cherrypy.error').addFilter(cherrypy_filter)
-cherrypy.log.access_log.propagate = False
+cherrypy.log.access_log.propagate = True
 
 
 class CephadmHttpServer(threading.Thread):
     def __init__(self, mgr: "CephadmOrchestrator") -> None:
         self.mgr = mgr
-        self.agent = AgentEndpoint(mgr)
-        self.service_discovery = ServiceDiscovery(mgr)
+        self.agent = AgentEndpoint(mgr, '::', mgr.service_discovery_port)
+        self.service_discovery = ServiceDiscovery(mgr, mgr.get_mgr_ip(), mgr.service_discovery_port)
         self.cherrypy_shutdown_event = threading.Event()
         super().__init__(target=self.run)
 
@@ -37,17 +37,30 @@ class CephadmHttpServer(threading.Thread):
             'engine.autoreload.on': False,
         })
 
+    def configure(self) -> None:
+        self.configure_cherrypy()
+        self.agent.configure()
+        self.service_discovery.configure()
+
+    def start_server(self) -> None:
+        # we only start one server, internally cherrypy
+        # will attach the routes confiugred by the agent also.
+        self.service_discovery.start()
+
+    def restart(self) -> None:
+        cherrypy.engine.stop()
+        cherrypy.server.httpserver = None
+        self.configure()
+        cherrypy.engine.start()
+
     def run(self) -> None:
         try:
-            self.configure_cherrypy()
-            self.agent.configure()
-            self.service_discovery.configure()
-
             self.mgr.log.debug('Starting cherrypy engine...')
+            self.configure()
+            self.start_server()
             cherrypy.server.unsubscribe()  # disable default server
             cherrypy.engine.start()
             self.mgr.log.debug('Cherrypy engine started.')
-
             self.mgr._kick_serve_loop()
             # wait for the shutdown event
             self.cherrypy_shutdown_event.wait()
