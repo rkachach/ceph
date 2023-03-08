@@ -55,7 +55,7 @@ system_1 = {
         'drives': [
             {
                 'device': 'devc',
-                'description': 'Milk, Cheese, Bread, Fruit, Vegetables',
+                'description': 'Milk, Cheese, Bread, Fruit',
                 'model': 'Buy groceries',
                 'type': 'ssd|rotate|nvme',
                 'capacity_bytes': '',
