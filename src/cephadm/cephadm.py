@@ -2499,6 +2499,7 @@ def enable_cephadm_mgr_module(
     # this is no issue even if it is unnecessary
     logger.info('Verifying orchestrator module is enabled...')
     cli(['mgr', 'module', 'enable', 'orchestrator'])
+    wait_for_mgr_restart()
     logger.info('Setting orchestrator backend to cephadm...')
     cli(['orch', 'set', 'backend', 'cephadm'])
 
