@@ -1297,7 +1297,11 @@ def deploy_daemon_units(
         DaemonSubIdentity.must(sc.identity) for sc in sidecars or []
     ]
     systemd_unit.update_files(
-        ctx, ident, init_container_ids=ic_ids, sidecar_ids=sc_ids
+        ctx,
+        ident,
+        init_container_ids=ic_ids,
+        sidecar_ids=sc_ids,
+        limit_core_infinity=ctx.limit_core_infinity,
     )
     call_throws(ctx, ['systemctl', 'daemon-reload'])
 
@@ -3576,7 +3580,7 @@ def command_ceph_volume(ctx):
 @infer_fsid
 def command_unit_install(ctx: CephadmContext) -> int:
     ident = identify(ctx)
-    systemd_unit.update_files(ctx, ident)
+    systemd_unit.update_files(ctx, ident, limit_core_infinity=ctx.limit_core_infinity)
     call_throws(ctx, ['systemctl', 'daemon-reload'])
     return 0
 
@@ -3605,10 +3609,10 @@ def command_unit(ctx: CephadmContext) -> int:
 def command_set_coredump_overrides(ctx: CephadmContext) -> None:
     if not ctx.cleanup:
         set_coredump_overrides(ctx, ctx.fsid, ctx.coredump_max_size)
-        systemd_unit.update_base_ceph_unit_file(ctx, ctx.fsid)
+        systemd_unit.update_base_ceph_unit_file(ctx, ctx.fsid, limit_core_infinity=True)
     else:
         remove_coredump_overrides(ctx, ctx.fsid)
-        systemd_unit.update_base_ceph_unit_file(ctx, ctx.fsid)
+        systemd_unit.update_base_ceph_unit_file(ctx, ctx.fsid, limit_core_infinity=False)
 
 ##################################
 
@@ -5143,6 +5147,12 @@ def _add_deploy_parser_args(
         default=[],
         help='Additional entrypoint arguments to apply to deamon'
     )
+    parser_deploy.add_argument(
+        '--limit-core-infinity',
+        action='store_true',
+        default=False,
+        help='Set LimitCORE=infinity in ceph unit files'
+    )
 
 
 def _name_opts(parser: argparse.ArgumentParser) -> None:
@@ -5316,6 +5326,12 @@ def _get_parser():
         action='store_true',
         default=False,
         help='Do not run containers with --cgroups=split (currently only relevant when using podman)')
+    parser_adopt.add_argument(
+        '--limit-core-infinity',
+        action='store_true',
+        default=False,
+        help='Set LimitCORE=infinity in generated ceph unit files'
+    )
 
     parser_rm_daemon = subparsers.add_parser(
         'rm-daemon', help='remove daemon instance')
@@ -5493,6 +5509,11 @@ def _get_parser():
         '--fsid',
         help='cluster FSID')
     _name_opts(parser_unit_install)
+    parser_unit.add_argument(
+        '--limit-core-infinity',
+        action='store_true',
+        help='Set LimitCORE=infinity in ceph unit files'
+    )
 
     parser_logs = subparsers.add_parser(
         'logs', help='print journald logs for a daemon container')
@@ -5713,6 +5734,11 @@ def _get_parser():
         '--yes-i-know',
         action='store_true',
         help='deprecated flag only here for backwards compatibility')
+    parser_bootstrap.add_argument(
+        '--limit-core-infinity',
+        action='store_true',
+        help='Set LimitCORE=infinity in ceph unit files'
+    )
 
     parser_bootstrap.add_argument(
         '--call-home-icn',
