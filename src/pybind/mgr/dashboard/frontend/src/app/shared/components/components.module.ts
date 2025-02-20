@@ -95,6 +95,8 @@ import { IconComponent } from './icon/icon.component';
 import downloadIcon from '@carbon/icons/es/download/16';
 import { ChartsModule } from '@carbon/charts-angular';
 import { ProductiveCardComponent } from './productive-card/productive-card.component';
+import { CallHomeConnectionInfoComponent } from './call-home-connection-info/call-home-connection-info.component';
+import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-status/call-home-connectivity-status.component';
 
 @NgModule({
   imports: [
@@ -186,7 +188,15 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
-    ProductiveCardComponent
+    ProductiveCardComponent,
+    CardGroupComponent,
+    CallHomeModalComponent,
+    CallHomeNotificationComponent,
+    StorageInsightsModalComponent,
+    StorageInsightsNotificationComponent,
+    ProgressComponent,
+    CallHomeConnectionInfoComponent,
+    CallHomeConnectivityStatusComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   exports: [
@@ -229,7 +239,14 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
-    ProductiveCardComponent
+    ProductiveCardComponent,
+    CardGroupComponent,
+    CallHomeModalComponent,
+    CallHomeNotificationComponent,
+    StorageInsightsNotificationComponent,
+    ProgressComponent,
+    CallHomeConnectionInfoComponent,
+    CallHomeConnectivityStatusComponent
   ]
 })
 export class ComponentsModule {
