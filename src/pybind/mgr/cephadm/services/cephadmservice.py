@@ -1062,6 +1062,11 @@ class MdsService(CephService):
 @register_cephadm_service
 class RgwService(CephService):
     TYPE = 'rgw'
+    SCOPE = TLSObjectScope.SERVICE
+
+    @property
+    def needs_certificates(self) -> bool:
+        return True
 
     def allow_colo(self) -> bool:
         return True
@@ -1078,8 +1083,19 @@ class RgwService(CephService):
             if isinstance(ssl_cert, list):
                 ssl_cert = '\n'.join(ssl_cert)
             deps.append(f'ssl-cert:{str(utils.md5_hash(ssl_cert))}')
+        else:
+            deps += RgwService.get_daemons_ips(mgr, rgw_spec)
 
         return sorted(deps)
+
+    @classmethod
+    def get_daemons_ips(cls, mgr: "CephadmOrchestrator", rgw_spec: RGWSpec) -> List[str]:
+        ips = []
+        for dd in mgr.cache.get_daemons_by_service(rgw_spec.service_name()):
+            assert dd.hostname is not None
+            addr = dd.ip if dd.ip else mgr.inventory.get_addr(dd.hostname)
+            ips.append(addr)
+        return ips
 
     def set_realm_zg_zone(self, spec: RGWSpec) -> None:
         assert self.TYPE == spec.service_type
@@ -1111,21 +1127,6 @@ class RgwService(CephService):
 
         # set rgw_realm rgw_zonegroup and rgw_zone, if present
         self.set_realm_zg_zone(spec)
-
-        if spec.rgw_frontend_ssl_certificate:
-            if isinstance(spec.rgw_frontend_ssl_certificate, list):
-                cert_data = '\n'.join(spec.rgw_frontend_ssl_certificate)
-            elif isinstance(spec.rgw_frontend_ssl_certificate, str):
-                cert_data = spec.rgw_frontend_ssl_certificate
-            else:
-                raise OrchestratorError(
-                    'Invalid rgw_frontend_ssl_certificate: %s'
-                    % spec.rgw_frontend_ssl_certificate)
-            ret, out, err = self.mgr.check_mon_command({
-                'prefix': 'config-key set',
-                'key': f'rgw/cert/{spec.service_name()}',
-                'val': cert_data,
-            })
 
         if spec.zonegroup_hostnames:
             zg_update_cmd = {
@@ -1163,17 +1164,13 @@ class RgwService(CephService):
             else:
                 port = ports[0]
 
-        if spec.generate_cert:
-            cert, key = self.mgr.cert_mgr.generate_cert(
-                daemon_spec.host,
-                self.mgr.inventory.get_addr(daemon_spec.host),
-                custom_san_list=spec.zonegroup_hostnames
-            )
+        if spec.ssl or spec.generate_cert:
+            rgw_cert_name = daemon_spec.name() if spec.generate_cert else spec.service_name()
+            cert, key = self.get_certificates(spec, daemon_spec, RgwService.get_daemons_ips(self.mgr, spec))
             pem = ''.join([key, cert])
-            self.mgr.cert_mgr.save_cert('rgw_frontend_ssl_cert', pem, service_name=spec.service_name())
             ret, out, err = self.mgr.check_mon_command({
                 'prefix': 'config-key set',
-                'key': f'rgw/cert/{daemon_spec.name()}',
+                'key': f'rgw/cert/{rgw_cert_name}',
                 'val': pem,
             })
 
