@@ -709,7 +709,7 @@ class CephadmOrchestrator(orchestrator.Orchestrator, MgrModule,
         self.cert_mgr = CertMgr(self)
 
         for svc in service_registry.get_all_services():
-            if svc.needs_certificates:
+            if svc.needs_certificates():
                 assert svc.SCOPE != TLSObjectScope.UNKNOWN
                 self.cert_mgr.register_cert_key_pair(svc.TYPE, svc.cert_name, svc.key_name, svc.SCOPE)
 

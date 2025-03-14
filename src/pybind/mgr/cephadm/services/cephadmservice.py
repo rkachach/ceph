@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 import ipaddress
 from urllib.parse import urlparse
 from typing import TYPE_CHECKING, List, Callable, TypeVar, \
-    Optional, Dict, Any, Tuple, NewType, cast
+    Optional, Dict, Any, Tuple, NewType, cast, Union
 
 from mgr_module import HandleCommandResult, MonCommandFailed
 
@@ -20,6 +20,7 @@ from ceph.deployment.service_spec import (
     MONSpec,
     RGWSpec,
     ServiceSpec,
+    CertificateSource
 )
 from ceph.deployment.utils import is_ipv6, unwrap_ipv6
 from mgr_util import build_url, merge_dicts, parse_combined_pem_file
@@ -33,6 +34,7 @@ from orchestrator._interface import daemon_type_to_service
 from cephadm import utils
 from .service_registry import register_cephadm_service
 from cephadm.tlsobject_store import TLSObjectScope
+from cephadm.ssl_cert_utils import extract_ips_and_fqdns_from_cert
 
 if TYPE_CHECKING:
     from cephadm.module import CephadmOrchestrator
@@ -261,14 +263,13 @@ class CephadmDaemonDeploySpec:
     def extra_args(self) -> List[str]:
         return []
 
-
 class CephadmService(metaclass=ABCMeta):
     """
     Base class for service types. Often providing a create() and config() fn.
     """
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return False
 
     @property
@@ -292,27 +293,60 @@ class CephadmService(metaclass=ABCMeta):
     def get_dependencies(cls, mgr: "CephadmOrchestrator",
                          spec: Optional[ServiceSpec] = None,
                          daemon_type: Optional[str] = None) -> List[str]:
-        return []
+
+        if not cls.needs_certificates() or not spec or not spec.ssl:
+            return []
+
+        deps = []
+        cert_source = spec.certificate_source
+        if cert_source == CertificateSource.SPEC_EMBEDDED:
+            for attr in ['ssl_cert', 'ssl_key']:
+                ssl_cert_key = getattr(spec, attr, None)
+                if ssl_cert_key:
+                    assert isinstance(ssl_cert_key, str)
+                    deps.append(f'{attr}:{str(utils.md5_hash(ssl_cert_key))}')
+        elif cert_source == CertificateSource.CEPHADM_USER_PROVIDED:
+            #TODO: fix this and try to have only one place to calcualte the cert_name
+            cert_name = f"{spec.service_type.replace('-', '_')}_ssl_cert"
+            key_name = f"{spec.service_type.replace('-', '_')}_ssl_cert"
+            cert = mgr.cert_mgr.get_cert(cert_name, spec.service_name()) or ''
+            key = mgr.cert_mgr.get_key(key_name, spec.service_name()) or ''
+            deps.append(f'ssl_cert:{str(utils.md5_hash(cert))}')
+            deps.append(f'ssl_key:{str(utils.md5_hash(key))}')
+        elif cert_source == CertificateSource.CEPHADM_SIGNED:
+            pass
+
+        return deps
 
     def __init__(self, mgr: "CephadmOrchestrator"):
         self.mgr: "CephadmOrchestrator" = mgr
 
+    @classmethod
+    def get_daemons_ips_and_fqdns(cls, mgr: "CephadmOrchestrator",
+                                  spec: ServiceSpec,
+                                  as_separated_lists: bool = True
+                                  ) -> Union[Tuple[List[str], List[str]], List[Tuple[str, str]]]:
+        ips_and_fqdns = []
+        for dd in mgr.cache.get_daemons_by_service(spec.service_name()):
+            assert dd.hostname is not None
+            addr = dd.ip if dd.ip else mgr.inventory.get_addr(dd.hostname)
+            ips_and_fqdns.append((addr, dd.hostname))
+        if as_separated_lists:
+            ips, fqdns = map(list, zip(*ips_and_fqdns)) if ips_and_fqdns else ([], [])
+            return ips, fqdns
+        else:
+            return ips_and_fqdns
+
     def rm_cert_and_key(self, service_name: str, hostname: Optional[str] = None) -> None:
         # remove only if they are not user made
+        logger.info(f'redo: deleting certs for {self.cert_name}/{self.key_name}')
         self.mgr.cert_mgr.rm_cert(self.cert_name, service_name=service_name, host=hostname)
         self.mgr.cert_mgr.rm_key(self.key_name, service_name=service_name, host=hostname)
 
-    def get_certificates(self,
-                         svc_spec: ServiceSpec,
-                         daemon_spec: CephadmDaemonDeploySpec,
-                         ips: Optional[List[str]] = None) -> Tuple[str, str]:
+    def _get_certificates_from_spec(self,
+                                    svc_spec: ServiceSpec,
+                                    daemon_spec: CephadmDaemonDeploySpec) -> Tuple[str, str]:
 
-        cert = self.mgr.cert_mgr.get_cert(self.cert_name, svc_spec.service_name(), daemon_spec.host)
-        key = self.mgr.cert_mgr.get_key(self.key_name, svc_spec.service_name(), daemon_spec.host)
-        if cert and key:
-            return cert, key
-
-        # if not available on store, check if provided on the spec
         if hasattr(svc_spec, 'ssl_certificate') and hasattr(svc_spec, 'ssl_certificate_key'):
             cert, key = svc_spec.ssl_certificate, svc_spec.ssl_certificate_key
         elif hasattr(svc_spec, 'ssl_cert') and hasattr(svc_spec, 'ssl_key'):
@@ -321,23 +355,81 @@ class CephadmService(metaclass=ABCMeta):
             cert, key = parse_combined_pem_file(svc_spec.rgw_frontend_ssl_certificate) \
                 if svc_spec.rgw_frontend_ssl_certificate else (None, None)
 
-        # if no certificates provided in the service spec, let's get cephadm-signed ones
-        user_made = cert is not None and key is not None
-        if not user_made:
-            if not ips:
-                ips = [self.mgr.inventory.get_addr(daemon_spec.host)]
-            host_fqdn = self.mgr.get_fqdn(daemon_spec.host)
-            cert, key = self.mgr.cert_mgr.generate_cert(host_fqdn, ips)
-
-        # save certificates
+        # save certs in the certmgr
         if cert and key:
-            self.mgr.cert_mgr.save_cert(self.cert_name, cert, svc_spec.service_name(), daemon_spec.host, user_made)
-            self.mgr.cert_mgr.save_key(self.key_name, key, svc_spec.service_name(), daemon_spec.host, user_made)
+            self.mgr.cert_mgr.save_cert(self.cert_name, cert, svc_spec.service_name(), daemon_spec.host, True)
+            self.mgr.cert_mgr.save_key(self.key_name, key, svc_spec.service_name(), daemon_spec.host, True)
+            return cert, key
+        else:
+            pass # TODO log error
+            return '', ''
+
+
+    def _get_certificates_from_certmgr_store(self, svc_spec: ServiceSpec) -> Tuple[str, str]:
+
+        cert = self.mgr.cert_mgr.get_cert(self.cert_name, svc_spec.service_name())
+        key = self.mgr.cert_mgr.get_key(self.key_name, svc_spec.service_name())
+        if cert and key:
+            return cert, key
+        else:
+            pass # TODO log error
+            return '', ''
+
+    def _generate_cephadm_signed_certificates(self,
+                                              svc_spec: ServiceSpec,
+                                              daemon_spec: CephadmDaemonDeploySpec,
+                                              ips: List[str] = [],
+                                              fqdns: List[str] = []) -> Tuple[str, str]:
+
+        cert = self.mgr.cert_mgr.get_cert(self.cert_name, svc_spec.service_name(), daemon_spec.host)
+        key = self.mgr.cert_mgr.get_key(self.key_name, svc_spec.service_name(), daemon_spec.host)
+        if cert and key:
+            logger.info(f'redo: certs for {self.cert_name} already exists.. checking ips')
+            ips = ips or [self.mgr.inventory.get_addr(daemon_spec.host)]
+            fqdns = fqdns or [self.mgr.get_fqdn(daemon_spec.host)]
+            cert_ips, cert_fqdns = extract_ips_and_fqdns_from_cert(cert)
+            if sorted(cert_ips) == sorted(ips) and sorted(cert_fqdns) == sorted(fqdns):
+                logger.info(f'redo: certs for {self.cert_name} already exists.. and ips are the same')
+                # Nothing has changed, use the stored certifiactes
+                return cert, key
+
+        # Either there were not certs or ips/fqdns have changed generate new cets
+        logger.info(f'redo: generating new certs for {self.cert_name}')
+        cert, key = self.mgr.cert_mgr.generate_cert(fqdns, ips)
+        if cert and key:
+            logger.info(f'redo: saving  certs for {self.cert_name}/{self.key_name}')
+            self.mgr.cert_mgr.save_cert(self.cert_name, cert, svc_spec.service_name(), daemon_spec.host)
+            self.mgr.cert_mgr.save_key(self.key_name, key, svc_spec.service_name(), daemon_spec.host)
         else:
             cert, key = '', ''
-            logger.error(f'Failed to obtain SSL cert-key pair: {self.cert_name}/{self.key_name} for service {svc_spec.service_name()}.')
+            logger.error(f'Failed to generate cephadm-signed SSL cert-key pair: {self.cert_name}/{self.key_name} for service {svc_spec.service_name()}.')
 
         return cert, key
+
+    def get_certificates(self,
+                         svc_spec: ServiceSpec,
+                         daemon_spec: CephadmDaemonDeploySpec,
+                         ips: List[str] = [],
+                         fqdns: List[str] = []) -> Tuple[str, str]:
+
+        if not self.needs_certificates() or not svc_spec.ssl:
+            return '', ''
+
+        logger.info(f'redo: getting certificate for {svc_spec.service_name()}')
+
+        cert_source = svc_spec.certificate_source
+        if cert_source == CertificateSource.SPEC_EMBEDDED.value:
+            logger.info(f'redo: CertificateSource.SPEC_EMBEDDED')
+            return self._get_certificates_from_spec(svc_spec, daemon_spec)
+        elif cert_source == CertificateSource.CEPHADM_USER_PROVIDED.value:
+            logger.info(f'redo: CertificateSource.CEPHADM_USER_PROVIDED')
+            return self._get_certificates_from_certmgr_store(svc_spec)
+        elif cert_source == CertificateSource.CEPHADM_SIGNED.value:
+            logger.info(f'redo: CertificateSource.CEPHADM_SIGNED')
+            return self._generate_cephadm_signed_certificates(svc_spec, daemon_spec, ips, fqdns)
+        else:
+            logger.info(f'redo: cert_source is {cert_source}')
+            return '', ''
 
     def allow_colo(self) -> bool:
         """
@@ -622,6 +714,9 @@ class CephadmService(metaclass=ABCMeta):
         assert daemon.daemon_type is not None
         assert self.TYPE == daemon_type_to_service(daemon.daemon_type)
         logger.debug(f'Pre remove daemon {self.TYPE}.{daemon.daemon_id}')
+        if self.needs_certificates():
+            svc_spec = self.mgr.spec_store[daemon.service_name()].spec
+            self.rm_cert_and_key(svc_spec.service_name(), daemon.hostname)
 
     def post_remove(self, daemon: DaemonDescription, is_failed_deploy: bool) -> None:
         """
@@ -630,9 +725,6 @@ class CephadmService(metaclass=ABCMeta):
         assert daemon.daemon_type is not None
         assert self.TYPE == daemon_type_to_service(daemon.daemon_type)
         logger.debug(f'Post remove daemon {self.TYPE}.{daemon.daemon_id}')
-        if self.needs_certificates:
-            svc_spec = self.mgr.spec_store[daemon.service_name()].spec
-            self.rm_cert_and_key(svc_spec.service_name(), daemon.hostname)
 
     def purge(self, service_name: str) -> None:
         """Called to carry out any purge tasks following service removal"""
@@ -1064,18 +1156,18 @@ class RgwService(CephService):
     TYPE = 'rgw'
     SCOPE = TLSObjectScope.SERVICE
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     def allow_colo(self) -> bool:
         return True
 
+    # TODO: should we remove this method
     @classmethod
     def get_dependencies(cls, mgr: "CephadmOrchestrator",
                          spec: Optional[ServiceSpec] = None,
                          daemon_type: Optional[str] = None) -> List[str]:
-
         deps = []
         rgw_spec = cast(RGWSpec, spec)
         ssl_cert = getattr(rgw_spec, 'rgw_frontend_ssl_certificate', None)
@@ -1084,7 +1176,9 @@ class RgwService(CephService):
                 ssl_cert = '\n'.join(ssl_cert)
             deps.append(f'ssl-cert:{str(utils.md5_hash(ssl_cert))}')
         else:
-            deps += RgwService.get_daemons_ips(mgr, rgw_spec)
+            ips, _ = CephadmService.get_daemons_ips_and_fqdns(mgr, rgw_spec)
+            assert isinstance(ips, list)  # for mypy
+            deps += ips
 
         return sorted(deps)
 
@@ -1164,9 +1258,16 @@ class RgwService(CephService):
             else:
                 port = ports[0]
 
-        if spec.ssl or spec.generate_cert:
+        if spec.ssl:
+            if spec.generate_cert:
+                ips, fqdns = CephadmService.get_daemons_ips_and_fqdns(self.mgr, spec)
+                assert isinstance(ips, list)  # for mypy
+                assert isinstance(fqdns, list)  # for mypy
+                cert, key = self.get_certificates(spec, daemon_spec, ips, fqdns)
+            else:
+                cert, key = self.get_certificates(spec, daemon_spec)
+
             rgw_cert_name = daemon_spec.name() if spec.generate_cert else spec.service_name()
-            cert, key = self.get_certificates(spec, daemon_spec, RgwService.get_daemons_ips(self.mgr, spec))
             pem = ''.join([key, cert])
             ret, out, err = self.mgr.check_mon_command({
                 'prefix': 'config-key set',

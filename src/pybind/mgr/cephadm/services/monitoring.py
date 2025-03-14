@@ -31,8 +31,8 @@ class GrafanaService(CephadmService):
     SCOPE = TLSObjectScope.HOST
     DEFAULT_SERVICE_PORT = 3000
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     def prepare_create(self, daemon_spec: CephadmDaemonDeploySpec) -> CephadmDaemonDeploySpec:

@@ -36,8 +36,8 @@ class IscsiService(CephService):
     TYPE = 'iscsi'
     SCOPE = TLSObjectScope.SERVICE
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     def config(self, spec: IscsiServiceSpec) -> None:  # type: ignore

@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 @register_cephadm_service
 class MgmtGatewayService(CephadmService):
     TYPE = 'mgmt-gateway'
-    SCOPE = TLSObjectScope.GLOBAL
+    SCOPE = TLSObjectScope.HOST
     SVC_TEMPLATE_PATH = 'services/mgmt-gateway/nginx.conf.j2'
     EXTERNAL_SVC_TEMPLATE_PATH = 'services/mgmt-gateway/external_server.conf.j2'
     INTERNAL_SVC_TEMPLATE_PATH = 'services/mgmt-gateway/internal_server.conf.j2'
     INTERNAL_SERVICE_PORT = 29443
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     def prepare_create(self, daemon_spec: CephadmDaemonDeploySpec) -> CephadmDaemonDeploySpec:

@@ -18,8 +18,8 @@ class OAuth2ProxyService(CephadmService):
     SCOPE = TLSObjectScope.HOST
     SVC_TEMPLATE_PATH = 'services/oauth2-proxy/oauth2-proxy.conf.j2'
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     def prepare_create(self, daemon_spec: CephadmDaemonDeploySpec) -> CephadmDaemonDeploySpec:

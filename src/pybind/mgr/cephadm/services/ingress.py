@@ -24,8 +24,8 @@ class IngressService(CephService):
     SCOPE = TLSObjectScope.SERVICE
     MAX_KEEPALIVED_PASS_LEN = 8
 
-    @property
-    def needs_certificates(self) -> bool:
+    @classmethod
+    def needs_certificates(cls) -> bool:
         return True
 
     @classmethod
