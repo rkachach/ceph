@@ -9,6 +9,8 @@
 #include "rgw_zone.h"
 #include "rgw_rest_conn.h"
 #include "rgw_bucket_sync.h"
+#include "rgw_sal.h"
+#include "rgw_sal_config.h"
 
 #include "common/errno.h"
 #include "include/random.h"
@@ -97,6 +99,22 @@ int RGWSI_Zone::do_start(optional_yield y, const DoutPrefixProvider *dpp)
   }
   if (site->get_period().has_value()) {
     *current_period = site->get_period().value();
+
+  auto config_store_type = g_conf().get_val<std::string>("rgw_config_store");
+  auto cfgstore = DriverManager::create_config_store(dpp, config_store_type);
+  ldpp_dout(dpp, 20) << "realm  " << realm->get_name() << " " << realm->get_id() << dendl;
+  current_period->set_realm_id(realm->get_id());
+  ret = cfgstore->read_period(dpp, y, current_period->get_id(), current_period->epoch, *current_period);
+  if (ret < 0 && ret != -ENOENT) {
+    ldpp_dout(dpp, 0) << "failed reading current period info: " << " " << cpp_strerror(-ret) << dendl;
+    return ret;
+  }
+
+  ret = zone_params->init(dpp, cct, sysobj_svc, y);
+  bool found_zone = (ret == 0);
+  if (ret < 0 && ret != -ENOENT) {
+    lderr(cct) << "failed reading zone info: ret "<< ret << " " << cpp_strerror(-ret) << dendl;
+    return ret;
   }
   *zonegroup = site->get_zonegroup();
   *zone_public_config = site->get_zone();
@@ -291,7 +309,9 @@ int RGWSI_Zone::list_periods(const DoutPrefixProvider *dpp, const string& curren
   string period_id = current_period;
   while(!period_id.empty()) {
     RGWPeriod period(period_id);
-    ret = period.init(dpp, cct, sysobj_svc, y);
+    auto config_store_type = g_conf().get_val<std::string>("rgw_config_store");
+    auto cfgstore = DriverManager::create_config_store(dpp, config_store_type);
+    ret = cfgstore->read_period(dpp, y, period_id, std::nullopt, period);
     if (ret < 0) {
       return ret;
     }
