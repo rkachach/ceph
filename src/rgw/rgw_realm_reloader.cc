@@ -143,6 +143,7 @@ void RGWRealmReloader::reload()
           true, // run notification thread
           true, // run bucket logging thread
           null_yield,
+	  env.cfgstore,
           cct->_conf->rgw_cache_enabled);
     }
 

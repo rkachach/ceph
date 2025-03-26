@@ -366,6 +366,7 @@ void *RGWRadosThread::Worker::entry() {
 
   do {
     auto start = ceph::real_clock::now();
+
     int r = processor->process(this);
     if (r < 0) {
       ldpp_dout(this, 0) << "ERROR: processor->process() returned error r=" << r << dendl;
@@ -486,6 +487,7 @@ public:
 class RGWMetaSyncProcessorThread : public RGWSyncProcessorThread
 {
   RGWMetaSyncStatusManager sync;
+  rgw::sal::ConfigStore* cfgstore;
 
   uint64_t interval_msec() override {
     return 0; /* no interval associated, it'll run once until stopped */
@@ -514,7 +516,7 @@ public:
   }
 
   int process(const DoutPrefixProvider *dpp) override {
-    sync.run(dpp, null_yield);
+    sync.run(dpp, null_yield, cfgstore);
     return 0;
   }
 };
@@ -524,6 +526,7 @@ class RGWDataSyncProcessorThread : public RGWSyncProcessorThread
   PerfCountersRef counters;
   RGWDataSyncStatusManager sync;
   bool initialized;
+  rgw::sal::ConfigStore *cfgstore{nullptr};
 
   uint64_t interval_msec() override {
     if (initialized) {
@@ -569,7 +572,7 @@ public:
       /* we'll be back! */
       return 0;
     }
-    sync.run(dpp);
+    sync.run(dpp, cfgstore);
     return 0;
   }
 };
@@ -1465,14 +1468,14 @@ int RGWRados::init_complete(const DoutPrefixProvider *dpp, optional_yield y)
 }
 
 int RGWRados::init_svc(bool raw, const DoutPrefixProvider *dpp,
-		       bool background_tasks, // Ignored when `raw`
-                       const rgw::SiteConfig& site)
+           bool background_tasks, // Ignored when `raw`
+           const rgw::SiteConfig& site, rgw::sal::ConfigStore* cfgstore)
 {
   if (raw) {
-    return svc.init_raw(cct, driver, use_cache, null_yield, dpp, site);
+    return svc.init_raw(cct, driver, use_cache, null_yield, dpp, site, cfgstore);
   }
 
-  return svc.init(cct, driver, use_cache, run_sync_thread, background_tasks, null_yield, dpp, site);
+  return svc.init(cct, driver, use_cache, run_sync_thread, background_tasks, null_yield, dpp, site, cfgstore);
 }
 
 /** 
@@ -1481,7 +1484,7 @@ int RGWRados::init_svc(bool raw, const DoutPrefixProvider *dpp,
  */
 int RGWRados::init_begin(CephContext* _cct, const DoutPrefixProvider *dpp,
 			 bool background_tasks,
-                         const rgw::SiteConfig& site)
+       const rgw::SiteConfig& site, rgw::sal::ConfigStore* cfgstore)
 {
   set_context(_cct);
   auto ret = init_rados();
@@ -1490,7 +1493,7 @@ int RGWRados::init_begin(CephContext* _cct, const DoutPrefixProvider *dpp,
     return ret;
   }
 
-  ret = init_svc(false, dpp, background_tasks, site);
+  ret = init_svc(false, dpp, background_tasks, site, cfgstore);
   if (ret < 0) {
     ldpp_dout(dpp, 0) << "ERROR: failed to init services (ret=" << cpp_strerror(-ret) << ")" << dendl;
     return ret;

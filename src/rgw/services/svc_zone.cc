@@ -92,29 +92,13 @@ int RGWSI_Zone::do_start(optional_yield y, const DoutPrefixProvider *dpp)
 
   assert(sysobj_svc->is_started()); /* if not then there's ordering issue */
 
-  auto config_store_type = g_conf().get_val<std::string>("rgw_config_store");
-  auto cfgstore = DriverManager::create_config_store(dpp, config_store_type);
-  ret = rgw::read_realm(dpp, y, cfgstore.get(), realm->get_id(), realm->get_name(), *realm);
+  ret = rgw::read_realm(dpp, y, cfgstore, realm->get_id(), realm->get_name(), *realm);
   if (ret < 0 && ret != -ENOENT) {
     ldpp_dout(dpp, 0) << "failed reading realm info: ret "<< ret << " " << cpp_strerror(-ret) << dendl;
     return ret;
   }
   if (site->get_period().has_value()) {
     *current_period = site->get_period().value();
-
-  ldpp_dout(dpp, 20) << "realm  " << realm->get_name() << " " << realm->get_id() << dendl;
-  current_period->set_realm_id(realm->get_id());
-  ret = cfgstore->read_period(dpp, y, current_period->get_id(), current_period->epoch, *current_period);
-  if (ret < 0 && ret != -ENOENT) {
-    ldpp_dout(dpp, 0) << "failed reading current period info: " << " " << cpp_strerror(-ret) << dendl;
-    return ret;
-  }
-
-  ret = zone_params->init(dpp, cct, sysobj_svc, y);
-  bool found_zone = (ret == 0);
-  if (ret < 0 && ret != -ENOENT) {
-    lderr(cct) << "failed reading zone info: ret "<< ret << " " << cpp_strerror(-ret) << dendl;
-    return ret;
   }
   *zonegroup = site->get_zonegroup();
   *zone_public_config = site->get_zone();
@@ -274,7 +258,7 @@ int RGWSI_Zone::list_zones(const DoutPrefixProvider *dpp, list<string>& zones)
 
 int RGWSI_Zone::list_realms(const DoutPrefixProvider *dpp, list<string>& realms)
 {
-  RGWRealm realm(cct);
+  RGWRealm realm;
   RGWSI_SysObj::Pool syspool = sysobj_svc->get_pool(realm.get_pool(cct));
 
   return syspool.list_prefixed_objs(dpp, realm_names_oid_prefix, &realms);
@@ -309,8 +293,6 @@ int RGWSI_Zone::list_periods(const DoutPrefixProvider *dpp, const string& curren
   string period_id = current_period;
   while(!period_id.empty()) {
     RGWPeriod period(period_id);
-    auto config_store_type = g_conf().get_val<std::string>("rgw_config_store");
-    auto cfgstore = DriverManager::create_config_store(dpp, config_store_type);
     ret = cfgstore->read_period(dpp, y, period_id, std::nullopt, period);
     if (ret < 0) {
       return ret;

@@ -55,6 +55,7 @@ int RGWServices_Def::init(CephContext *cct,
 			  bool background_tasks,
 			  optional_yield y,
                           const DoutPrefixProvider *dpp,
+                          rgw::sal::ConfigStore* cfgstore,
                           const rgw::SiteConfig* site)
 {
   finisher = std::make_unique<RGWSI_Finisher>(cct);
@@ -264,12 +265,12 @@ void RGWServices_Def::shutdown()
   has_shutdown = true;
 }
 
-int RGWServices::do_init(CephContext *_cct, rgw::sal::RadosStore* driver, bool have_cache, bool raw, bool run_sync, bool background_tasks, optional_yield y, const DoutPrefixProvider *dpp, const rgw::SiteConfig& _site)
+int RGWServices::do_init(CephContext *_cct, rgw::sal::RadosStore* driver, bool have_cache, bool raw, bool run_sync, bool background_tasks, optional_yield y, const DoutPrefixProvider *dpp, const rgw::SiteConfig& _site, rgw::sal::ConfigStore* cfgstore)
 {
   cct = _cct;
   site = &_site;
 
-  int r = _svc.init(cct, driver, have_cache, raw, run_sync, background_tasks, y, dpp, site);
+  int r = _svc.init(cct, driver, have_cache, raw, run_sync, background_tasks, y, dpp, cfgstore, site);
   if (r < 0) {
     return r;
   }

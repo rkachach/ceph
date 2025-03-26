@@ -1986,6 +1986,7 @@ public:
 				      bool run_bucket_logging_thread,
 				      bool background_tasks,
 				      optional_yield y,
+              rgw::sal::ConfigStore* cfgstore,
 				      bool use_cache = true,
 				      bool use_gc = true) {
     rgw::sal::Driver* driver = init_storage_provider(dpp, cct, cfg, io_context,
@@ -1999,17 +2000,19 @@ public:
                                                    run_notification_thread,
 				                   run_bucket_logging_thread,
 						   use_cache, use_gc,
-						   background_tasks, y);
+						   background_tasks, y, cfgstore);
     return driver;
   }
   /** Get a stripped down driver by service name */
   static rgw::sal::Driver* get_raw_storage(const DoutPrefixProvider* dpp,
 					  CephContext* cct, const Config& cfg,
 					  boost::asio::io_context& io_context,
-					  const rgw::SiteConfig& site_config) {
+					  const rgw::SiteConfig& site_config,
+            rgw::sal::ConfigStore* cfgstore) {
     rgw::sal::Driver* driver = init_raw_storage_provider(dpp, cct, cfg,
 							 io_context,
-							 site_config);
+							 site_config,
+               cfgstore);
     return driver;
   }
   /** Initialize a new full Driver */
@@ -2028,13 +2031,14 @@ public:
                                                 bool run_bucket_logging_thread,
 						bool use_metadata_cache,
 						bool use_gc, bool background_tasks,
-						optional_yield y);
+						optional_yield y, rgw::sal::ConfigStore* cfgstore);
   /** Initialize a new raw Driver */
   static rgw::sal::Driver* init_raw_storage_provider(const DoutPrefixProvider* dpp,
 						    CephContext* cct,
 						    const Config& cfg,
 						    boost::asio::io_context& io_context,
-						    const rgw::SiteConfig& site_config);
+						    const rgw::SiteConfig& site_config,
+                rgw::sal::ConfigStore* cfgstore);
   /** Close a Driver when it's no longer needed */
   static void close_storage(rgw::sal::Driver* driver);
 
