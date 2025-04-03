@@ -333,11 +333,6 @@ int RGWSI_Zone::init_zg_from_period(const DoutPrefixProvider *dpp, optional_yiel
   if (iter != current_period->get_map().zonegroups.end()) {
     ldpp_dout(dpp, 20) << "using current period zonegroup " << zonegroup->get_name() << dendl;
     *zonegroup = iter->second;
-    int ret = zonegroup->init(dpp, cct, sysobj_svc, y, false);
-    if (ret < 0) {
-      ldpp_dout(dpp, 0) << "failed init zonegroup: " << " " << cpp_strerror(-ret) << dendl;
-      return ret;
-    }
   }
   for (iter = current_period->get_map().zonegroups.begin();
        iter != current_period->get_map().zonegroups.end(); ++iter){
@@ -355,20 +350,22 @@ int RGWSI_Zone::init_zg_from_period(const DoutPrefixProvider *dpp, optional_yiel
 	  master->second.name << " id:" << master->second.id << " as master" << dendl;
 	if (zonegroup->get_id() == zg.get_id()) {
 	  zonegroup->master_zone = master->second.id;
-	  int ret = zonegroup->update(dpp, y);
+	  int ret = cfgstore->create_zonegroup(dpp, y, false, *zonegroup, nullptr);
 	  if (ret < 0) {
 	    ldpp_dout(dpp, 0) << "error updating zonegroup : " << cpp_strerror(-ret) << dendl;
 	    return ret;
 	  }
 	} else {
 	  RGWZoneGroup fixed_zg(zg.get_id(),zg.get_name());
-	  int ret = fixed_zg.init(dpp, cct, sysobj_svc, y);
+    std::string_view zonegroup_id = zonegroup->get_id();
+    std::string_view zonegroup_name = zonegroup->get_name();
+    int ret = rgw::read_zonegroup(dpp, y, cfgstore, zonegroup_id, zonegroup_name, *zonegroup);
 	  if (ret < 0) {
 	    ldpp_dout(dpp, 0) << "error initializing zonegroup : " << cpp_strerror(-ret) << dendl;
 	    return ret;
 	  }
 	  fixed_zg.master_zone = master->second.id;
-	  ret = fixed_zg.update(dpp, y);
+    ret = cfgstore->create_zonegroup(dpp, y, false, fixed_zg, nullptr);
 	  if (ret < 0) {
 	    ldpp_dout(dpp, 0) << "error initializing zonegroup : " << cpp_strerror(-ret) << dendl;
 	    return ret;
@@ -404,7 +401,7 @@ int RGWSI_Zone::init_zg_from_local(const DoutPrefixProvider *dpp, optional_yield
 	ldpp_dout(dpp, 0) << "zonegroup " << zonegroup->get_name() << " missing master_zone, setting zone " <<
 	  master->second.name << " id:" << master->second.id << " as master" << dendl;
 	zonegroup->master_zone = master->second.id;
-	int ret = zonegroup->update(dpp, y);
+	int ret = cfgstore->create_zonegroup(dpp, y, false, *zonegroup, nullptr);
 	if (ret < 0) {
 	  ldpp_dout(dpp, 0) << "error initializing zonegroup : " << cpp_strerror(-ret) << dendl;
 	  return ret;
