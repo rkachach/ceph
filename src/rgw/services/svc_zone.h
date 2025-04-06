@@ -69,7 +69,7 @@ class RGWSI_Zone : public RGWServiceInstance
   int init_zg_from_local(const DoutPrefixProvider *dpp, optional_yield y);
 
 public:
-  RGWSI_Zone(CephContext *cct, const rgw::SiteConfig* _site);
+  RGWSI_Zone(CephContext *cct, rgw::sal::ConfigStore* cfgstore, const rgw::SiteConfig* _site);
   ~RGWSI_Zone();
 
   const RGWZoneParams& get_zone_params() const;

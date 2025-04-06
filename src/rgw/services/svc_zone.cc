@@ -20,8 +20,8 @@
 using namespace std;
 using namespace rgw_zone_defaults;
 
-RGWSI_Zone::RGWSI_Zone(CephContext *cct, const rgw::SiteConfig* _site)
-        : RGWServiceInstance(cct), site(_site)
+RGWSI_Zone::RGWSI_Zone(CephContext *cct, rgw::sal::ConfigStore* _cfgstore, const rgw::SiteConfig* _site)
+        : RGWServiceInstance(cct), cfgstore(_cfgstore), site(_site)
 {
 }
 
