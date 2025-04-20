@@ -92,10 +92,8 @@ int RGWSI_Zone::do_start(optional_yield y, const DoutPrefixProvider *dpp)
 
   assert(sysobj_svc->is_started()); /* if not then there's ordering issue */
 
-  ret = rgw::read_realm(dpp, y, cfgstore, realm->get_id(), realm->get_name(), *realm);
-  if (ret < 0 && ret != -ENOENT) {
-    ldpp_dout(dpp, 0) << "failed reading realm info: ret "<< ret << " " << cpp_strerror(-ret) << dendl;
-    return ret;
+  if (site->get_realm().has_value()) {
+    *realm = site->get_realm().value();
   }
   if (site->get_period().has_value()) {
     *current_period = site->get_period().value();

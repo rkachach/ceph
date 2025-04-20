@@ -55,8 +55,8 @@ class RGWSI_Zone : public RGWServiceInstance
   std::map<rgw_zone_id, RGWZone> zone_by_id;
 
   std::unique_ptr<rgw_sync_policy_info> sync_policy;
-  const rgw::SiteConfig* site{nullptr};
   rgw::sal::ConfigStore *cfgstore{nullptr};
+  const rgw::SiteConfig* site{nullptr};
 
   void init(RGWSI_SysObj *_sysobj_svc,
 	    librados::Rados* rados_,
