@@ -907,6 +907,7 @@ class ServiceSpec(object):
         'osd',
         'prometheus',
         'promtail',
+        'alloy',
         'rbd-mirror',
         'rgw',
         'smb',
@@ -977,6 +978,7 @@ class ServiceSpec(object):
             'prometheus': PrometheusSpec,
             'loki': MonitoringSpec,
             'promtail': MonitoringSpec,
+            'alloy': MonitoringSpec,
             'snmp-gateway': SNMPGatewaySpec,
             SMBSpec.service_type: SMBSpec,
         }.get(service_type, cls)
@@ -2890,7 +2892,7 @@ class MonitoringSpec(ServiceSpec):
                  custom_configs: Optional[List[CustomConfig]] = None,
                  ):
         assert service_type in ['grafana', 'node-exporter', 'prometheus', 'alertmanager',
-                                'loki', 'promtail']
+                                'loki', 'alloy', 'promtail']
 
         super(MonitoringSpec, self).__init__(
             service_type, service_id,
@@ -2916,6 +2918,7 @@ class MonitoringSpec(ServiceSpec):
                     'alertmanager': 9093,
                     'grafana': 3000,
                     'loki': 3100,
+                    'alloy': 9080,
                     'promtail': 9080}[self.service_type]
 
 
