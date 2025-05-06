@@ -29,7 +29,6 @@
 #include "rgw_iam_managed_policy.h"
 #include "rgw_op.h"
 #include "rgw_process_env.h"
-#include "rgw_sal_config.h"
 
 using std::string;
 

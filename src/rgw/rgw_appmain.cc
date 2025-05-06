@@ -587,30 +587,33 @@ int rgw::AppMain::init_frontends2(RGWLib* rgwlib)
     /* ignore error */
   }
 
-  // if we're part of a realm, add a watcher to respond to configuration changes
-  if (const auto& realm = env.site->get_realm(); realm) {
-    realm_watcher = env.cfgstore->create_realm_watcher(dpp, null_yield, *realm);
-  }
-  if (realm_watcher) {
-    pusher = std::make_unique<RGWPeriodPusher>(dpp, env.driver, env.cfgstore, null_yield);
-    realm_watcher->add_watcher(RGWRealmNotify::ZonesNeedPeriod, *pusher);
-
-    fe_pauser = std::make_unique<RGWFrontendPauser>(fes, pusher.get());
-    rgw_pauser = std::make_unique<RGWPauser>();
-    rgw_pauser->add_pauser(fe_pauser.get());
-    if (env.lua.background) {
-      rgw_pauser->add_pauser(env.lua.background);
+#ifdef WITH_RADOSGW_RADOS
+  if (env.driver->get_name() == "rados") {
+    // add a watcher to respond to realm configuration changes
+    // if we're part of a realm, add a watcher to respond to configuration changes
+    if (const auto& realm = env.site->get_realm(); realm) {
+      realm_watcher = env.cfgstore->create_realm_watcher(dpp, null_yield, *realm);
     }
+    if (realm_watcher) {
+      pusher = std::make_unique<RGWPeriodPusher>(dpp, env.driver, env.cfgstore, null_yield);
+      realm_watcher->add_watcher(RGWRealmNotify::ZonesNeedPeriod, *pusher);
 
+      fe_pauser = std::make_unique<RGWFrontendPauser>(fes, pusher.get());
+      rgw_pauser = std::make_unique<RGWPauser>();
+      rgw_pauser->add_pauser(fe_pauser.get());
+      if (env.lua.background) {
+        rgw_pauser->add_pauser(env.lua.background);
+      }
     if (dedup_background) {
       rgw_pauser->add_pauser(dedup_background.get());
     }
-
-    need_context_pool();
-    reloader = std::make_unique<RGWRealmReloader>(
-        env, *implicit_tenant_context, service_map_meta, rgw_pauser.get(), *context_pool);
-    realm_watcher->add_watcher(RGWRealmNotify::Reload, *reloader);
+      need_context_pool();
+      reloader = std::make_unique<RGWRealmReloader>(
+          env, *implicit_tenant_context, service_map_meta, rgw_pauser.get(), *context_pool);
+      realm_watcher->add_watcher(RGWRealmNotify::Reload, *reloader);
+    }
   }
+#endif
 
   return r;
 } /* init_frontends2 */
@@ -644,6 +647,7 @@ void rgw::AppMain::init_lua()
 #endif
 
   env.lua.manager = env.driver->get_lua_manager(install_dir);
+#ifdef WITH_RADOSGW_RADOS
   if (driver->get_name() == "rados") { /* Supported for only RadosStore */
     lua_background = std::make_unique<
       rgw::lua::Background>(dpp->get_cct(), env.lua.manager.get());
@@ -652,6 +656,7 @@ void rgw::AppMain::init_lua()
     static_cast<rgw::sal::RadosLuaManager*>(env.lua.manager.get())->watch_reload(dpp);
     env.lua.manager.get()->set_lua_background(lua_background.get());
   }
+#endif
 } /* init_lua */
 
 void rgw::AppMain::init_dedup()
@@ -686,7 +691,7 @@ void rgw::AppMain::shutdown(std::function<void(void)> finalize_async_signals)
   realm_watcher.reset();
   pusher.reset();
   reloader.reset();
-
+#ifdef WITH_RADOSGW_RADOS
   if (env.driver->get_name() == "rados") {
     if (g_conf().get_val<bool>("rgw_lua_enable"))
       static_cast<rgw::sal::RadosLuaManager*>(env.lua.manager.get())->
@@ -696,6 +701,7 @@ void rgw::AppMain::shutdown(std::function<void(void)> finalize_async_signals)
       dedup_background->unwatch_reload(dpp);
     }
   }
+#endif
 
   env.kms_cache.reset();
 

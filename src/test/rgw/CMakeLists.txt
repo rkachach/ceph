@@ -143,6 +143,7 @@ add_executable(unittest_rgw_ratelimit test_rgw_ratelimit.cc $<TARGET_OBJECTS:uni
 target_link_libraries(unittest_rgw_ratelimit ${rgw_libs})
 add_ceph_unittest(unittest_rgw_ratelimit)
 
+if(WITH_RADOSGW_RADOS)
 # ceph_test_rgw_manifest
 set(test_rgw_manifest_srcs test_rgw_manifest.cc)
 add_executable(ceph_test_rgw_manifest
@@ -165,8 +166,10 @@ target_link_libraries(ceph_test_rgw_manifest
   ${CMAKE_DL_LIBS}
   ${UNITTEST_LIBS}
   ${CRYPTO_LIBS})
+endif()
 
 set(test_rgw_obj_srcs test_rgw_obj.cc)
+if(WITH_RADOSGW_RADOS)
 add_executable(ceph_test_rgw_obj
   ${test_rgw_obj_srcs}
   )
@@ -188,6 +191,7 @@ target_link_libraries(ceph_test_rgw_obj
   ${CRYPTO_LIBS}
   )
 install(TARGETS ceph_test_rgw_obj DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 set(test_rgw_crypto_srcs test_rgw_crypto.cc)
 add_executable(unittest_rgw_crypto
@@ -326,11 +330,13 @@ target_include_directories(unittest_rgw_sync_trace
   SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/src/rgw")
 target_link_libraries(unittest_rgw_sync_trace)
 
+if(WITH_RADOSGW_RADOS)
 add_executable(ceph_test_rgw_gc_log test_rgw_gc_log.cc $<TARGET_OBJECTS:unit-main>)
 target_include_directories(ceph_test_rgw_gc_log
   SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/src/rgw")
 target_link_libraries(ceph_test_rgw_gc_log ${rgw_libs} radostest-cxx)
 install(TARGETS ceph_test_rgw_gc_log DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 add_executable(unittest_rgw_shard_io test_rgw_shard_io.cc)
 add_ceph_unittest(unittest_rgw_shard_io)
@@ -350,6 +356,7 @@ target_link_libraries(unittest_rgw_object_ctx ${rgw_libs})
 add_ceph_test(test-ceph-diff-sorted.sh
   ${CMAKE_CURRENT_SOURCE_DIR}/test-ceph-diff-sorted.sh)
 
+if(WITH_RADOSGW_RADOS)
 # unittest_log_backing
 add_executable(unittest_log_backing test_log_backing.cc)
 target_include_directories(unittest_log_backing
@@ -360,6 +367,7 @@ target_link_libraries(unittest_log_backing
   neoradostest-support
   ${UNITTEST_LIBS}
   ${rgw_libs})
+endif()
 
 # Adding the usage cache unit test
 if(WITH_TESTS)
@@ -420,6 +428,7 @@ target_include_directories(unittest_rgw_lua
   SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/src/rgw")
 target_link_libraries(unittest_rgw_lua ${rgw_libs})
 
+if(WITH_RADOSGW_RADOS)
 add_executable(radosgw-cr-test rgw_cr_test.cc)
 target_link_libraries(radosgw-cr-test ${rgw_libs} librados
   cls_rgw_client cls_otp_client cls_lock_client cls_refcount_client
@@ -429,6 +438,7 @@ target_link_libraries(radosgw-cr-test ${rgw_libs} librados
   OATH::OATH
   ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${BLKID_LIBRARIES}
   GTest::GTest)
+endif()
 
 if(WITH_RADOSGW_POSIX)
   # unittest_posix_bucket_cache
@@ -454,6 +464,7 @@ target_link_libraries(unittest_rgw_posix_driver  ${UNITTEST_LIBS}
   ${rgw_libs} ${LMDB_LIBRARIES})
 endif(WITH_RADOSGW_POSIX)
 
+if(WITH_RADOSGW_RADOS)
 # ceph_test_datalog
 add_executable(ceph_test_datalog test_datalog.cc)
 target_include_directories(ceph_test_datalog
@@ -465,6 +476,7 @@ target_link_libraries(ceph_test_datalog
   ${UNITTEST_LIBS}
   ${rgw_libs})
 install(TARGETS ceph_test_datalog DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 add_executable(unittest_rgw_tag test_rgw_tag.cc)
 add_ceph_unittest(unittest_rgw_tag)

@@ -461,6 +461,7 @@ WRITE_CLASS_ENCODER(RGWPeriodConfig)
 
 class RGWRealm;
 class RGWPeriod;
+namespace rgw {class SiteConfig;}
 
 class RGWRealm
 {
@@ -783,7 +784,7 @@ int commit_period(const DoutPrefixProvider* dpp, optional_yield y,
                   RGWRealm& realm, sal::RealmWriter& realm_writer,
                   const RGWPeriod& current_period,
                   RGWPeriod& info, std::ostream& error_stream,
-                  bool force_if_stale);
+                  bool force_if_stale, const rgw::SiteConfig& site);
 
 
 /// Look up a zonegroup by its id. If no id is given, look it up by name.
