@@ -88,6 +88,8 @@ import { UpgradableComponent } from './upgradable/upgradable.component';
 import { ProgressComponent } from './progress/progress.component';
 import { TearsheetComponent } from './tearsheet/tearsheet.component';
 import { TearsheetStepComponent } from './tearsheet-step/tearsheet-step.component';
+import { SidePanelComponent } from './side-panel/side-panel.component';
+
 // Icons
 import InfoIcon from '@carbon/icons/es/information/16';
 import CopyIcon from '@carbon/icons/es/copy/32';
@@ -196,7 +198,8 @@ import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-st
     StorageInsightsModalComponent,
     StorageInsightsNotificationComponent,
     CallHomeConnectionInfoComponent,
-    CallHomeConnectivityStatusComponent
+    CallHomeConnectivityStatusComponent,
+    SidePanelComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   exports: [
@@ -241,12 +244,11 @@ import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-st
     TearsheetStepComponent,
     CallHomeModalComponent,
     CallHomeNotificationComponent,
-    StorageInsightsNotificationComponent,
     CallHomeConnectionInfoComponent,
-    CallHomeConnectivityStatusComponent
-  ]
-})
-export class ComponentsModule {
+    CallHomeConnectivityStatusComponent,
+    SidePanelComponent
+]})
+export class ComponentModule {
   constructor(private iconService: IconService) {
     this.iconService.registerAll([InfoIcon, CopyIcon, downloadIcon]);
   }
