@@ -28,7 +28,9 @@
 #include "rgw_realm_reloader.h"
 #include "rgw_ldap.h"
 #include "rgw_lua.h"
+#ifdef WITH_RADOSGW_RADOS
 #include "rgw_dedup.h"
+#endif
 #include "rgw_dmclock_scheduler_ctx.h"
 #include "rgw_ratelimit.h"
 #include "rgw_usage_perf.h"
@@ -56,7 +58,9 @@ public:
 namespace rgw {
 
 namespace lua { class Background; }
+#ifdef WITH_RADOSGW_RADOS
 namespace dedup{ class Background; }
+#endif
 namespace sal { class ConfigStore; }
 
 class RGWLib;
@@ -72,7 +76,9 @@ class AppMain {
   std::unique_ptr<rgw::LDAPHelper> ldh;
   RGWREST rest;
   std::unique_ptr<rgw::lua::Background> lua_background;
+#ifdef WITH_RADOSGW_RADOS
   std::unique_ptr<rgw::dedup::Background> dedup_background;
+#endif
   std::unique_ptr<rgw::auth::ImplicitTenants> implicit_tenant_context;
   std::unique_ptr<rgw::dmclock::SchedulerCtx> sched_ctx;
   std::unique_ptr<ActiveRateLimiter> ratelimiter;
@@ -80,7 +86,9 @@ class AppMain {
   // wow, realm reloader has a lot of parts
   std::unique_ptr<RGWRealmReloader> reloader;
   std::unique_ptr<rgw::UsagePerfCounters> usage_perf_counters;
+#ifdef WITH_RADOSGW_RADOS
   std::unique_ptr<RGWPeriodPusher> pusher;
+#endif
   std::unique_ptr<RGWFrontendPauser> fe_pauser;
   std::unique_ptr<RGWRealmWatcher> realm_watcher;
   std::unique_ptr<RGWPauser> rgw_pauser;
@@ -120,7 +128,9 @@ public:
   void init_tracepoints();
   void init_lua();
   void init_kms_cache();
+#ifdef WITH_RADOSGW_RADOS
   void init_dedup();
+#endif
 
   bool have_http() {
     return have_http_frontend;
