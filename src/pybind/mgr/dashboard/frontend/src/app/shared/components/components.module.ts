@@ -92,7 +92,11 @@ import { TearsheetComponent } from './tearsheet/tearsheet.component';
 import { TearsheetStepComponent } from './tearsheet-step/tearsheet-step.component';
 import { DetailsCardComponent } from './details-card/details-card.component';
 import { SidePanelComponent } from './side-panel/side-panel.component';
+<<<<<<< HEAD
 import { ClickableTileComponent } from './clickable-tile/clickable-tile.component';
+=======
+import { ToastComponent } from './notification-toast/notification-toast.component';
+>>>>>>> c361fd45ac0 (mgr/dashboard: Carbonised Toast Notification)
 
 // Icons
 import InfoIcon from '@carbon/icons/es/information/16';
@@ -241,6 +245,7 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     TearsheetComponent,
     TearsheetStepComponent,
     SidePanelComponent,
+<<<<<<< HEAD
     ClickableTileComponent,
     SidebarLayoutComponent,
     DetailsCardComponent,
@@ -251,6 +256,10 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     CallHomeConnectionInfoComponent,
     CallHomeConnectivityStatusComponent,
     NumberWithUnitComponent
+=======
+    SidebarLayoutComponent,
+    ToastComponent
+>>>>>>> c361fd45ac0 (mgr/dashboard: Carbonised Toast Notification)
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   exports: [
@@ -294,6 +303,7 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     TearsheetComponent,
     TearsheetStepComponent,
     SidePanelComponent,
+<<<<<<< HEAD
     ClickableTileComponent,
     SidebarLayoutComponent,
     ProductiveCardComponent,
@@ -304,6 +314,10 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     CallHomeConnectivityStatusComponent,
     DetailsCardComponent,
     NumberWithUnitComponent
+=======
+    SidebarLayoutComponent,
+    ToastComponent
+>>>>>>> c361fd45ac0 (mgr/dashboard: Carbonised Toast Notification)
   ]
 })
 
