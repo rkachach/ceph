@@ -72,6 +72,7 @@ import { CephfsMirroringFsMirrorPathsComponent } from './ceph/cephfs/cephfs-mirr
 import { CephfsMirroringFsBreadcrumbResolver } from './ceph/cephfs/cephfs-mirroring-fs-tabs/cephfs-mirroring-fs-breadcrumb.resolver';
 import { CephfsMirroringErrorComponent } from './ceph/cephfs/cephfs-mirroring-error/cephfs-mirroring-error.component';
 import { OverviewComponent } from './ceph/overview/overview.component';
+import { NotificationsPageComponent } from './core/navigation/notification-panel/notifications-page/notifications-page.component';
 
 @Injectable()
 export class PerformanceCounterBreadcrumbsResolver extends BreadcrumbsResolver {
@@ -126,6 +127,14 @@ const routes: Routes = [
         }
       },
 
+      // Notifications
+      {
+        path: 'notifications',
+        data: {
+          breadcrumbs: 'Cluster/Notifications'
+        },
+        component: NotificationsPageComponent
+      },
       // Cluster
       {
         path: 'add-storage',

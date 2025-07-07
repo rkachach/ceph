@@ -252,7 +252,8 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     CallHomeConnectivityStatusComponent,
     NumberWithUnitComponent,
     SidebarLayoutComponent,
-    ToastComponent
+    ToastComponent,
+    ProductiveCardComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
     SparklineComponent,
@@ -306,7 +307,8 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     DetailsCardComponent,
     NumberWithUnitComponent,
     SidebarLayoutComponent,
-    ToastComponent
+    ToastComponent,
+    ProductiveCardComponent
   ]
 })
 
