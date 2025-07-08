@@ -751,6 +751,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
 
         self._verify_snap_schedule(self.CREATE_VERSION, 'sv05', 'mygrp05')
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv05', 'mygrp05')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv05', '--group', 'mygrp05', path='.', fs='cephfs')
         self.remove_snapshots(path, self.get_snap_dir_name())
 
         self._fs_cmd('subvolume', 'rm', 'cephfs', 'sv05', '--group_name', 'mygrp05')
@@ -766,6 +767,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv06', '--group', 'mygrp06', path='.', snap_schedule='1m', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('list', '--subvol', 'sv06', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv06', '--group', 'mygrp06', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv06', '--group', 'mygrp06', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv06', 'mygrp06')
@@ -783,6 +785,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv07', '--group', 'mygrp07', path='.', snap_schedule='1m', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('list', '--group', 'mygrp07', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv07', '--group', 'mygrp07', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv07', '--group', 'mygrp07', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv07', 'mygrp07')
@@ -799,6 +802,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
 
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv08', '--group', 'mygrp08', path='.', snap_schedule='1m', fs='cephfs')
         self.fs_snap_schedule_cmd('list', '--subvol', 'sv08', '--group', 'mygrp08', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv08', '--group', 'mygrp08', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv08', '--group', 'mygrp08', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv08', 'mygrp08')
@@ -816,6 +820,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv09', '--group', 'mygrp09', path='.', snap_schedule='1m', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('retention', 'add', '--subvol', 'sv09', path='.', retention_spec_or_period='h', retention_count='5')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv09', '--group', 'mygrp09', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv09', '--group', 'mygrp09', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv09', 'mygrp09')
@@ -833,6 +838,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv10', '--group', 'mygrp10', path='.', snap_schedule='1m', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('retention', 'add', '--group', 'mygrp10', path='.', retention_spec_or_period='h', retention_count='5')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv10', '--group', 'mygrp10', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv10', '--group', 'mygrp10', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv10', 'mygrp10')
@@ -849,6 +855,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
 
         self.fs_snap_schedule_cmd('add', '--subvol', 'sv11', '--group', 'mygrp11', path='.', snap_schedule='1m', fs='cephfs')
         self.fs_snap_schedule_cmd('retention', 'add', '--subvol', 'sv11', '--group', 'mygrp11', path='.', retention_spec_or_period='h', retention_count=5, fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv11', '--group', 'mygrp11', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv11', '--group', 'mygrp11', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv11', 'mygrp11')
@@ -867,6 +874,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('retention', 'add', '--subvol', 'sv12', '--group', 'mygrp12', path='.', retention_spec_or_period='h', retention_count=5, fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('activate', '--subvol', 'sv12', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv12', '--group', 'mygrp12', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv12', '--group', 'mygrp12', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv12', 'mygrp12')
@@ -885,6 +893,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('retention', 'add', '--subvol', 'sv13', '--group', 'mygrp13', path='.', retention_spec_or_period='h', retention_count=5, fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('activate', '--group', 'mygrp13', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv13', '--group', 'mygrp13', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv13', '--group', 'mygrp13', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv13', 'mygrp13')
@@ -904,6 +913,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('activate', '--subvol', 'sv14', '--group', 'mygrp14', path='.', fs='cephfs')
 
         self._verify_snap_schedule(self.CREATE_VERSION, 'sv14', 'mygrp14')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv14', '--group', 'mygrp14', path='.', fs='cephfs')
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv14', 'mygrp14')
         self.remove_snapshots(path, self.get_snap_dir_name())
 
@@ -923,6 +933,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('activate', '--subvol', 'sv15', '--group', 'mygrp15', path='.', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv15', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv15', '--group', 'mygrp15', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv15', '--group', 'mygrp15', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv15', 'mygrp15')
@@ -942,6 +953,7 @@ class TestSnapSchedulesSubvolAndGroupArguments(TestSnapSchedulesHelper):
         self.fs_snap_schedule_cmd('activate', '--subvol', 'sv16', '--group', 'mygrp16', path='.', fs='cephfs')
         with self.assertRaises(CommandFailedError):
             self.fs_snap_schedule_cmd('deactivate', '--group', 'mygrp16', path='.', fs='cephfs')
+        self.fs_snap_schedule_cmd('deactivate', '--subvol', 'sv16', '--group', 'mygrp16', path='.', fs='cephfs')
         self.fs_snap_schedule_cmd('remove', '--subvol', 'sv16', '--group', 'mygrp16', path='.', snap_schedule='1m', fs='cephfs')
 
         path = self._get_subvol_snapdir_path(self.CREATE_VERSION, 'sv16', 'mygrp16')
