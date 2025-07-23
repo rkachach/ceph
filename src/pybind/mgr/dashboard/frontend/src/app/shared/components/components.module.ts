@@ -41,6 +41,7 @@ import {
   TagModule,
   LinkModule,
   LayerModule,
+  LayoutModule,
   TilesModule,
   ThemeModule
 } from 'carbon-components-angular';
@@ -89,8 +90,8 @@ import { UpgradableComponent } from './upgradable/upgradable.component';
 import { ProgressComponent } from './progress/progress.component';
 import { TearsheetComponent } from './tearsheet/tearsheet.component';
 import { TearsheetStepComponent } from './tearsheet-step/tearsheet-step.component';
+import { DetailsCardComponent } from './details-card/details-card.component';
 import { SidePanelComponent } from './side-panel/side-panel.component';
-
 // Icons
 import InfoIcon from '@carbon/icons/es/information/16';
 import CopyIcon from '@carbon/icons/es/copy/32';
@@ -126,6 +127,7 @@ import Warning16 from '@carbon/icons/es/warning/16';
 import Deploy16 from '@carbon/icons/es/deploy/16';
 import Close16 from '@carbon/icons/es/close/16';
 import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.component';
+import { ProductiveCardComponent } from './productive-card/productive-card.component';
 
 @NgModule({
   imports: [
@@ -171,6 +173,7 @@ import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.componen
     TagModule,
     LinkModule,
     LayerModule,
+    LayoutModule,
     TilesModule,
     ThemeModule
   ],
@@ -218,6 +221,8 @@ import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.componen
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
+    ProductiveCardComponent,
+    DetailsCardComponent,
     CallHomeModalComponent,
     CallHomeNotificationComponent,
     StorageInsightsModalComponent,
@@ -273,7 +278,10 @@ import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.componen
     CallHomeConnectionInfoComponent,
     CallHomeConnectivityStatusComponent,
     SidePanelComponent,
-    SidebarLayoutComponent
+    SidebarLayoutComponent,
+    ProductiveCardComponent,
+    DetailsCardComponent
+
 ]})
 export class ComponentsModule {
   constructor(private iconService: IconService) {
