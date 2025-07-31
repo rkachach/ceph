@@ -175,7 +175,8 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     LayerModule,
     LayoutModule,
     TilesModule,
-    ThemeModule
+    ThemeModule,
+    ProductiveCardComponent
   ],
   declarations: [
     SparklineComponent,
@@ -221,7 +222,6 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
-    ProductiveCardComponent,
     DetailsCardComponent,
     CallHomeModalComponent,
     CallHomeNotificationComponent,
