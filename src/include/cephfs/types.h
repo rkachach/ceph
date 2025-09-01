@@ -636,6 +636,26 @@ struct optmetadata_singleton {
     return u64kind < other.u64kind;
   }
 
+  bool operator == (const optmetadata_singleton& other) const {
+    if (this->get_kind() != other.get_kind()) {
+      return false;
+    }
+
+    return std::visit(
+      [](auto& this_optmetadata, auto& other_optmetadata)
+      {
+	// FIXME: optmetadata's can be an instance of unknown_md_t or
+	// charmap_md_t. former should memcmp() since there's no other way but
+	// latter should not. See https://tracker.ceph.com/issues/73382.
+	return memcmp(&this_optmetadata, &other_optmetadata, sizeof(this_optmetadata)) == 0;
+      },
+      optmetadata, other.optmetadata);
+  }
+
+  bool operator != (const optmetadata_singleton& other) const {
+    return !(*this == other);
+  }
+
 private:
   uint64_t u64kind = 0;
   optmetadata_t optmetadata;
@@ -715,6 +735,30 @@ struct optmetadata_multiton {
 
   auto size() const {
     return opts.size();
+  }
+
+  bool operator == (const optmetadata_multiton<optmetadata_singleton<optmetadata_server_t<Allocator>,Allocator>, Allocator>& other) const
+  {
+    if (size() != other.size())
+      return false;
+
+    auto it_this = opts.begin();
+    auto it_other = other.opts.begin();
+    while (it_this != opts.end() && it_other != opts.end()) {
+      if (*it_this != *it_other) {
+        return false;
+      }
+
+      ++it_this;
+      ++it_other;
+    }
+
+    return true;
+  }
+
+  bool operator != (const optmetadata_multiton<optmetadata_singleton<optmetadata_server_t<Allocator>,Allocator>, Allocator>& other) const
+  {
+    return !(*this == other);
   }
 
 private:
@@ -1355,7 +1399,6 @@ void inode_t<Allocator>::generate_test_instances(std::list<inode_t*>& ls)
 template<template<typename> class Allocator>
 int inode_t<Allocator>::compare(const inode_t<Allocator> &other, bool *divergent) const
 {
-  // TODO: fscrypt / optmetadata: https://tracker.ceph.com/issues/70188
   ceph_assert(ino == other.ino);
   *divergent = false;
   if (version == other.version) {
