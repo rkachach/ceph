@@ -497,7 +497,6 @@ class Migrations:
         self.mgr.remove_health_warning('CEPHADM_MIGRATION_FAILURE')
         return True
 
-
     def migrate_9_10(self) -> bool:
         logger.info(f'Starting rgw SSL/TLS migration (queue length is {len(self.rgw_ssl_migration_queue)})')
         for s in self.rgw_ssl_migration_queue:
