@@ -5107,6 +5107,8 @@ class TestMgmtGateway:
                                                  location / {
                                                      proxy_pass https://dashboard_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /grafana {
@@ -5115,6 +5117,8 @@ class TestMgmtGateway:
                                                      # will send this header if Grafana is running on the same node as one of those services
                                                      proxy_set_header Authorization "";
                                                      proxy_buffering off;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /prometheus {
@@ -5124,7 +5128,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /alertmanager {
@@ -5134,7 +5140,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
                                              }"""),
                     "nginx_internal_server.conf": dedent("""
@@ -5155,17 +5163,23 @@ class TestMgmtGateway:
                                                      rewrite ^/internal/(.*) /$1 break;
                                                      proxy_pass https://service_discovery_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/dashboard {
                                                      rewrite ^/internal/dashboard/(.*) /$1 break;
                                                      proxy_pass https://dashboard_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/grafana {
                                                      rewrite ^/internal/grafana/(.*) /$1 break;
                                                      proxy_pass https://grafana_servers;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/prometheus {
@@ -5176,7 +5190,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/alertmanager {
@@ -5187,7 +5203,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
                                              }"""),
                     "nginx_internal.crt": f"{ceph_generated_cert}",
@@ -5379,6 +5397,8 @@ class TestMgmtGateway:
                                                  location / {
                                                      proxy_pass https://dashboard_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                      auth_request /oauth2/auth;
                                                      error_page 401 = /oauth2/sign_in;
 
@@ -5417,6 +5437,8 @@ class TestMgmtGateway:
                                                      # will send this header if Grafana is running on the same node as one of those services
                                                      proxy_set_header Authorization "";
                                                      proxy_buffering off;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                      auth_request /oauth2/auth;
                                                      error_page 401 = /oauth2/sign_in;
 
@@ -5448,7 +5470,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                      auth_request /oauth2/auth;
                                                      error_page 401 = /oauth2/sign_in;
 
@@ -5468,7 +5492,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                      auth_request /oauth2/auth;
                                                      error_page 401 = /oauth2/sign_in;
 
@@ -5499,17 +5525,23 @@ class TestMgmtGateway:
                                                      rewrite ^/internal/(.*) /$1 break;
                                                      proxy_pass https://service_discovery_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/dashboard {
                                                      rewrite ^/internal/dashboard/(.*) /$1 break;
                                                      proxy_pass https://dashboard_servers;
                                                      proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/grafana {
                                                      rewrite ^/internal/grafana/(.*) /$1 break;
                                                      proxy_pass https://grafana_servers;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/prometheus {
@@ -5520,7 +5552,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
 
                                                  location /internal/alertmanager {
@@ -5531,7 +5565,9 @@ class TestMgmtGateway:
                                                      proxy_ssl_certificate_key /etc/nginx/ssl/nginx_internal.key;
                                                      proxy_ssl_trusted_certificate /etc/nginx/ssl/ca.crt;
                                                      proxy_ssl_verify on;
-                                                     proxy_ssl_verify_depth 2;
+                                                     proxy_ssl_verify_depth 1;
+                                                     proxy_ssl_server_name on;
+                                                     proxy_ssl_name $ssl_server_name;
                                                  }
                                              }"""),
                     "nginx_internal.crt": f"{ceph_generated_cert}",
