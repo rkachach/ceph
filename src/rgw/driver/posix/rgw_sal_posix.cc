@@ -4412,6 +4412,7 @@ int POSIXObject::restore_obj_from_cloud(Bucket* bucket,
 	  CephContext* cct,
           std::optional<uint64_t> days,
           bool& in_progress,
+	  uint64_t& size,
           const DoutPrefixProvider* dpp, 
           optional_yield y)
 {
