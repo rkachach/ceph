@@ -83,8 +83,7 @@ struct mon_info_t {
     : name(n), public_addrs(p_addrs)
   { }
 
-  mon_info_t() { }
-
+  mon_info_t() = default;
 
   void encode(ceph::buffer::list& bl, uint64_t features) const;
   void decode(ceph::buffer::list::const_iterator& p);
