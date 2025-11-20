@@ -61,6 +61,7 @@ import { SmbOverviewComponent } from './ceph/smb/smb-overview/smb-overview.compo
 import { environment } from '~/environments/environment';
 import { NfsClusterFormComponent } from './ceph/nfs/nfs-cluster-form/nfs-cluster-form.component';
 import { OverviewComponent } from './ceph/overview/overview.component';
+import { CephfsMirroringListComponent } from './ceph/cephfs/cephfs-mirroring-list/cephfs-mirroring-list.component';
 
 @Injectable()
 export class PerformanceCounterBreadcrumbsResolver extends BreadcrumbsResolver {
@@ -406,6 +407,11 @@ const routes: Routes = [
             path: `fs/${URLVerbs.EDIT}/:id`,
             component: CephfsVolumeFormComponent,
             data: { breadcrumbs: ActionLabels.EDIT }
+          },
+          {
+            path: 'mirroring',
+            component: CephfsMirroringListComponent,
+            data: { breadcrumbs: 'File/Mirroring' }
           },
           {
             path: 'nfs',
