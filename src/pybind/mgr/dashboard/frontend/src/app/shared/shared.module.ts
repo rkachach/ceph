@@ -10,6 +10,7 @@ import { AuthGuardService } from './services/auth-guard.service';
 import { AuthStorageService } from './services/auth-storage.service';
 import { FormatterService } from './services/formatter.service';
 import { BlockUIModule, BlockUIService } from 'ng-block-ui';
+import { TilesModule } from 'carbon-components-angular';
 
 @NgModule({
   imports: [
@@ -21,7 +22,7 @@ import { BlockUIModule, BlockUIService } from 'ng-block-ui';
     BlockUIModule.forRoot()
   ],
   declarations: [],
-  exports: [ComponentsModule, PipesModule, DataTableModule, DirectivesModule],
+  exports: [ComponentsModule, PipesModule, DataTableModule, DirectivesModule, TilesModule],
   providers: [AuthStorageService, AuthGuardService, FormatterService, CssHelper, BlockUIService]
 })
 export class SharedModule {}

@@ -62,6 +62,7 @@ import { environment } from '~/environments/environment';
 import { NfsClusterFormComponent } from './ceph/nfs/nfs-cluster-form/nfs-cluster-form.component';
 import { OverviewComponent } from './ceph/overview/overview.component';
 import { CephfsMirroringListComponent } from './ceph/cephfs/cephfs-mirroring-list/cephfs-mirroring-list.component';
+import { CephfsMirroringWizardComponent } from './ceph/cephfs/cephfs-mirroring-wizard/cephfs-mirroring-wizard.component';
 
 @Injectable()
 export class PerformanceCounterBreadcrumbsResolver extends BreadcrumbsResolver {
@@ -412,6 +413,11 @@ const routes: Routes = [
             path: 'mirroring',
             component: CephfsMirroringListComponent,
             data: { breadcrumbs: 'File/Mirroring' }
+          },
+          {
+            path: `mirroring/${URLVerbs.CREATE}`,
+            component: CephfsMirroringWizardComponent,
+            data: { breadcrumbs: ActionLabels.CREATE }
           },
           {
             path: 'nfs',
