@@ -3,24 +3,14 @@
   very large namespaces.
 * RGW: Bucket Logging suppports creating log buckets in EC pools.
   Implicit logging object commits are now performed asynchronously.
-* RGW: OpenSSL engine support is deprecated in favor of provider support.
-  - Removed the `openssl_engine_opts` configuration option. OpenSSL engine configuration in string format is no longer supported.
-  - Added the `openssl_conf` configuration option for loading specified providers as default providers.
-    Configuration file syntax follows the OpenSSL standard (see https://github.com/openssl/openssl/blob/master/doc/man5/config.pod).
-    If the default provider is required when also using custom providers,
-    it must be explicitly loaded in the configuration file or code (see https://github.com/openssl/openssl/blob/master/README-PROVIDERS.md).
 * RGW: When the `rgw_copious_policy_logging` variable is set to true,
        a detailed trace of policy evaluation is logged.
 
-* DASHBOARD: Removed the older landing page which was deprecated in Quincy.
-  Admins can no longer enable the older, deprecated landing page layout by
-  adjusting FEATURE_TOGGLE_DASHBOARD.
 * DASHBOARD: RGW Service form updated to take input regarding QAT compression.
   - QAT compression is an optional field which can be set to 'Hardware' or 'Software' by selecting options from provided dropdwon. If 'None' is selected, compression is removed altogether.
 * Monitoring: Added new Prometheus alerts for certificate management:
   - CephCertificateError: Fires when a Ceph certificate has expired (critical severity).
   - CephCertificateWarning: Fires when a Ceph certificate is about to expire (warning severity).
-* CephFS: The `peer_add` command is deprecated in favor of the `peer_bootstrap` command.
 * RADOS: When objects are read during deep scrubs, the data is read in strides,
   and the scrubbing process is delayed between each read in order to avoid monopolizing
   the I/O capacity of the OSD.
@@ -68,6 +58,19 @@
 * RBD: Mirror snapshot creation and trash purge schedules are now automatically
   staggered when no explicit "start-time" is specified. This reduces scheduling
   spikes and distributes work more evenly over time.
+* RGW: Bucket Logging suppports creating log buckets in EC pools.
+  Implicit logging object commits are now performed asynchronously.
+* RGW: OpenSSL engine support is deprecated in favor of provider support.
+  - Removed the `openssl_engine_opts` configuration option. OpenSSL engine configuration in string format is no longer supported.
+  - Added the `openssl_conf` configuration option for loading specified providers as default providers.
+    Configuration file syntax follows the OpenSSL standard (see https://github.com/openssl/openssl/blob/master/doc/man5/config.pod).
+    If the default provider is required when also using custom providers,
+    it must be explicitly loaded in the configuration file or code (see https://github.com/openssl/openssl/blob/master/README-PROVIDERS.md).
+
+* DASHBOARD: Removed the older landing page which was deprecated in Quincy.
+  Admins can no longer enable the older, deprecated landing page layout by
+  adjusting FEATURE_TOGGLE_DASHBOARD.
+* CephFS: The `peer_add` command is deprecated in favor of the `peer_bootstrap` command.
 
 >=20.0.0
 
