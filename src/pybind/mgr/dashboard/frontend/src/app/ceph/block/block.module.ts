@@ -75,6 +75,8 @@ import AddFilled from '@carbon/icons/es/add--filled/32';
 import SubtractFilled from '@carbon/icons/es/subtract--filled/32';
 import Reset from '@carbon/icons/es/reset/32';
 import { NvmeofGatewayGroupComponent } from './nvmeof-gateway-group/nvmeof-gateway-group.component';
+import { NvmeofGroupFormComponent } from './nvmeof-group-form /nvmeof-group-form.component';
+import { NvmeofGatewayNodeComponent } from './nvmeof-gateway-node/nvmeof-gateway-node.component';
 
 @NgModule({
   imports: [
@@ -102,7 +104,8 @@ import { NvmeofGatewayGroupComponent } from './nvmeof-gateway-group/nvmeof-gatew
     DatePickerModule,
     ComboBoxModule,
     TabsModule,
-    TagModule
+    TagModule,
+    GridModule
   ],
   declarations: [
     RbdListComponent,
@@ -139,7 +142,9 @@ import { NvmeofGatewayGroupComponent } from './nvmeof-gateway-group/nvmeof-gatew
     NvmeofNamespacesListComponent,
     NvmeofNamespacesFormComponent,
     NvmeofInitiatorsListComponent,
-    NvmeofInitiatorsFormComponent
+    NvmeofInitiatorsFormComponent,
+    NvmeofGatewayNodeComponent,
+    NvmeofGroupFormComponent
   ],
   exports: [RbdConfigurationListComponent, RbdConfigurationFormComponent]
 })
@@ -285,7 +290,12 @@ const routes: Routes = [
     },
     children: [
       { path: '', redirectTo: 'gateways', pathMatch: 'full' },
-      { path: '', component: NvmeofGatewayComponent, data: { breadcrumbs: 'Gateways' } },
+      { path: 'gateways', component: NvmeofGatewayComponent, data: { breadcrumbs: 'Gateways' } },
+      {
+        path: `gateways/${URLVerbs.CREATE}`,
+        component: NvmeofGroupFormComponent,
+        data: { breadcrumbs: `${ActionLabels.CREATE}${URLVerbs.GATEWAY_GROUP}` }
+      },
       {
         path: 'subsystems',
         component: NvmeofSubsystemsComponent,
