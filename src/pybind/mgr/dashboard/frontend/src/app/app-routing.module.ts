@@ -128,6 +128,7 @@ const routes: Routes = [
       },
 
       // Notifications
+      // Cluster
       {
         path: 'notifications',
         data: {
@@ -135,7 +136,6 @@ const routes: Routes = [
         },
         component: NotificationsPageComponent
       },
-      // Cluster
       {
         path: 'add-storage',
         component: CreateClusterComponent,
