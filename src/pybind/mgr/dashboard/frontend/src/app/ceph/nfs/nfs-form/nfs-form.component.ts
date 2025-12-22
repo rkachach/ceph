@@ -42,7 +42,8 @@ import { NFSBwIopConfig } from '../models/nfs-cluster-config';
 @Component({
   selector: 'cd-nfs-form',
   templateUrl: './nfs-form.component.html',
-  styleUrls: ['./nfs-form.component.scss']
+  styleUrls: ['./nfs-form.component.scss'],
+  standalone: false
 })
 export class NfsFormComponent extends CdForm implements OnInit {
   @ViewChild('nfsClients', { static: true })

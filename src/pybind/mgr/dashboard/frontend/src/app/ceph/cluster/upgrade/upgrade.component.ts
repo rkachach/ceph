@@ -22,7 +22,8 @@ import { getVersionAndRelease } from '~/app/shared/helpers/utils';
 @Component({
   selector: 'cd-upgrade',
   templateUrl: './upgrade.component.html',
-  styleUrls: ['./upgrade.component.scss']
+  styleUrls: ['./upgrade.component.scss'],
+  standalone: false
 })
 export class UpgradeComponent implements OnInit, OnDestroy {
   version: string;

@@ -18,7 +18,8 @@ import { ModalCdsService } from '~/app/shared/services/modal-cds.service';
 @Component({
   selector: 'cd-upgrade-start-modal.component',
   templateUrl: './upgrade-start-modal.component.html',
-  styleUrls: ['./upgrade-start-modal.component.scss']
+  styleUrls: ['./upgrade-start-modal.component.scss'],
+  standalone: false
 })
 export class UpgradeStartModalComponent implements OnInit {
   permission: Permission;

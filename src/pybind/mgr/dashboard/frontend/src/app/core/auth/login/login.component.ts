@@ -12,7 +12,8 @@ import { environment } from '~/environments/environment';
 @Component({
   selector: 'cd-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
+  standalone: false
 })
 export class LoginComponent implements OnInit {
   model = new Credentials();

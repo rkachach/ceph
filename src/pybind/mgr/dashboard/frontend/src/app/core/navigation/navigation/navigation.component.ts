@@ -22,7 +22,8 @@ import { environment } from '~/environments/environment';
 @Component({
   selector: 'cd-navigation',
   templateUrl: './navigation.component.html',
-  styleUrls: ['./navigation.component.scss']
+  styleUrls: ['./navigation.component.scss'],
+  standalone: false
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   clusterDetails: any[] = [];

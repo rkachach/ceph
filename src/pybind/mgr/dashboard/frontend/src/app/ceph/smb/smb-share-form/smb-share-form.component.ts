@@ -44,7 +44,8 @@ function getBwMaxForUnit(unit: string): number {
 @Component({
   selector: 'cd-smb-share-form',
   templateUrl: './smb-share-form.component.html',
-  styleUrls: ['./smb-share-form.component.scss']
+  styleUrls: ['./smb-share-form.component.scss'],
+  standalone: false
 })
 export class SmbShareFormComponent extends CdForm implements OnInit {
   smbShareForm: CdFormGroup;

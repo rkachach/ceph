@@ -3,7 +3,8 @@ import _ from 'lodash';
 import moment from 'moment';
 
 @Pipe({
-  name: 'cdDate'
+  name: 'cdDate',
+  standalone: false
 })
 export class CdDatePipe implements PipeTransform {
   private static readonly DEFAULT_FORMAT = 'D/M/YY hh:mm A';

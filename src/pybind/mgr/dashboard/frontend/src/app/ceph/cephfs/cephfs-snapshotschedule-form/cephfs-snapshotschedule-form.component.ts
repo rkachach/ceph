@@ -50,7 +50,8 @@ const DEBOUNCE_TIMER = 300;
 @Component({
   selector: 'cd-cephfs-snapshotschedule-form',
   templateUrl: './cephfs-snapshotschedule-form.component.html',
-  styleUrls: ['./cephfs-snapshotschedule-form.component.scss']
+  styleUrls: ['./cephfs-snapshotschedule-form.component.scss'],
+  standalone: false
 })
 export class CephfsSnapshotscheduleFormComponent
   extends CdForm

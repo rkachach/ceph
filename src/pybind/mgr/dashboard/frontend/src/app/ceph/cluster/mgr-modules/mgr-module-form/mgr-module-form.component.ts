@@ -18,7 +18,8 @@ import { environment } from '~/environments/environment';
 @Component({
   selector: 'cd-mgr-module-form',
   templateUrl: './mgr-module-form.component.html',
-  styleUrls: ['./mgr-module-form.component.scss']
+  styleUrls: ['./mgr-module-form.component.scss'],
+  standalone: false
 })
 export class MgrModuleFormComponent extends CdForm implements OnInit {
   mgrModuleForm: CdFormGroup;

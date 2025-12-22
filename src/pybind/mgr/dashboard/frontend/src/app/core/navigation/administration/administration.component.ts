@@ -10,7 +10,8 @@ import { environment } from '~/environments/environment';
 @Component({
   selector: 'cd-administration',
   templateUrl: './administration.component.html',
-  styleUrls: ['./administration.component.scss']
+  styleUrls: ['./administration.component.scss'],
+  standalone: false
 })
 export class AdministrationComponent {
   userPermission: Permission;

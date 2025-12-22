@@ -12,7 +12,8 @@ import { ICON_TYPE, IconSize } from '../../enum/icons.enum';
   selector: 'cd-icon',
   templateUrl: './icon.component.html',
   styleUrl: './icon.component.scss',
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 export class IconComponent implements OnInit, OnChanges {
   @Input() type!: keyof typeof ICON_TYPE;
