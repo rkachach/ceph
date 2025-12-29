@@ -20,6 +20,9 @@
   synchronized using full copy, as blockdiff is not efficient for small files. The threshold is
   controlled by the new configuration option cephfs_mirror_blockdiff_min_file_size (default: 16_M).
   For more information, see https://tracker.ceph.com/issues/73452
+* RBD: Mirror snapshot creation and trash purge schedules are now automatically
+  staggered when no explicit "start-time" is specified. This reduces scheduling
+  spikes and distributes work more evenly over time.
 
 >=20.0.0
 
