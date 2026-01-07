@@ -154,7 +154,7 @@ export class TableComponent implements AfterViewInit, OnInit, OnChanges, OnDestr
   // Allows other components to specify which type of selection they want,
   // e.g. 'single' or 'multi'.
   @Input()
-  selectionType: string = undefined;
+  selectionType: 'single' | 'multiClick' | 'singleRadio' = undefined;
   // By default selected item details will be updated on table refresh, if data has changed
   @Input()
   updateSelectionOnRefresh: 'always' | 'never' | 'onChange' = 'onChange';
@@ -292,11 +292,11 @@ export class TableComponent implements AfterViewInit, OnInit, OnChanges, OnDestr
   }
 
   get showSelectionColumn() {
-    return this.selectionType === 'multiClick';
+    return this.selectionType === 'multiClick' || this.selectionType === 'singleRadio';
   }
 
   get enableSingleSelect() {
-    return this.selectionType === 'single';
+    return this.selectionType === 'single' || this.selectionType === 'singleRadio';
   }
 
   /**
@@ -1093,7 +1093,7 @@ export class TableComponent implements AfterViewInit, OnInit, OnChanges, OnDestr
   }
 
   onSelect(selectedRowIndex: number) {
-    if (this.selectionType === 'single') {
+    if (this.selectionType === 'single' || this.selectionType === 'singleRadio') {
       this.model.selectAll(false);
       this.selection.selected = [_.get(this.model.data?.[selectedRowIndex], [0, 'selected'])];
       this.model.selectRow(selectedRowIndex, true);
@@ -1116,7 +1116,7 @@ export class TableComponent implements AfterViewInit, OnInit, OnChanges, OnDestr
 
   onDeselect(deselectedRowIndex: number) {
     this.model.selectRow(deselectedRowIndex, false);
-    if (this.selectionType === 'single') {
+    if (this.selectionType === 'single' || this.selectionType === 'singleRadio') {
       return;
     }
     this._toggleSelection(deselectedRowIndex, false);

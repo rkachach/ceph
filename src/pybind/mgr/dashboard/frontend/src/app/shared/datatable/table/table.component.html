@@ -176,6 +176,7 @@
             [expandable]="model.isRowExpandable(i)"
             [expanded]="model.isRowExpanded(i)"
             [showSelectionColumn]="showSelectionColumn"
+            [enableSingleSelect]="enableSingleSelect"
             [skeleton]="loadingIndicator"
             (selectRow)="onSelect(i)"
             (deselectRow)="onDeselect(i)"
