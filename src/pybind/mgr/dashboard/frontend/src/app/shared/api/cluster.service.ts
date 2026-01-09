@@ -3,6 +3,8 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
+import { CephClusterUser } from '~/app/shared/models/cluster.model';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -25,6 +27,14 @@ export class ClusterService {
     );
   }
 
+  listUser(): Observable<CephClusterUser[]> {
+    return this.http.get<CephClusterUser[]>(`${this.baseURL}/user`);
+  }
+
+  createUser(payload: CephClusterUser) {
+    return this.http.post(`${this.baseURL}/user`, payload);
+  }
+
   getLicense(image_name: string): Observable<{ call_home_notice: string; license: string }> {
     return this.http.get<{ call_home_notice: string; license: string }>(
       `${this.baseURL}/license/${encodeURIComponent(image_name)}`
@@ -34,4 +44,5 @@ export class ClusterService {
   acceptLicense(image_name: string): Observable<void> {
     return this.http.put<void>(`${this.baseURL}/license`, { image_name: image_name });
   }
+
 }
