@@ -1,7 +1,7 @@
 import { Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MultiClusterService } from '~/app/shared/api/multi-cluster.service';
 import { Permissions } from '~/app/shared/models/permissions';
@@ -12,9 +12,6 @@ import { SummaryService } from '~/app/shared/services/summary.service';
 import { TaskManagerService } from '~/app/shared/services/task-manager.service';
 import { TelemetryNotificationService } from '../../../shared/services/telemetry-notification.service';
 import { MotdNotificationService } from '~/app/shared/services/motd-notification.service';
-import {
-  FeatureTogglesMap,
-} from '~/app/shared/services/feature-toggles.service';
 import _ from 'lodash';
 import { environment } from '../../../../environments/environment.ibm';
 import { CallHomeNotificationService } from '~/app/shared/services/call-home-notification.service';

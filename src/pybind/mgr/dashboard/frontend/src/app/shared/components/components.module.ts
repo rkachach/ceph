@@ -270,7 +270,7 @@ import CheckMarkOutline16 from '@carbon/icons/es/checkmark--outline/16';
     CallHomeConnectivityStatusComponent,
     SidePanelComponent
 ]})
-export class ComponentModule {
+export class ComponentsModule {
   constructor(private iconService: IconService) {
     this.iconService.registerAll([
       InfoIcon,
