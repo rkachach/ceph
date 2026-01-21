@@ -41,7 +41,8 @@ import {
   TagModule,
   LinkModule,
   LayerModule,
-  TilesModule
+  TilesModule,
+  ThemeModule
 } from 'carbon-components-angular';
 
 import { MotdComponent } from '~/app/shared/components/motd/motd.component';
@@ -147,7 +148,8 @@ import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-st
     TagModule,
     LinkModule,
     LayerModule,
-    TilesModule
+    TilesModule,
+    ThemeModule
   ],
   declarations: [
     SparklineComponent,
