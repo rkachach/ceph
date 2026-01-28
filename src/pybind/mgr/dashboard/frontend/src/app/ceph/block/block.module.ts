@@ -49,6 +49,10 @@ import { NvmeofInitiatorsListComponent } from './nvmeof-initiators-list/nvmeof-i
 import { NvmeofInitiatorsFormComponent } from './nvmeof-initiators-form/nvmeof-initiators-form.component';
 import { environment } from '~/environments/environment';
 
+import { NvmeofGatewayGroupComponent } from './nvmeof-gateway-group/nvmeof-gateway-group.component';
+import { NvmeofSubsystemsStepOneComponent } from './nvmeof-subsystems-form/nvmeof-subsystem-step-1/nvmeof-subsystem-step-1.component';
+import { NvmeofGatewayNodeComponent } from './nvmeof-gateway-node/nvmeof-gateway-node.component';
+import { NvmeofGroupFormComponent } from './nvmeof-group-form/nvmeof-group-form.component';
 import {
   ButtonModule,
   CheckboxModule,
@@ -74,9 +78,6 @@ import Close from '@carbon/icons/es/close/32';
 import AddFilled from '@carbon/icons/es/add--filled/32';
 import SubtractFilled from '@carbon/icons/es/subtract--filled/32';
 import Reset from '@carbon/icons/es/reset/32';
-import { NvmeofGatewayGroupComponent } from './nvmeof-gateway-group/nvmeof-gateway-group.component';
-import { NvmeofGatewayNodeComponent } from './nvmeof-gateway-node/nvmeof-gateway-node.component';
-import { NvmeofGroupFormComponent } from './nvmeof-group-form/nvmeof-group-form.component';
 
 @NgModule({
   imports: [
@@ -144,7 +145,8 @@ import { NvmeofGroupFormComponent } from './nvmeof-group-form/nvmeof-group-form.
     NvmeofInitiatorsListComponent,
     NvmeofInitiatorsFormComponent,
     NvmeofGatewayNodeComponent,
-    NvmeofGroupFormComponent
+    NvmeofGroupFormComponent,
+    NvmeofSubsystemsStepOneComponent
   ],
   exports: [RbdConfigurationListComponent, RbdConfigurationFormComponent]
 })
