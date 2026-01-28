@@ -1,7 +1,7 @@
 import { Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MultiClusterService } from '~/app/shared/api/multi-cluster.service';
 import { Permissions } from '~/app/shared/models/permissions';
@@ -13,7 +13,6 @@ import { TaskManagerService } from '~/app/shared/services/task-manager.service';
 import { TelemetryNotificationService } from '../../../shared/services/telemetry-notification.service';
 import { MotdNotificationService } from '~/app/shared/services/motd-notification.service';
 import {
-  FeatureTogglesMap,
   FeatureTogglesService
 } from '~/app/shared/services/feature-toggles.service';
 import _ from 'lodash';
@@ -34,7 +33,6 @@ export class WorkbenchLayoutComponent implements OnInit, OnDestroy {
   permissions: Permissions;
   pageHeaderTitle: string | null = null;
   pageHeaderDescription: string | null = null;
-  enabledFeature$: Observable<FeatureTogglesMap>;
 
   @HostBinding('class') get class(): string {
     return 'top-notification-' + this.notifications.length;
