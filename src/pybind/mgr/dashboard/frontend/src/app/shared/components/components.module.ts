@@ -111,7 +111,6 @@ import NotificationFilledIcon from '@carbon/icons/es/notification--filled/16';
 import DataViewAlt16 from '@carbon/icons/es/data--view--alt/16';
 import DataCenter16 from '@carbon/icons/es/data--center/16';
 import Upgrade16 from '@carbon/icons/es/upgrade/16';
-import Close16 from '@carbon/icons/es/close/16';
 import WarningAltFilled16 from '@carbon/icons/es/warning--alt--filled/16';
 import Help16 from '@carbon/icons/es/help/16';
 import IncidentReporter16 from '@carbon/icons/es/incident-reporter/16';
@@ -123,6 +122,9 @@ import Plug16 from '@carbon/icons/es/plug/16';
 import VmdkDisk16 from '@carbon/icons/es/vmdk-disk/16';
 import WarningAlt16 from '@carbon/icons/es/warning--alt/16';
 import CheckMarkOutline16 from '@carbon/icons/es/checkmark--outline/16';
+import Warning16 from '@carbon/icons/es/warning/16';
+import Deploy16 from '@carbon/icons/es/deploy/16';
+import Close16 from '@carbon/icons/es/close/16';
 
 @NgModule({
   imports: [
@@ -295,7 +297,9 @@ export class ComponentsModule {
       Plug16,
       VmdkDisk16,
       WarningAlt16,
-      CheckMarkOutline16
+      CheckMarkOutline16,
+      Deploy16,
+      Warning16,
     ]);
   }
 }

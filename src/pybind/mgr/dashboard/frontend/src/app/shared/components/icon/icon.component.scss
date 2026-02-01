@@ -5,7 +5,11 @@
 }
 
 .danger-icon {
-  color: theme.$support-error;
+  fill: theme.$support-error !important;
+}
+
+.error-icon {
+  fill: theme.$support-error !important;
 }
 
 //@TODO: this naming needs to be changed
@@ -28,6 +32,10 @@
 
 .info-icon {
   fill: theme.$support-info !important;
+}
+
+.warningAltFilled-icon {
+  color: theme.$support-caution-major;
 }
 
 .deploy-icon {

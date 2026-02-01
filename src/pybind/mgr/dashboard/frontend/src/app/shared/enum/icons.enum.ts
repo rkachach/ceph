@@ -133,7 +133,8 @@ export const ICON_TYPE = {
   danger: 'warning--filled',
   infoCircle: 'information--filled',
   success: 'checkmark--filled',
-  warning: 'warning--alt--filled',
+  warning: 'warning',
+  warningAltFilled: 'warning--alt--filled',
   deploy: 'deploy',
   edit: 'edit',
   error: 'error--filled',
@@ -145,7 +146,6 @@ export const ICON_TYPE = {
   dataViewAlt: 'data--view--alt',
   dataCenter: 'data--center',
   upgrade: 'upgrade',
-  warningAltFilled: 'warning--alt--filled',
   help: 'help',
   incidentReporter: 'incident-reporter',
   ibmStreamSets: 'ibm--streamsets',
@@ -155,5 +155,7 @@ export const ICON_TYPE = {
   plug: 'plug',
   vmdkDisk: 'vmdk-disk',
   warningAlt: 'warning--alt',
-  checkMarkOutline: 'checkmark--outline'
+  checkMarkOutline: 'checkmark--outline',
+  destroy: 'destroy',
+  close: 'close'
 } as const;
