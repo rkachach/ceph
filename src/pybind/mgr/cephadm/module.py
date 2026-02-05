@@ -18,6 +18,7 @@ from threading import Event
 from ceph.deployment.service_spec import PrometheusSpec
 from cephadm.cert_mgr import CertMgr
 from cephadm.cephadm_secrets import CephadmSecrets
+from ceph_secrets_types import SecretScope
 from cephadm.tlsobject_store import TLSObjectScope, TLSObjectException
 
 import string
@@ -3277,6 +3278,7 @@ Then run the following:
                 creds = {'username': 'admin', 'password': 'admin'}
             # only persist if not coming from secret store
             self.cephadm_secrets.set(name=AlertmanagerService.BASIC_AUTH_CREDS,
+                                     scope=SecretScope.SERVICE,
                                      target=AlertmanagerService.TYPE,
                                      data=creds,
                                      secret_type='basic-auth',
@@ -3293,6 +3295,7 @@ Then run the following:
                 creds = {'username': 'admin', 'password': 'admin'}
             # only persist if not coming from secret store
             self.cephadm_secrets.set(name=PrometheusService.BASIC_AUTH_CREDS,
+                                     scope=SecretScope.SERVICE,
                                      target=PrometheusService.TYPE,
                                      data=creds,
                                      secret_type='basic-auth',
@@ -3321,8 +3324,9 @@ Then run the following:
     @handle_orch_error
     def set_prometheus_access_info(self, user: str, password: str) -> str:
         self.cephadm_secrets.set(name=PrometheusService.BASIC_AUTH_CREDS,
+                                 scope=SecretScope.SERVICE,
                                  data={'username': user, 'password': password},
-                                 target='prometheus',
+                                 target=PrometheusService.TYPE,
                                  secret_type='basic-auth',
                                  user_made=True,
                                  editable=True)
@@ -3383,8 +3387,9 @@ Then run the following:
     @handle_orch_error
     def set_alertmanager_access_info(self, user: str, password: str) -> str:
         self.cephadm_secrets.set(name=AlertmanagerService.BASIC_AUTH_CREDS,
+                                 scope=SecretScope.SERVICE,
                                  data={'username': user, 'password': password},
-                                 target='alertmanager',  # service type
+                                 target=AlertmanagerService.TYPE,
                                  secret_type='basic-auth',
                                  user_made=True,
                                  editable=True)
