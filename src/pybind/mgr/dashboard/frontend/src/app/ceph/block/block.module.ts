@@ -361,6 +361,11 @@ const routes: Routes = [
         ]
       },
       {
+        path: `namespaces/${URLVerbs.CREATE}`,
+        component: NvmeofNamespacesFormComponent,
+        data: { breadcrumbs: ActionLabels.CREATE + ' ' + $localize`Namespace` }
+      },
+      {
         path: 'subsystems',
         component: NvmeofSubsystemsComponent,
         data: { breadcrumbs: 'Subsystems' },
@@ -382,12 +387,12 @@ const routes: Routes = [
           {
             path: `${URLVerbs.CREATE}/:subsystem_nqn/namespace`,
             component: NvmeofNamespacesFormComponent,
-            outlet: 'modal'
+            data: { breadcrumbs: ActionLabels.CREATE + ' ' + $localize`Namespace` }
           },
           {
             path: `${URLVerbs.EDIT}/:subsystem_nqn/namespace/:nsid`,
             component: NvmeofNamespacesFormComponent,
-            outlet: 'modal'
+            data: { breadcrumbs: ActionLabels.EDIT + ' ' + $localize`Namespace` }
           },
           // initiators
           {
