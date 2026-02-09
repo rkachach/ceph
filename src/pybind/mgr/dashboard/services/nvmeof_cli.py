@@ -11,7 +11,7 @@ from typing import Annotated, Any, Callable, Dict, List, NamedTuple, Optional, \
 
 import yaml
 from mgr_module import CLICheckNonemptyFileInput, CLICommand, CLIReadCommand, \
-    CLIWriteCommand, HandleCommandResult, HandlerFuncType
+    CLIWriteCommand, HandleCommandResult
 from prettytable import PrettyTable
 
 from ..model.nvmeof import CliFieldTransformer, CliFlags, CliHeader
@@ -333,7 +333,7 @@ class NvmeofCLICommand(CLICommand):
         sig = inspect.signature(self.func)
 
         for name, param in sig.parameters.items():
-            if name in DBCLICommand.KNOWN_ARGS:
+            if name in CLICommand.KNOWN_ARGS:
                 continue
             if name not in self.arg_spec:
                 continue
