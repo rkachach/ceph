@@ -125,6 +125,7 @@ import CheckMarkOutline16 from '@carbon/icons/es/checkmark--outline/16';
 import Warning16 from '@carbon/icons/es/warning/16';
 import Deploy16 from '@carbon/icons/es/deploy/16';
 import Close16 from '@carbon/icons/es/close/16';
+import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.component';
 
 @NgModule({
   imports: [
@@ -223,7 +224,8 @@ import Close16 from '@carbon/icons/es/close/16';
     StorageInsightsNotificationComponent,
     CallHomeConnectionInfoComponent,
     CallHomeConnectivityStatusComponent,
-    SidePanelComponent
+    SidePanelComponent,
+    SidebarLayoutComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   exports: [
@@ -270,7 +272,8 @@ import Close16 from '@carbon/icons/es/close/16';
     CallHomeNotificationComponent,
     CallHomeConnectionInfoComponent,
     CallHomeConnectivityStatusComponent,
-    SidePanelComponent
+    SidePanelComponent,
+    SidebarLayoutComponent
 ]})
 export class ComponentsModule {
   constructor(private iconService: IconService) {
