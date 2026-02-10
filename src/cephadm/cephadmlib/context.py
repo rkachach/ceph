@@ -38,6 +38,7 @@ class BaseConfig:
         self.log_to_journald: Optional[bool] = None
         # Suffix after LA_ for IBM license files in the image (e.g. en -> LA_en).
         self.license_language: str = 'en'
+        self.logging_level: str = 'debug'
 
         self.container_init: bool = CONTAINER_INIT
         # FIXME(refactor) : should be Optional[ContainerEngine]
