@@ -128,6 +128,7 @@ import Deploy16 from '@carbon/icons/es/deploy/16';
 import Close16 from '@carbon/icons/es/close/16';
 import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.component';
 import { ProductiveCardComponent } from './productive-card/productive-card.component';
+import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.component';
 
 @NgModule({
   imports: [
@@ -230,7 +231,8 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     CallHomeConnectionInfoComponent,
     CallHomeConnectivityStatusComponent,
     SidePanelComponent,
-    SidebarLayoutComponent
+    SidebarLayoutComponent,
+    NumberWithUnitComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
   exports: [
@@ -280,9 +282,10 @@ import { ProductiveCardComponent } from './productive-card/productive-card.compo
     SidePanelComponent,
     SidebarLayoutComponent,
     ProductiveCardComponent,
-    DetailsCardComponent
-
-]})
+    DetailsCardComponent,
+    NumberWithUnitComponent
+  ]
+})
 export class ComponentsModule {
   constructor(private iconService: IconService) {
     this.iconService.registerAll([
