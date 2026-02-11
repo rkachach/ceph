@@ -343,7 +343,7 @@ class CephadmService(metaclass=ABCMeta):
         svc_name = svc_spec.service_name()
         ip = ip_addr or self.mgr.inventory.get_addr(daemon_spec.host)
         host_fqdn = self.mgr.get_fqdn(daemon_spec.host)
-        tls_creds = self.mgr.cert_mgr.get_self_signed_tls_credentials(svc_name, host_fqdn, label)
+        tls_creds = self.mgr.cert_mgr.get_self_signed_tls_credentials(svc_name, daemon_spec.host, label)
         if not tls_creds:
             tls_creds = self.mgr.cert_mgr.generate_cert(host_fqdn, ip)
             self.mgr.cert_mgr.save_self_signed_cert_key_pair(svc_name, tls_creds, host=daemon_spec.host, label=label)
