@@ -1066,6 +1066,155 @@ class TestCertMgr(object):
             error_mock.assert_not_called()
             remove_warning_mock.assert_called_once_with(CertMgr.CEPHADM_CERTMGR_HEALTH_ERR)
 
+    def test_cleanup_leftovers_after_cert_source_switch(self, cephadm_module: CephadmOrchestrator, caplog):
+        """Validate the combined cleanup used by post_remove after cert-source switches.
+
+        Scenario:
+        - Service previously used cephadm-signed certs (leftover host-scoped cephadm-signed pair exists)
+        - Service previously used inline certs (leftover non-editable service-scoped objects exist)
+
+        After a cert-source switch, post_remove should be able to clean both kinds of
+        cephadm-managed leftovers regardless of the *current* cert source.
+        """
+        cephadm_module._init_cert_mgr()
+        cm: CertMgr = cephadm_module.cert_mgr
+
+        svc = 'ingress.foo'
+        host = 'host1'
+
+        # Seed a cephadm-signed (host-scoped) pair
+        cm.register_self_signed_cert_key_pair(svc)
+        cm.save_self_signed_cert_key_pair(
+            svc,
+            TLSCredentials(CEPHADM_SELF_GENERATED_CERT_1, CEPHADM_SELF_GENERATED_KEY_2048),
+            host=host,
+        )
+
+        cephadm_cert = cm.self_signed_cert(svc)
+        cephadm_key = cm.self_signed_key(svc)
+        assert cm.get_cert(cephadm_cert, host=host) == CEPHADM_SELF_GENERATED_CERT_1
+        assert cm.get_key(cephadm_key, host=host) == CEPHADM_SELF_GENERATED_KEY_2048
+
+        # Seed inline-saved (service-scoped) objects for the same service
+        cm.save_cert('ingress_ssl_cert', 'inline-cert', service_name=svc, user_made=True, editable=False)
+        cm.save_key('ingress_ssl_key', 'inline-key', service_name=svc, user_made=True, editable=False)
+        assert cm.get_cert('ingress_ssl_cert', service_name=svc) == 'inline-cert'
+        assert cm.get_key('ingress_ssl_key', service_name=svc) == 'inline-key'
+
+        # Combined cleanup (as in post_remove)
+        with caplog.at_level(logging.INFO):
+            cm.try_rm_self_signed_cert_key_pair(svc, host)
+        cm.rm_inline_saved_cert_key_pair(
+            'ingress_ssl_cert',
+            'ingress_ssl_key',
+            service_name=svc,
+            host=host,
+        )
+
+        # Both categories removed
+        assert cm.get_cert(cephadm_cert, host=host) is None
+        assert cm.get_key(cephadm_key, host=host) is None
+        assert cm.get_cert('ingress_ssl_cert', service_name=svc) is None
+        assert cm.get_key('ingress_ssl_key', service_name=svc) is None
+
+        # The INFO log should have been emitted for the cephadm-signed cleanup
+        assert any(
+            f"Removing cephadm-signed cert/key for service: {svc}, host: {host}" in r.getMessage()
+            for r in caplog.records
+        )
+
+        # If referenced creds are present (editable=True), inline cleanup must not remove them.
+        cm.save_cert('ingress_ssl_cert', 'ref-cert', service_name=svc, user_made=True, editable=True)
+        cm.save_key('ingress_ssl_key', 'ref-key', service_name=svc, user_made=True, editable=True)
+        cm.rm_inline_saved_cert_key_pair(
+            'ingress_ssl_cert',
+            'ingress_ssl_key',
+            service_name=svc,
+            host=host,
+        )
+        assert cm.get_cert('ingress_ssl_cert', service_name=svc) == 'ref-cert'
+        assert cm.get_key('ingress_ssl_key', service_name=svc) == 'ref-key'
+
+    def test_try_rm_self_signed_cert_key_pair_best_effort_and_logs(self, cephadm_module: CephadmOrchestrator, caplog):
+        cephadm_module._init_cert_mgr()
+        cm: CertMgr = cephadm_module.cert_mgr
+
+        svc = "rgw.foo"
+        host = "host1"
+
+        cm.register_self_signed_cert_key_pair(svc)
+        cm.save_self_signed_cert_key_pair(
+            svc,
+            TLSCredentials(CEPHADM_SELF_GENERATED_CERT_1, CEPHADM_SELF_GENERATED_KEY_2048),
+            host=host,
+        )
+
+        cert_name = cm.self_signed_cert(svc)
+        key_name = cm.self_signed_key(svc)
+        assert cm.get_cert(cert_name, host=host) == CEPHADM_SELF_GENERATED_CERT_1
+        assert cm.get_key(key_name, host=host) == CEPHADM_SELF_GENERATED_KEY_2048
+
+        with caplog.at_level(logging.INFO):
+            cm.try_rm_self_signed_cert_key_pair(svc, host)
+        assert cm.get_cert(cert_name, host=host) is None
+        assert cm.get_key(key_name, host=host) is None
+        assert any("Removing cephadm-signed cert/key" in r.getMessage() for r in caplog.records)
+
+        caplog.clear()
+        with caplog.at_level(logging.INFO):
+            cm.try_rm_self_signed_cert_key_pair(svc, host)
+        assert not any("Removing cephadm-signed cert/key" in r.getMessage() for r in caplog.records)
+
+
+    def test_rm_inline_saved_cert_key_pair_best_effort_and_editable(self, cephadm_module: CephadmOrchestrator):
+
+        cephadm_module._init_cert_mgr()
+        cm: CertMgr = cephadm_module.cert_mgr
+
+        svc = "nfs.foo"
+
+        # 1) unknown/unregistered names should never raise (best-effort cleanup)
+        cm.rm_inline_saved_cert_key_pair(
+            "totally_unknown_cert",
+            "totally_unknown_key",
+            service_name=svc,
+            host="host1",
+            ca_cert_name="totally_unknown_ca",
+        )
+
+        # 2) inline-saved objects (user_made=True, editable=False) should be removed
+        cm.save_cert("nfs_ssl_cert", "inline-cert", service_name=svc, user_made=True, editable=False)
+        cm.save_key("nfs_ssl_key", "inline-key", service_name=svc, user_made=True, editable=False)
+        cm.save_cert("nfs_ssl_ca_cert", "inline-ca", service_name=svc, user_made=True, editable=False)
+
+        cm.rm_inline_saved_cert_key_pair(
+            "nfs_ssl_cert",
+            "nfs_ssl_key",
+            service_name=svc,
+            host="host1",  # host passed even though SERVICE scope (should be ignored by store)
+            ca_cert_name="nfs_ssl_ca_cert",
+        )
+        assert cm.get_cert("nfs_ssl_cert", service_name=svc) is None
+        assert cm.get_key("nfs_ssl_key", service_name=svc) is None
+        assert cm.get_cert("nfs_ssl_ca_cert", service_name=svc) is None
+
+        # 3) referenced/user-managed entries (editable=True) must NOT be removed
+        cm.save_cert("nfs_ssl_cert", "ref-cert", service_name=svc, user_made=True, editable=True)
+        cm.save_key("nfs_ssl_key", "ref-key", service_name=svc, user_made=True, editable=True)
+        cm.save_cert("nfs_ssl_ca_cert", "ref-ca", service_name=svc, user_made=True, editable=True)
+
+        cm.rm_inline_saved_cert_key_pair(
+            "nfs_ssl_cert",
+            "nfs_ssl_key",
+            service_name=svc,
+            host="host1",
+            ca_cert_name="nfs_ssl_ca_cert",
+        )
+        assert cm.get_cert("nfs_ssl_cert", service_name=svc) == "ref-cert"
+        assert cm.get_key("nfs_ssl_key", service_name=svc) == "ref-key"
+        assert cm.get_cert("nfs_ssl_ca_cert", service_name=svc) == "ref-ca"
+
+
 
 class MockTLSObject(TLSObjectProtocol):
     STORAGE_PREFIX = "mocktls"
@@ -1136,6 +1285,21 @@ class TestTLSObjectStore(unittest.TestCase):
         scope, target = self.store.get_tlsobject_scope_and_target("global_cert_1")
         self.assertEqual(scope, TLSObjectScope.GLOBAL)
         self.assertEqual(target, None)
+
+    def test_get_tlsobject_if_exists(self):
+        """get_tlsobject_if_exists should never raise and return None on missing/invalid access."""
+        # Unknown entity
+        assert self.store.get_tlsobject_if_exists("unknown_entity") is None
+
+        # Known but missing required target
+        assert self.store.get_tlsobject_if_exists("per_host1") is None
+        assert self.store.get_tlsobject_if_exists("per_service1") is None
+
+        # Existing object returns normally
+        self.store.save_tlsobject("per_host1", "cert_data", host="my_host")
+        obj = self.store.get_tlsobject_if_exists("per_host1", host="my_host")
+        assert obj is not None
+        assert obj.data == "cert_data"
 
     def test_list_tlsobjects(self):
         self.store.save_tlsobject("global_cert_1", "cert_data1")
