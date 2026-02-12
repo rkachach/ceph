@@ -90,7 +90,9 @@ import Reset from '@carbon/icons/es/reset/32';
 import SubtractAlt from '@carbon/icons/es/subtract--alt/20';
 import ProgressBarRound from '@carbon/icons/es/progress-bar--round/32';
 import Search from '@carbon/icons/es/search/32';
+import Datastore from '@carbon/icons/es/datastore/16';
 import { NvmeofGatewaySubsystemComponent } from './nvmeof-gateway-subsystem/nvmeof-gateway-subsystem.component';
+import { NvmeofNamespaceExpandModalComponent } from './nvmeof-namespace-expand-modal/nvmeof-namespace-expand-modal.component';
 import { NvmeGatewayViewComponent } from './nvme-gateway-view/nvme-gateway-view.component';
 import { NvmeGatewayViewBreadcrumbResolver } from './nvme-gateway-view/nvme-gateway-view-breadcrumb.resolver';
 import { NvmeofGatewayNodeMode } from '~/app/shared/enum/nvmeof.enum';
@@ -178,6 +180,7 @@ import { NvmeSubsystemViewComponent } from './nvme-subsystem-view/nvme-subsystem
     NvmeGatewayViewComponent,
     NvmeofGatewaySubsystemComponent,
     NvmeofGatewayNodeAddModalComponent,
+    NvmeofNamespaceExpandModalComponent,
     NvmeSubsystemViewComponent,
     NvmeofEditHostKeyModalComponent
   ],
@@ -194,7 +197,8 @@ export class BlockModule {
       Reset,
       ProgressBarRound,
       SubtractAlt,
-      Search
+      Search,
+      Datastore
     ]);
   }
 }
@@ -335,7 +339,18 @@ const routes: Routes = [
     },
     children: [
       { path: '', redirectTo: 'gateways', pathMatch: 'full' },
-      { path: 'gateways', component: NvmeofGatewayComponent, data: { breadcrumbs: 'Gateways' } },
+      {
+        path: 'gateways',
+        component: NvmeofGatewayComponent,
+        data: { breadcrumbs: 'Gateways' },
+        children: [
+          {
+            path: `${URLVerbs.EDIT}/:subsystem_nqn/namespace/:nsid`,
+            component: NvmeofNamespaceExpandModalComponent,
+            outlet: 'modal'
+          }
+        ]
+      },
       {
         path: `gateways/${URLVerbs.CREATE}`,
         component: NvmeofGroupFormComponent,
@@ -371,7 +386,7 @@ const routes: Routes = [
         data: { breadcrumbs: 'Subsystems' },
         children: [
           // subsystems
-          { path: '', component: NvmeofSubsystemsComponent },
+
           {
             path: URLVerbs.CREATE,
             component: NvmeofSubsystemsFormComponent,
@@ -391,8 +406,8 @@ const routes: Routes = [
           },
           {
             path: `${URLVerbs.EDIT}/:subsystem_nqn/namespace/:nsid`,
-            component: NvmeofNamespacesFormComponent,
-            data: { breadcrumbs: ActionLabels.EDIT + ' ' + $localize`Namespace` }
+            component: NvmeofNamespaceExpandModalComponent,
+            outlet: 'modal'
           },
           // initiators
           {

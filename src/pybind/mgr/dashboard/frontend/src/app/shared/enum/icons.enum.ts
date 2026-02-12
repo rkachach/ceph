@@ -90,6 +90,7 @@ export enum Icons {
   connect = 'connect',
   checkmarkOutline = 'checkmark--outline',
   circleDash = 'circle-dash',
+  datastore = 'datastore',
   /* Icons for special effect */
   large = 'fa fa-lg', // icon becomes 33% larger
   large2x = 'fa fa-2x', // icon becomes 50% larger
