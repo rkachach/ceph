@@ -17,9 +17,10 @@ from ..services.orchestrator import OrchClient
 from ..tools import str_to_bool
 from . import APIDoc, APIRouter, BaseController, CreatePermission, \
     DeletePermission, Endpoint, EndpointDoc, Param, ReadPermission, \
-    RESTController, UIRouter
+    RESTController, UIRouter, UpdatePermission
 
 logger = logging.getLogger(__name__)
+
 
 NVME_SCHEMA = {
     "available": (bool, "Is NVMe/TCP available?"),
@@ -268,8 +269,8 @@ else:
                 "max_namespaces": Param(int, "Maximum number of namespaces", True, None),
                 "no_group_append": Param(int, "Do not append gateway group name to the NQN",
                                          True, False),
-                "serial_number": Param(int, "Subsystem serial number", True, None),
-                "dhchap_key": Param(int, "Subsystem DH-HMAC-CHAP key", True, None),
+                "serial_number": Param(str, "Subsystem serial number", True, None),
+                "dhchap_key": Param(str, "Subsystem DH-HMAC-CHAP key", True, None),
                 "gw_group": Param(str, "NVMeoF gateway group", True, None),
                 "server_address": Param(str, "NVMeoF gateway address", True, None),
             },
@@ -287,7 +288,8 @@ else:
                 NVMeoFClient.pb2.create_subsystem_req(
                     subsystem_nqn=nqn, serial_number=serial_number,
                     max_namespaces=max_namespaces, enable_ha=enable_ha,
-                    no_group_append=no_group_append, dhchap_key=dhchap_key
+                    no_group_append=no_group_append,
+                    dhchap_key=dhchap_key
                 )
             )
 
@@ -337,7 +339,8 @@ else:
                 server_address=server_address
             ).stub.change_subsystem_key(
                 NVMeoFClient.pb2.change_subsystem_key_req(
-                    subsystem_nqn=nqn, dhchap_key=dhchap_key
+                    subsystem_nqn=nqn,
+                    dhchap_key=dhchap_key
                 )
             )
 
@@ -1394,9 +1397,10 @@ else:
                 gw_group=gw_group,
                 server_address=server_address
             ).stub.add_host(
-                NVMeoFClient.pb2.add_host_req(subsystem_nqn=nqn, host_nqn=host_nqn,
-                                              dhchap_key=dhchap_key, psk=psk)
-            )
+                NVMeoFClient.pb2.add_host_req(
+                    subsystem_nqn=nqn, host_nqn=host_nqn,
+                    dhchap_key=dhchap_key, psk=psk)
+          )
 
         @empty_response
         @NvmeofCLICommand(
@@ -1428,6 +1432,8 @@ else:
                 NVMeoFClient.pb2.remove_host_req(subsystem_nqn=nqn, host_nqn=host_nqn)
             )
 
+        @Endpoint('PUT', '{host_nqn}/change_key')
+        @UpdatePermission
         @empty_response
         @NvmeofCLICommand(
             "nvmeof host change_key",
@@ -1455,9 +1461,10 @@ else:
                 gw_group=gw_group,
                 server_address=server_address
             ).stub.change_host_key(
-                NVMeoFClient.pb2.change_host_key_req(subsystem_nqn=nqn,
-                                                     host_nqn=host_nqn,
-                                                     dhchap_key=dhchap_key)
+                NVMeoFClient.pb2.change_host_key_req(
+                    subsystem_nqn=nqn,
+                    host_nqn=host_nqn,
+                    dhchap_key=dhchap_key)
             )
 
         @empty_response
