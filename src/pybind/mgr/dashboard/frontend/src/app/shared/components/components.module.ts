@@ -113,6 +113,8 @@ import DataCenter16 from '@carbon/icons/es/data--center/16';
 import Upgrade16 from '@carbon/icons/es/upgrade/16';
 import Close16 from '@carbon/icons/es/close/16';
 import WarningAltFilled16 from '@carbon/icons/es/warning--alt--filled/16';
+import Help16 from '@carbon/icons/es/help/16';
+import IncidentReporter16 from '@carbon/icons/es/incident-reporter/16';
 
 @NgModule({
   imports: [
@@ -275,7 +277,9 @@ export class ComponentModule {
       DataViewAlt16,
       DataCenter16,
       Upgrade16,
-      WarningAltFilled16
+      WarningAltFilled16,
+      Help16,
+      IncidentReporter16
     ]);
   }
 }
