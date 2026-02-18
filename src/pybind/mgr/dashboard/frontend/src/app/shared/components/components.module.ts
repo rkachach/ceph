@@ -94,7 +94,6 @@ import CopyIcon from '@carbon/icons/es/copy/32';
 import { IconComponent } from './icon/icon.component';
 import downloadIcon from '@carbon/icons/es/download/16';
 import { ChartsModule } from '@carbon/charts-angular';
-import { ProductiveCardComponent } from './productive-card/productive-card.component';
 import { CallHomeModalComponent } from './call-home-modal/call-home-modal.component';
 import { CallHomeNotificationComponent } from './call-home-notification/call-home-notification.component';
 import { StorageInsightsModalComponent } from './storage-insights-modal/storage-insights-modal.component';
@@ -192,7 +191,6 @@ import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-st
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
-    ProductiveCardComponent,
     CallHomeModalComponent,
     CallHomeNotificationComponent,
     StorageInsightsModalComponent,
@@ -241,7 +239,6 @@ import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-st
     IconComponent,
     TearsheetComponent,
     TearsheetStepComponent,
-    ProductiveCardComponent,
     CallHomeModalComponent,
     CallHomeNotificationComponent,
     StorageInsightsNotificationComponent,
