@@ -445,6 +445,11 @@ const routes: Routes = [
           {
             path: 'performance',
             component: NvmeofSubsystemPerformanceComponent
+          },
+          {
+            path: `${URLVerbs.ADD}/initiator`,
+            component: NvmeofInitiatorsFormComponent,
+            outlet: 'modal'
           }
         ]
       }
