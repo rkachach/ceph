@@ -156,6 +156,17 @@
   rather rigid and also challenging to disseminate in some environments.  The
   key can be embedded in the migration spec or just referenced from there while
   stored in the MON config-key store.
+* MGR: The Manager now automatically increases ``mgr_stats_period`` when its
+  message queue is congested, reducing daemon reporting frequency to prevent
+  overload. The period recovers automatically once the queue clears. This
+  behavior is controlled by the new ``mgr_stats_period_autotune`` (default:
+  ``true``) and ``mgr_stats_period_autotune_queue_threshold`` (default: ``100``)
+  config options.
+>=20.0.2
+
+* RGW: For `radosgw-admin account rm`, the `--purge-data` option previously applied only
+  to buckets and objects, but now deletes account users, roles, groups, and oidc-providers
+  too instead of failing with ENOTEMPTY.
 
 >=20.0.0
 
