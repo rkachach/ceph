@@ -96,6 +96,9 @@ class AppMain {
   SiteConfig site;
   const DoutPrefixProvider* dpp;
   RGWProcessEnv env;
+  class AdminSocketHook* heap_profiler_hook{nullptr};
+  void unregister_heap_profiler_hook(); // idempotent; used by shutdown() and ~AppMain()
+
   void need_context_pool();
   std::optional<ceph::async::io_context_pool> context_pool;
 public:
