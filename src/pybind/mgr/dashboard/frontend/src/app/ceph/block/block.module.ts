@@ -98,8 +98,10 @@ import { NvmeGatewayViewBreadcrumbResolver } from './nvme-gateway-view/nvme-gate
 import { NvmeofGatewayNodeMode } from '~/app/shared/enum/nvmeof.enum';
 import { NvmeofGatewayNodeAddModalComponent } from './nvmeof-gateway-node/nvmeof-gateway-node-add-modal/nvmeof-gateway-node-add-modal.component';
 import { NvmeofSubsystemNamespacesListComponent } from './nvmeof-subsystem-namespaces-list/nvmeof-subsystem-namespaces-list.component';
+import { NvmeofSubsystemOverviewComponent } from './nvmeof-subsystem-overview/nvmeof-subsystem-overview.component';
 import { NvmeSubsystemViewBreadcrumbResolver } from './nvme-subsystem-view/nvme-subsystem-view-breadcrumb.resolver';
 import { NvmeSubsystemViewComponent } from './nvme-subsystem-view/nvme-subsystem-view.component';
+import { NvmeofSubsystemPerformanceComponent } from './nvmeof-subsystem-performance/nvmeof-subsystem-performance.component';
 
 @NgModule({
   imports: [
@@ -182,7 +184,9 @@ import { NvmeSubsystemViewComponent } from './nvme-subsystem-view/nvme-subsystem
     NvmeofGatewayNodeAddModalComponent,
     NvmeofNamespaceExpandModalComponent,
     NvmeSubsystemViewComponent,
-    NvmeofEditHostKeyModalComponent
+    NvmeofEditHostKeyModalComponent,
+    NvmeofSubsystemOverviewComponent,
+    NvmeofSubsystemPerformanceComponent
   ],
 
   exports: [RbdConfigurationListComponent, RbdConfigurationFormComponent]
@@ -342,7 +346,6 @@ const routes: Routes = [
       {
         path: 'gateways',
         component: NvmeofGatewayComponent,
-        data: { breadcrumbs: 'Gateways' },
         children: [
           {
             path: `${URLVerbs.EDIT}/:subsystem_nqn/namespace/:nsid`,
@@ -422,7 +425,11 @@ const routes: Routes = [
         component: NvmeSubsystemViewComponent,
         data: { breadcrumbs: NvmeSubsystemViewBreadcrumbResolver },
         children: [
-          { path: '', redirectTo: 'namespaces', pathMatch: 'full' },
+          { path: '', redirectTo: 'overview', pathMatch: 'full' },
+          {
+            path: 'overview',
+            component: NvmeofSubsystemOverviewComponent
+          },
           {
             path: 'hosts',
             component: NvmeofInitiatorsListComponent
@@ -434,6 +441,10 @@ const routes: Routes = [
           {
             path: 'listeners',
             component: NvmeofListenersListComponent
+          },
+          {
+            path: 'performance',
+            component: NvmeofSubsystemPerformanceComponent
           }
         ]
       }
