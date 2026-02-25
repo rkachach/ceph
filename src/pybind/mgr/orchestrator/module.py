@@ -2583,6 +2583,7 @@ Usage:
                        topological_labels: Optional[List[str]] = None,
                        no_osd_flags: bool = False,
                        ceph_version: Optional[str] = None,
+                       automatically_accept_license: bool = False,
                        ) -> HandleCommandResult:
         """Initiate upgrade"""
         self._upgrade_check_image_name(image, ceph_version)
@@ -2598,6 +2599,7 @@ Usage:
             limit,
             topological_labels,
             no_osd_flags,
+            automatically_accept_license,
         )
         raise_if_exception(completion)
         return HandleCommandResult(stdout=completion.result_str())

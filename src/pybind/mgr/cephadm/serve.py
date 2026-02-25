@@ -2294,7 +2294,7 @@ class CephadmServe:
         )
 
         if 'license' not in j or not j.get('license', ''):
-            raise OrcestratorError(f'Failed to fetch ibm license for {image_name}')
+            raise OrchestratorError(f'Failed to fetch ibm license for {image_name}')
 
         return j.get('license')
 

@@ -1058,6 +1058,7 @@ class Orchestrator(object):
         limit: Optional[int],
         topological_labels: Optional[Union[str, List[str]]],
         no_osd_flags: bool = False,
+        automatically_accept_license: bool = False,
     ) -> OrchResult[str]:
         raise NotImplementedError()
 
