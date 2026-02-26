@@ -127,8 +127,9 @@ import Warning16 from '@carbon/icons/es/warning/16';
 import Deploy16 from '@carbon/icons/es/deploy/16';
 import Close16 from '@carbon/icons/es/close/16';
 import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.component';
-import { ProductiveCardComponent } from './productive-card/productive-card.component';
 import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.component';
+import ArrowUpRight16 from '@carbon/icons/es/arrow--up-right/16';
+import InProgress16 from '@carbon/icons/es/in-progress/16';
 
 @NgModule({
   imports: [
@@ -177,7 +178,6 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     LayoutModule,
     TilesModule,
     ThemeModule,
-    ProductiveCardComponent
   ],
   declarations: [
     SparklineComponent,
@@ -281,7 +281,6 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     CallHomeConnectivityStatusComponent,
     SidePanelComponent,
     SidebarLayoutComponent,
-    ProductiveCardComponent,
     DetailsCardComponent,
     NumberWithUnitComponent
   ]
@@ -314,6 +313,8 @@ export class ComponentsModule {
       CheckMarkOutline16,
       Deploy16,
       Warning16,
+      ArrowUpRight16,
+      InProgress16
     ]);
   }
 }
