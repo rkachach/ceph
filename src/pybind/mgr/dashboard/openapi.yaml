@@ -7093,12 +7093,16 @@ paths:
                           - count
                           type: object
                         type: array
-                    required:
+                      recovering_bytes_per_sec:
+                        description: Total recovery in bytes
+                        type: integer
+                    required: &id058
                     - pgs_by_state
                     - num_pools
                     - num_pgs
                     - bytes_used
                     - bytes_total
+                    - recovering_bytes_per_sec
                     type: object
                 required:
                 - fsid
@@ -7256,6 +7260,9 @@ paths:
                           required: *id057
                           type: object
                         type: array
+                      recovering_bytes_per_sec:
+                        description: Total recovery in bytes
+                        type: integer
                     required: *id058
                     type: object
                 required: *id059

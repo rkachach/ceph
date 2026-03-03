@@ -130,6 +130,7 @@ import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.componen
 import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.component';
 import ArrowUpRight16 from '@carbon/icons/es/arrow--up-right/16';
 import InProgress16 from '@carbon/icons/es/in-progress/16';
+import ArrowDown16 from '@carbon/icons/es/arrow--down/16';
 
 @NgModule({
   imports: [
@@ -314,7 +315,8 @@ export class ComponentsModule {
       Deploy16,
       Warning16,
       ArrowUpRight16,
-      InProgress16
+      InProgress16,
+      ArrowDown16
     ]);
   }
 }
