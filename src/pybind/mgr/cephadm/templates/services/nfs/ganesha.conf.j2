@@ -6,11 +6,9 @@ NFS_CORE_PARAM {
         mount_path_pseudo = true;
         Enable_UDP = false;
         NFS_Port = {{ port }};
-        allow_set_io_flusher_fail = true;
 {% if monitoring_addr %}
+        allow_set_io_flusher_fail = true;
         Monitoring_Addr = {{ monitoring_addr }};
-{% endif %}
-{% if monitoring_port %}
         Monitoring_Port = {{ monitoring_port }};
 {% endif %}
 {% if bind_addr %}
