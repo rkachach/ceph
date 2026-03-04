@@ -102,20 +102,11 @@ class NFSService(CephService):
         # create the RGW keyring
         rgw_user = f'{rados_user}-rgw'
         rgw_keyring = self.create_rgw_keyring(daemon_spec)
-        bind_addr = ''
         if spec.virtual_ip and not spec.enable_haproxy_protocol:
-            # keepalive_only mode: prioritize virtual_ip
             bind_addr = spec.virtual_ip
             daemon_spec.port_ips = {str(port): spec.virtual_ip}
         else:
             bind_addr = daemon_spec.ip if daemon_spec.ip else ''
-            # update daemon spec ip for prometheus, as monitoring will happen on this
-            # ip, if no monitor ip specified
-            daemon_spec.ip = bind_addr
-        elif daemon_spec.ip:
-            # daemon_spec.ip is already set by scheduler from ip_addrs if specified
-            bind_addr = daemon_spec.ip
-            daemon_spec.port_ips = {str(port): daemon_spec.ip}
         if not bind_addr:
             logger.warning(f'Bind address in {daemon_type}.{daemon_id}\'s ganesha conf is defaulting to empty')
         else:
@@ -128,6 +119,8 @@ class NFSService(CephService):
                 "nodeid": nodeid,
                 "pool": POOL_NAME,
                 "namespace": spec.service_id,
+                "rgw_user": rgw_user,
+                "url": f'rados://{POOL_NAME}/{spec.service_id}/{spec.rados_config_name()}',
                 # fall back to default NFS port if not present in daemon_spec
                 "port": port,
                 "monitoring_port": spec.monitoring_port if spec.monitoring_port else 9587,
@@ -379,36 +372,3 @@ class NFSService(CephService):
                     # one address per interface/subnet is enough
                     cluster_ips.append(addrs[0])
         return cluster_ips
-
-    def get_monitoring_details(self, service_name: str, host: str) -> Tuple[Optional[str], Optional[int]]:
-        spec = cast(NFSServiceSpec, self.mgr.spec_store[service_name].spec)
-        monitoring_port = spec.monitoring_port if spec.monitoring_port else 9587
-
-        # check if monitor needs to be bind on specific ip
-        monitoring_addr = spec.monitoring_ip_addrs.get(host) if spec.monitoring_ip_addrs else None
-
-        if monitoring_addr:
-            try:
-                ip = ipaddress.ip_address(monitoring_addr)
-
-                # Fetch host IPs once and normalize to strings
-                host_ips = set(self.mgr.cache.get_host_network_ips(host))
-
-                # Allow loopback addresses without requiring them on an interface
-                if not ip.is_loopback and str(ip) not in host_ips:
-                    logger.debug(
-                        f"Monitoring IP {monitoring_addr} is not configured on host {host}."
-                    )
-                    monitoring_addr = None
-
-            except ValueError:
-                logger.warning(
-                    f"Invalid monitoring IP address {monitoring_addr} for host {host}."
-                )
-                monitoring_addr = None
-        if not monitoring_addr and spec.monitoring_networks:
-            monitoring_addr = self.mgr.get_first_matching_network_ip(host, spec, spec.monitoring_networks)
-            if not monitoring_addr:
-                logger.debug(f"No IP address found in the network {spec.monitoring_networks} on host {host}.")
-        return monitoring_addr, monitoring_port
->>>>>>> 16033a507e1 (mgr/nfs + mgr/cephadm: support per-host bind and monitoring addresses for NFS)
