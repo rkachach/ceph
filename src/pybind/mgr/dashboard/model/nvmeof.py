@@ -142,6 +142,7 @@ class Namespace(NamedTuple):
     trash_image: Optional[bool]
     disable_auto_resize: Optional[bool]
     read_only: Optional[bool]
+    location: Optional[str]
 
 
 class NamespaceList(NamedTuple):
