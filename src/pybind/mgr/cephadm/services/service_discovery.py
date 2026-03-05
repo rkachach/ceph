@@ -11,7 +11,6 @@ import logging
 import orchestrator  # noqa
 from mgr_util import build_url
 from typing import Dict, List, TYPE_CHECKING, cast, Collection, Callable, NamedTuple, Optional, IO
-from cephadm.services.nfs import NFSService
 
 from cephadm.services.nfs import NFSService
 from cephadm.services.ingress import IngressService

@@ -1667,7 +1667,6 @@ Usage:
 
         return HandleCommandResult(stdout=res)
 
-
     @_cli_write_command('orch osd get-devices')
     def _osd_get_devices(self, osd_id: str) -> HandleCommandResult:
         """Fetch the devices used by a certain OSD"""
