@@ -565,7 +565,7 @@ class SMBService(CephService):
         daemon: Optional[DaemonDescription] = None,
     ) -> utils.NextDaemonStep:
         step = super().choose_next_action(
-            scheduled_action, daemon_type, spec, curr_deps, last_deps)
+            scheduled_action, daemon_type, spec, curr_deps, last_deps, daemon)
         if step.action is utils.Action.RECONFIG:
             sym_diff = set(curr_deps).symmetric_difference(last_deps)
             needs_redeploy_prefixes = (
