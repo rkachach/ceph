@@ -740,16 +740,10 @@ __public void ceph_rewinddir(struct ceph_mount_info *cmount,
 			     struct ceph_dir_result *dirp)
 {
 	CEPH_REQ(ceph_rewinddir, req, 0, ans, 0);
-	int32_t err;
 
 	req.dir = dirp->dirp;
 
-	err = CEPH_PROCESS(cmount, LIBCEPHFSD_OP_REWINDDIR, req, ans);
-	if (err >= 0) {
-		dirp->current = NULL;
-		dirp->count = 0;
-		dirp->eod = false;
-	}
+	CEPH_PROCESS(cmount, LIBCEPHFSD_OP_REWINDDIR, req, ans);
 }
 
 __public int ceph_ll_rmdir(struct ceph_mount_info *cmount, struct Inode *in,
@@ -906,45 +900,6 @@ __public int ceph_mount(struct ceph_mount_info *cmount, const char *root)
 	return CEPH_PROCESS(cmount, LIBCEPHFSD_OP_MOUNT, req, ans);
 }
 
-static int ceph_batch_readdir(struct ceph_mount_info *cmount,
-			      struct ceph_dir_result *dirp, struct dirent **pde)
-{
-	CEPH_REQ(ceph_batch_readdir, req, 0, ans, 1);
-	struct dirent *de;
-	int32_t err;
-
-	if ((dirp->count == 0) && !dirp->eod) {
-		req.dir = dirp->dirp;
-		req.size = dirp->size;
-
-		CEPH_BUFF_ADD(ans, dirp->entries, dirp->size);
-
-		err = CEPH_PROCESS(cmount, LIBCEPHFSD_OP_BATCH_READDIR, req,
-				   ans);
-		if (err < 0) {
-			return err;
-		}
-
-		dirp->eod = ans.eod;
-		dirp->count = err;
-		dirp->current = dirp->entries;
-	}
-
-	if (dirp->count > 0) {
-		de = dirp->current;
-		dirp->count--;
-		dirp->current = (struct dirent *)((uintptr_t)de + de->d_reclen);
-
-		*pde = de;
-
-		return 1;
-	}
-
-	*pde = NULL;
-
-	return 0;
-}
-
 /* The return value of this function has the same meaning as the original
  * ceph_readdir_r():
  *
@@ -957,17 +912,9 @@ static int ceph_batch_readdir(struct ceph_mount_info *cmount,
 __public int ceph_readdir_r(struct ceph_mount_info *cmount,
 			    struct ceph_dir_result *dirp, struct dirent *de)
 {
-	CEPH_REQ(ceph_readdir, req, 0, ans, 1);
-	struct dirent *ptr;
 	int32_t err;
 
-	if (proxy_op_supported(&cmount->neg, LIBCEPHFSD_OP_BATCH_READDIR)) {
-		err = ceph_batch_readdir(cmount, dirp, &ptr);
-		if (err > 0) {
-			memcpy(de, ptr, ptr->d_reclen);
-		}
-		return err;
-	}
+	CEPH_REQ(ceph_readdir, req, 0, ans, 1);
 
 	req.dir = dirp->dirp;
 
@@ -987,16 +934,10 @@ __public int ceph_readdir_r(struct ceph_mount_info *cmount,
 __public struct dirent *ceph_readdir(struct ceph_mount_info *cmount,
 				     struct ceph_dir_result *dirp)
 {
-	static struct dirent de, *ptr;
+	static struct dirent de;
 	int res;
 
-	if (proxy_op_supported(&cmount->neg, LIBCEPHFSD_OP_BATCH_READDIR)) {
-		res = ceph_batch_readdir(cmount, dirp, &ptr);
-	} else {
-		ptr = &de;
-		res = ceph_readdir_r(cmount, dirp, ptr);
-	}
-
+	res = ceph_readdir_r(cmount, dirp, &de);
 	if (res <= 0) {
 		if (res < 0) {
 			errno = -res;
@@ -1004,7 +945,7 @@ __public struct dirent *ceph_readdir(struct ceph_mount_info *cmount,
 		return NULL;
 	}
 
-	return ptr;
+	return &de;
 }
 
 __public int ceph_release(struct ceph_mount_info *cmount)
