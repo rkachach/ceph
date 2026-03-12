@@ -1,7 +1,19 @@
+import enum
 import errno
+import hashlib
 import ipaddress
 import logging
-from typing import Any, Dict, List, Tuple, cast, Optional, Iterable, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    Union,
+    cast,
+)
 
 from mgr_module import HandleCommandResult
 from ceph.smb.constants import (
@@ -24,6 +36,9 @@ from .cephadmservice import (
 )
 from ..tlsobject_types import TLSCredentials, EMPTY_TLS_CREDENTIALS
 from ..schedule import DaemonPlacement
+
+if TYPE_CHECKING:
+    from ..module import CephadmOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +300,8 @@ class SMBService(CephService):
 
         logger.debug('smb generate_config: %r', config_blobs)
         self._configure_cluster_meta(smb_spec, daemon_spec)
-        return config_blobs, []
+        deps = self.get_dependencies(self.mgr, smb_spec)
+        return config_blobs, deps
 
     def _cert_or_uri(self, data: Optional[str]) -> Optional[str]:
         if data is None:
@@ -508,6 +524,26 @@ class SMBService(CephService):
             )
         return ip
 
+    @classmethod
+    def get_dependencies(
+        cls,
+        mgr: 'CephadmOrchestrator',
+        spec: Optional[ServiceSpec] = None,
+        daemon_type: Optional[str] = None,
+    ) -> List[str]:
+        if not spec:
+            return []
+        assert cls.TYPE == spec.service_type
+        smb_spec = cast(SMBSpec, spec)
+        # NOTE: to be very explicit and do a little future proofing our
+        # 'dependencies' that are not the names of other services will be
+        # "namespaced" using the Dep enum.
+        out = []
+        for ccc in smb_spec.ceph_cluster_configs or []:
+            value = _hash_ceph_cluster_config(ccc)
+            out.append(Dep.META(f'ceph_cluster_config.{ccc.alias}', value))
+        return out
+
 
 Network = Union[ipaddress.IPv4Network, ipaddress.IPv6Network]
 
@@ -551,3 +587,19 @@ def _to_keyring(ext_cluster: SMBExternalCephCluster) -> str:
             '',
         ]
     )
+
+
+def _hash_ceph_cluster_config(spec: SMBExternalCephCluster) -> str:
+    _fields = ['alias', 'fsid', 'mon_host', 'user', 'key']
+    fdg = hashlib.sha256()
+    for field_name in _fields:
+        fdg.update(getattr(spec, field_name, '').encode())
+    return f'sha256:{fdg.hexdigest()}'
+
+
+class Dep(enum.Enum):
+    META = 'smb+meta'  # multiple fields as a digest
+    FIELD = 'smb+field'  # a single field and unmanged value
+
+    def __call__(self, key: str, value: str) -> str:
+        return f'{self.value}:{key}={value}'
