@@ -4,7 +4,7 @@
 #include "rgw_rest_dedup.h"
 #include "rgw_op.h"
 #include "rgw_sal.h"
-#include "rgw_sal_rados.h"
+#include "driver/rados/rgw_sal_rados.h"
 #include "rgw_dedup_cluster.h"
 #include "rgw_dedup_utils.h"
 

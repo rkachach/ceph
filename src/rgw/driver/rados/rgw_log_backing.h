@@ -254,6 +254,7 @@ cursorgen(std::optional<std::string> cursor_) {
   return { *gen_id, std::string{cursor} };
 }
 
+#ifdef WITH_RADOSGW_RADOS
 class LazyFIFO {
   neorados::RADOS r;
   const std::string oid;
@@ -337,3 +338,4 @@ public:
     co_return co_await fifo->last_entry_info(dpp, asio::use_awaitable);
   }
 };
+#endif

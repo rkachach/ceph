@@ -58,9 +58,6 @@
 #include "rgw_process_env.h"
 #include "rgw_notify_event_type.h"
 #include "rgw_sal.h"
-#ifdef WITH_RADOSGW_RADOS
-#include "rgw_sal_rados.h"
-#endif
 #include "rgw_torrent.h"
 #include "rgw_usage_perf.h"
 #include "rgw_user.h"

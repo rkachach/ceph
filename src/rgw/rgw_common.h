@@ -27,7 +27,9 @@
 #include <boost/container/flat_set.hpp>
 
 #include "common/dout_fmt.h"
+#ifdef WITH_RADOSGW_RADOS
 #include "include/neorados/RADOS.hpp"
+#endif
 
 #include "common/ceph_crypto.h"
 #include "common/random_string.h"
@@ -1014,7 +1016,9 @@ struct RGWObjVersionTracker {
   ///
   /// This function is defined in `rgw_rados.cc` rather than
   /// `rgw_common.cc`.
+#ifdef WITH_RADOSGW_RADOS
   void prepare_read(neorados::ReadOp& op);
+#endif
 
   /// This function is to be called on any write operation. If we have
   /// a non-empty read operation, assert on the OSD that the object
@@ -1032,7 +1036,9 @@ struct RGWObjVersionTracker {
   ///
   /// This function is defined in `rgw_rados.cc` rather than
   /// `rgw_common.cc`.
+#ifdef WITH_RADOSGW_RADOS
   void prepare_write(neorados::WriteOp& op);
+#endif
 
   /// This function is to be called after the completion of any write
   /// operation on which `prepare_op_for_write` was called. If we did
