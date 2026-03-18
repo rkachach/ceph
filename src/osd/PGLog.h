@@ -1,5 +1,6 @@
-// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*- 
-// vim: ts=8 sw=2 smarttab
+// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:nil -*- 
+// vim: ts=8 sw=2 sts=2 expandtab
+
 /*
  * Ceph - scalable distributed file system
  *
@@ -1115,6 +1116,7 @@ protected:
     mempool::osd_pglog::list<pg_log_entry_t> entries;
     eversion_t last;
     bool seen_non_error = false;
+    std::optional<eversion_t> prior_version_opt;
     for (auto i = orig_entries.begin();
 	 i != orig_entries.end();
 	 ++i) {
@@ -1147,14 +1149,20 @@ protected:
 	}
       }
       if (i->is_error()) {
- ldpp_dout(dpp, 20) << __func__ << ": ignoring " << *i << dendl;
+        ldpp_dout(dpp, 20) << __func__ << ": ignoring " << *i << dendl;
       } else if (!i->written_shards.empty() && !i->written_shards.contains(orig_shard)) {
         ldpp_dout(dpp, 20) << __func__ << ": ignoring partial write " << *i << dendl;
- last = i->version;
+        last = i->version;
+        if (!prior_version_opt) {
+          prior_version_opt = i->prior_version;
+        }
       } else {
- ldpp_dout(dpp, 20) << __func__ << ": keeping " << *i << dendl;
- entries.push_back(*i);
- last = i->version;
+        ldpp_dout(dpp, 20) << __func__ << ": keeping " << *i << dendl;
+        if (!prior_version_opt) {
+          prior_version_opt = i->prior_version;
+        }
+        entries.push_back(*i);
+        last = i->version;
       }
     }
     if (entries.empty()) {
@@ -1162,7 +1170,8 @@ protected:
       return;
     }
 
-    const eversion_t prior_version = entries.begin()->prior_version;
+    ceph_assert(prior_version_opt);
+    const eversion_t prior_version = *prior_version_opt;
     const eversion_t first_divergent_update = entries.begin()->version;
     const eversion_t last_divergent_update = entries.rbegin()->version;
     const bool object_not_in_store =
@@ -1669,7 +1678,7 @@ public:
       });
     if (info.pgid.is_no_shard()) {
       // replicated pool pg does not persist this key
-      assert(on_disk_rollback_info_trimmed_to == eversion_t());
+      ceph_assert(on_disk_rollback_info_trimmed_to == eversion_t());
       on_disk_rollback_info_trimmed_to = info.last_update;
     }
     log = IndexedLog(
@@ -1858,7 +1867,7 @@ public:
 
 #ifdef WITH_CRIMSON
   seastar::future<> read_log_and_missing_crimson(
-    crimson::os::FuturizedStore::Shard &store,
+    crimson::os::BackendStore store,
     crimson::os::CollectionRef ch,
     const pg_info_t &info,
     ghobject_t pgmeta_oid
@@ -1870,7 +1879,7 @@ public:
   }
 
   static seastar::future<> read_log_and_missing_crimson(
-    crimson::os::FuturizedStore::Shard &store,
+    crimson::os::BackendStore store,
     crimson::os::CollectionRef ch,
     const pg_info_t &info,
     IndexedLog &log,
