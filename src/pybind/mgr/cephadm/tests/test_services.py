@@ -3767,7 +3767,6 @@ class TestIngressService:
             '        Delegations = true;\n'
             '        Deleg_Recall_Retry_Delay = 1;\n'
             '        RecoveryBackend = "rados_cluster";\n'
-            '        Minor_Versions = 1, 2;\n'
             f'        Server_Scope = "{cephadm_module._cluster_fsid}-foo";\n'
             '        IdmapConf = "/etc/ganesha/idmap.conf";\n'
             '}\n'
