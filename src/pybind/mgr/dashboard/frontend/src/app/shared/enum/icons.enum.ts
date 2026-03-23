@@ -139,7 +139,7 @@ export enum Icons {
   cloudMonitoring = 'cloud--monitoring',
   locked = 'locked', // Access denied, locked state
   pendingFilled = 'pending--filled',
-  folder = 'folder'
+  folder = 'folder',
 }
 
 export enum IconSize {
@@ -192,7 +192,15 @@ export const ICON_TYPE = {
   pendingFilled: 'pending--filled',
   chevronDown: 'chevron--down',
   chevronUp: 'chevron--up',
-  folder: 'folder'
+  folder: 'folder',
+  destroy: 'close',
+  launch: 'launch',
+  cubes: 'cube',
+  angleDoubleLeft: 'chevron--left',
+  angleDoubleRight: 'chevron--right',
+  leftArrow: 'caret--left',
+  rightArrow: 'caret--right',
+  locked: 'locked',
 } as const;
 
 export const EMPTY_STATE_IMAGE = {
