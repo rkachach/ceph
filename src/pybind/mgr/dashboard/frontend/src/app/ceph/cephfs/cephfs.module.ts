@@ -58,6 +58,7 @@ import {
   PlaceholderModule,
   RadioModule,
   SelectModule,
+  TagModule,
   TimePickerModule,
   TilesModule,
   TreeviewModule,
@@ -115,10 +116,10 @@ import FolderIcon16 from '@carbon/icons/es/folder/16';
     RadioModule,
     BaseChartDirective,
     TabsModule,
-    RadioModule,
     TilesModule,
     NotificationModule,
-    ProgressBarModule
+    ProgressBarModule,
+    TagModule
   ],
   declarations: [
     CephfsDetailComponent,
