@@ -4,9 +4,9 @@ import re
 from typing import Any, Dict, Optional, List, Tuple
 import errno
 
+from .cli import CephSecretsCLICommand
 from mgr_module import (
     MgrModule,
-    CLICommand,
     HandleCommandResult,
 )
 from .secret_mgr import SecretMgr
@@ -68,6 +68,7 @@ class Module(MgrModule):
       secret_store/v1/<namespace>/<scope>/<target>/<name>
 
     """
+    CLICommand = CephSecretsCLICommand
 
     MODULE_OPTIONS: list = []
 
@@ -246,7 +247,7 @@ class Module(MgrModule):
 
     # ---------------------- Module CLI commands ----------------------
 
-    @CLICommand('secret ls', perm='r')
+    @CephSecretsCLICommand.Read('secret ls')
     def _cli_secret_ls(self,
                        namespace: Optional[str] = None,
                        scope: Optional[str] = None,
@@ -264,7 +265,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret get', perm='r')
+    @CephSecretsCLICommand.Read('secret get')
     def _cli_secret_get(self,
                         namespace: str,
                         scope: str,
@@ -279,7 +280,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret set', perm='rw')
+    @CephSecretsCLICommand.Write('secret set')
     def _cli_secret_set(self,
                         namespace: str,
                         scope: str,
@@ -300,7 +301,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret get-key', perm='r')
+    @CephSecretsCLICommand.Read('secret get-key')
     def _cli_secret_get_by_path(self, path: str, reveal: bool = False) -> HandleCommandResult:
         try:
             ns, sc, target, name = parse_secret_path(path)
@@ -311,7 +312,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret set-key', perm='rw')
+    @CephSecretsCLICommand.Write('secret set-key')
     def _cli_secret_set_by_path(self,
                                 path: str,
                                 data: str = '',
@@ -331,7 +332,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret rm', perm='rw')
+    @CephSecretsCLICommand.Write('secret rm')
     def _cli_secret_rm(self,
                        namespace: str,
                        scope: str,
@@ -345,7 +346,7 @@ class Module(MgrModule):
         except CephSecretException as e:
             return HandleCommandResult(-errno.EINVAL, f'secret error: {e}', '')
 
-    @CLICommand('secret rm-key', perm='rw')
+    @CephSecretsCLICommand.Write('secret rm-key')
     def _cli_secret_rm_by_path(self, path: str) -> HandleCommandResult:
         try:
             ns, sc, target, name = parse_secret_path(path)
