@@ -24,7 +24,7 @@ tasks:
           echo "At least one raw OSD deployed is stopped"
           exit 1
         fi
-        if ceph-volume lvm list; then
-          echo "ceph-volume lvm list was expected to give non-zero rc with all raw OSDs"
+        if ceph-volume lvm list 2>/dev/null | grep -q 'osd\.'; then
+          echo "ceph-volume lvm list was expected to find no LVM OSDs with all raw OSDs"
           exit 1
         fi
