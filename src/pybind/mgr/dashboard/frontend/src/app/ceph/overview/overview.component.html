@@ -49,7 +49,9 @@
         [estimatedTimeUntilFull]="storageCard?.estimatedTimeUntilFull ?? ''"
         [breakdownData]="storageCard?.breakdownData ?? []"
         [isBreakdownLoaded]="storageCard?.isBreakdownLoaded ?? false"
-        [threshold]="storageCard?.threshold">
+        [threshold]="storageCard?.threshold"
+        [storageEmptyState]="storageEmptyState$ | async"
+        [prometheusEmptyState]="prometheusEmptyState$ | async">
       </cd-overview-storage-card>
     </div>
   </div>
@@ -57,7 +59,7 @@
     <div cdsCol
          class="overview-pr-0"
          [columnNumbers]="{ lg: 16 }">
-      <cd-performance-card></cd-performance-card>
+      <cd-performance-card [emptyStateText]="prometheusEmptyState$ | async"></cd-performance-card>
     </div>
   </div>
 </main>
@@ -114,7 +116,7 @@
       </div>
       <cd-table
          [data]="health?.pgs?.states"
-         [columns]="tableColumns"
+         [columns]="pgTableColumns"
          size="xs">
       </cd-table>
     </div>
