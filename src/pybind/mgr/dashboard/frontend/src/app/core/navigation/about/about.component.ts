@@ -53,7 +53,7 @@ export class AboutComponent extends BaseModal implements OnInit, OnDestroy {
 
   setVariables() {
     const project = {} as any;
-    project.user = localStorage.getItem(LocalStorage.DASHBOARD_USRENAME);
+    project.user = localStorage.getItem(LocalStorage.DASHBOARD_USERNAME);
     project.role = USER;
     if (this.userPermission.read) {
       this.userService.get(project.user).subscribe((data: any) => {
