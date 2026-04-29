@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from ceph_secrets_types import SecretScope
 
 logger = logging.getLogger(__name__)
+
+ScopeArg = Union[SecretScope, str]
 
 
 class CephSecretsClient:
@@ -46,7 +48,7 @@ class CephSecretsClient:
     def secret_get(
         self,
         namespace: str,
-        scope: SecretScope,
+        scope: ScopeArg,
         target: str,
         name: str,
     ) -> Dict[str, Any]:
@@ -61,7 +63,7 @@ class CephSecretsClient:
     def secret_get_version(
         self,
         namespace: str,
-        scope: SecretScope,
+        scope: ScopeArg,
         target: str,
         name: str,
     ) -> Optional[int]:
@@ -79,7 +81,7 @@ class CephSecretsClient:
     def secret_set(
         self,
         namespace: str,
-        scope: SecretScope,
+        scope: ScopeArg,
         target: str,
         name: str,
         data: Dict[str, Any],
@@ -99,7 +101,7 @@ class CephSecretsClient:
             editable=editable,
         )
 
-    def secret_rm(self, namespace: str, scope: SecretScope, target: str, name: str) -> bool:
+    def secret_rm(self, namespace: str, scope: ScopeArg, target: str, name: str) -> bool:
         return bool(
             self._remote(
                 "secret_rm",
