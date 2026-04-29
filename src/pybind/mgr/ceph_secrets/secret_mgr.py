@@ -66,16 +66,16 @@ class SecretMgr:
 
     def set(
         self,
+        namespace: str,
+        scope: Tuple[SecretScope,str],
+        target: str,
         name: str,
         data: Dict[str, Any],
-        namespace: str,
-        scope: Optional[SecretScope | str] = None,
-        target: Optional[str] = None,
         secret_type: str = "Opaque",
         user_made: bool = True,
         editable: bool = True,
     ) -> SecretRecord:
-        sc = _coerce_scope(scope or SecretScope.GLOBAL)
+        sc = _coerce_scope(scope)
         tgt = target or ""
         if sc in (SecretScope.GLOBAL, SecretScope.CUSTOM) and tgt:
             raise CephSecretException(f"target must be empty for {sc.value} scope")
@@ -103,7 +103,7 @@ class SecretMgr:
         for ref in self.scan_refs(obj, namespace):
             if isinstance(ref, SecretRef):
                 try:
-                    self.get(ref)
+                    self.get_value(ref)
                 except CephSecretException:
                     unresolved.add(ref)
             else:

@@ -51,6 +51,7 @@ class CephSecretsClient:
         scope: ScopeArg,
         target: str,
         name: str,
+        reveal: bool = False,
     ) -> Dict[str, Any]:
         return self._remote(
             "secret_get",
@@ -58,6 +59,7 @@ class CephSecretsClient:
             scope=scope,
             target=target,
             name=name,
+            reveal=reveal,
         )
 
     def secret_get_version(
