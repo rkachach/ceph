@@ -8,6 +8,8 @@
 
 @let storageCard = (storageCardVm$ | async);
 @let health = (healthCardVm$ | async);
+@let storageEmptyState = (storageEmptyState$ | async);
+@let prometheusEmptyState = (prometheusEmptyState$ | async);
 @let callHomeEnabledWarning = (callHomeEnabledWarning$ | async);
 @let callHomeEnabled = (callHomeStatus$ | async);
 
@@ -15,10 +17,10 @@
   <cd-call-home-notification [callHomeEnabled]="callHomeEnabled" [callHomeEnabledWarning]="callHomeEnabledWarning"></cd-call-home-notification>
   <cd-storage-insights-notification></cd-storage-insights-notification>
 }
-<div cdsGrid
-     [fullWidth]="true"
-     [narrow]="true"
-     class="cds-mt-6 cds-mb-6 overview">
+<main cdsGrid
+      [fullWidth]="true"
+      [narrow]="true"
+      class="overview cds-mt-5">
   <div cdsRow
        class="cds-mb-5">
     <div cdsCol
@@ -50,8 +52,8 @@
         [breakdownData]="storageCard?.breakdownData ?? []"
         [isBreakdownLoaded]="storageCard?.isBreakdownLoaded ?? false"
         [threshold]="storageCard?.threshold"
-        [storageEmptyState]="storageEmptyState$ | async"
-        [prometheusEmptyState]="prometheusEmptyState$ | async">
+        [storageEmptyState]="storageEmptyState"
+        [prometheusEmptyState]="prometheusEmptyState">
       </cd-overview-storage-card>
     </div>
   </div>
@@ -59,7 +61,9 @@
     <div cdsCol
          class="overview-pr-0"
          [columnNumbers]="{ lg: 16 }">
-      <cd-performance-card [emptyStateText]="prometheusEmptyState$ | async"></cd-performance-card>
+      <cd-performance-card
+        [prometheusEmptyState]="prometheusEmptyState"
+        [storageEmptyState]="storageEmptyState"></cd-performance-card>
     </div>
   </div>
 </main>
