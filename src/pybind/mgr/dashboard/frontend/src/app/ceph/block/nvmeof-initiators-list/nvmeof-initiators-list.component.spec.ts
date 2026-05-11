@@ -229,4 +229,24 @@ describe('NvmeofInitiatorsListComponent', () => {
 
     expect(component.allowAllHosts).toBe(true);
   }));
+
+  it('should keep Add action enabled even when allow any host is active', () => {
+    component.subsystem = { ...mockSubsystem, allow_any_host: true } as any;
+    component.initiators = [{ nqn: ALLOW_ALL_HOST, use_dhchap: false }] as any;
+
+    const addAction = component.tableActions.find((action) => action.name === component.actionLabels.ADD);
+    expect(addAction).toBeTruthy();
+    expect(addAction?.disable?.()).toBe(false);
+  });
+
+  it('should open Add form with disableAllowAll when wildcard host is present', () => {
+    component.subsystem = { ...mockSubsystem, allow_any_host: true } as any;
+    component.initiators = [{ nqn: ALLOW_ALL_HOST, use_dhchap: false }] as any;
+    const openAddSpy = spyOn(component, 'openAddInitiatorForm');
+
+    const addAction = component.tableActions.find((action) => action.name === component.actionLabels.ADD);
+    addAction?.click();
+
+    expect(openAddSpy).toHaveBeenCalledWith(true);
+  });
 });

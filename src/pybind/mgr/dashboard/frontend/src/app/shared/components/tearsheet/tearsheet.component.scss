@@ -2,8 +2,9 @@
 // No css variable to apply css to modal div.
 // This is needed to set the width of tearsheet as per carbon standards.
 .cds--modal-container.cds--modal-container--lg {
-  // Fill remaining viewport between top and bottom insets
-  block-size: calc(100vh - 88px - 64px);
+  // Use insets to size the fixed container. Avoid mixing explicit height with
+  // top/bottom constraints to prevent platform-specific clipping.
+  block-size: auto;
   display: flex;
   flex-direction: column;
   inline-size: auto;
@@ -11,12 +12,12 @@
   // 88px from top
   inset-block-start: 88px;
   // 64px bottom margin to match left/right; Carbon has no API for tearsheet insets
-  inset-block-end: 64px;
+  inset-block-end: calc(64px + env(safe-area-inset-bottom, 0px));
   inset-inline-end: 64px;
 
   // 64px margins left & right
   inset-inline-start: 64px;
-  max-block-size: calc(100vh - 88px - 64px);
+  max-block-size: none;
   max-inline-size: none;
   position: fixed;
 
@@ -183,6 +184,10 @@
 .tearsheet-footer {
   background-color: var(--cds-layer-01);
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding-bottom: calc(var(--cds-spacing-05) + env(safe-area-inset-bottom, 0px));
 
   &-submit {
     display: flex;
