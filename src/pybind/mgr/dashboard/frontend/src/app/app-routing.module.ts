@@ -66,7 +66,6 @@ import { environment } from '~/environments/environment';
 import { NfsClusterFormComponent } from './ceph/nfs/nfs-cluster-form/nfs-cluster-form.component';
 import { OverviewComponent } from './ceph/overview/overview.component';
 import { CephfsMirroringListComponent } from './ceph/cephfs/cephfs-mirroring-list/cephfs-mirroring-list.component';
-import { CephfsMirroringWizardComponent } from './ceph/cephfs/cephfs-mirroring-wizard/cephfs-mirroring-wizard.component';
 import { CephfsMirroringErrorComponent } from './ceph/cephfs/cephfs-mirroring-error/cephfs-mirroring-error.component';
 
 @Injectable()
@@ -436,11 +435,6 @@ const routes: Routes = [
               breadcrumbs: 'File/Mirroring',
               pageHeader: CEPHFS_MIRRORING_PAGE_HEADER
             }
-          },
-          {
-            path: `mirroring/${URLVerbs.CREATE}`,
-            component: CephfsMirroringWizardComponent,
-            data: { breadcrumbs: ActionLabels.CREATE }
           },
           {
             path: 'nfs',

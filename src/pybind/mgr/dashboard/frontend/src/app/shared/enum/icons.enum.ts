@@ -85,6 +85,15 @@ export enum Icons {
   calendar = 'fa fa-calendar',
   externalUrl = 'fa fa-external-link', // links to external page
   nfsExport = 'fa fa-server', // NFS Share
+  downArrow = 'caret--down',
+  angleDoubleLeft = 'chevron--left', // Double left angle for pagination
+  angleDoubleRight = 'chevron--right', // Double right angle for pagination
+  square = 'checkbox', // Empty checkbox/square outline
+  code = 'code', // JSON file
+  document = 'document', // Text file
+  launch = 'launch',
+  dataTable = 'data-table',
+  idea = 'idea',
   userAccessLocked = 'user--access-locked', // User access locked
   chevronDown = 'chevron--down',
   connect = 'connect',
@@ -172,7 +181,10 @@ export const ICON_TYPE = {
   clusterIcon:'web-services--cluster',
   download: 'download',
   cloudMonitoring: 'cloud--monitoring',
-  arrowRight: 'arrow--right'
+  arrowRight: 'arrow--right',
+  trash: 'trash-can',
+  replicate: 'replicate',
+  share: 'share'
 } as const;
 
 export const EMPTY_STATE_IMAGE = {
