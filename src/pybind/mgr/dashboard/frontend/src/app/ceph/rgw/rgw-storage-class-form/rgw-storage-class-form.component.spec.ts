@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { SharedModule } from '~/app/shared/shared.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ToastrModule } from 'ngx-toastr';
+
 import {
   CheckboxModule,
   ComboBoxModule,
@@ -34,7 +34,6 @@ describe('RgwStorageClassFormComponent', () => {
         HttpClientTestingModule,
         RouterTestingModule,
         ReactiveFormsModule,
-        ToastrModule.forRoot(),
         GridModule,
         InputModule,
         CoreModule,

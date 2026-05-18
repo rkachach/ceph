@@ -16,7 +16,6 @@ import { Icons } from '~/app/shared/enum/icons.enum';
 import { CdTableSelection } from '~/app/shared/models/cd-table-selection';
 import { Permission, Permissions } from '~/app/shared/models/permissions';
 import { AuthStorageService } from '~/app/shared/services/auth-storage.service';
-import { ToastrModule } from 'ngx-toastr';
 
 describe('RgwMultisiteDetailsComponent', () => {
   let component: RgwMultisiteDetailsComponent;
@@ -26,13 +25,7 @@ describe('RgwMultisiteDetailsComponent', () => {
 
   configureTestBed({
     declarations: [RgwMultisiteDetailsComponent],
-    imports: [
-      HttpClientTestingModule,
-      SharedModule,
-      ToastrModule.forRoot(),
-      RouterTestingModule,
-      NgbNavModule
-    ],
+    imports: [HttpClientTestingModule, SharedModule, RouterTestingModule, NgbNavModule],
     providers: [NgbActiveModal]
   });
 

@@ -4,8 +4,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
-import { ToastrModule } from 'ngx-toastr';
-
 import { NgbActiveModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { CdFormGroup } from '~/app/shared/forms/cd-form-group';
@@ -38,9 +36,7 @@ describe('NvmeofSubsystemsStepOneComponent', () => {
         NgbTypeaheadModule,
         InputModule,
         GridModule,
-        ComboBoxModule,
-        RadioModule,
-        ToastrModule.forRoot()
+        ComboBoxModule
       ],
       providers: [NgbActiveModal],
       schemas: [NO_ERRORS_SCHEMA]
