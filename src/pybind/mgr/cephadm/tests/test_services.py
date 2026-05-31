@@ -43,7 +43,7 @@ from cephadm.tests.fixtures import (
     wait,
 )
 from cephadm.tlsobject_types import TLSCredentials
-
+from ceph.smb.constants import REMOTE_CONTROL
 from ceph.utils import datetime_now
 
 from orchestrator import OrchestratorError
@@ -1419,7 +1419,7 @@ class TestMonitoring:
     @patch("cephadm.services.monitoring.password_hash", lambda password: 'prometheus_password_hash')
     @patch('cephadm.cert_mgr.CertMgr.get_root_ca', lambda instance: 'cephadm_root_cert')
     @patch("cephadm.services.cephadmservice.CephadmService.get_certificates",
-           lambda instance, dspec, ips=None, fqdns=None: TLSCredentials('mycert', 'mykey'))
+           lambda instance, dspec, ips=None, fqdns=None, ca_cert_required=False: TLSCredentials('mycert', 'mykey'))
     def test_prometheus_config_security_enabled(self, _run_cephadm, _get_uname, cephadm_module: CephadmOrchestrator):
         _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
         _get_uname.return_value = 'test'
@@ -4973,6 +4973,50 @@ class TestSMB:
                     error_ok=True,
                     use_current_daemon_image=False,
                 )
+
+    @patch("cephadm.serve.CephadmServe._run_cephadm")
+    def test_smb_tls_feature_cert_in_config_blobs(
+        self, _run_cephadm, cephadm_module: CephadmOrchestrator
+    ):
+        _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
+
+        with with_host(cephadm_module, 'test', addr='1.2.3.7'):
+            cephadm_module.cache.update_host_networks(
+                'test',
+                {'1.2.3.0/24': {'if0': ['1.2.3.7']}}
+            )
+
+            smb_spec = SMBSpec(
+                cluster_id='foxtrot',
+                service_id='foo',
+                config_uri='rados://.smb/foxtrot/config2.json',
+                placement=PlacementSpec(hosts=['test']),
+                features=[REMOTE_CONTROL],
+                ssl_certificates={
+                    'remote_control': {
+                        'enabled': True,
+                        'ssl_cert': ceph_generated_cert,
+                        'ssl_key': ceph_generated_key,
+                        'ssl_ca_cert': cephadm_root_ca,
+                        'certificate_source': 'inline',
+                    },
+                },
+            )
+            service_name = smb_spec.service_name()
+
+            with with_service(cephadm_module, smb_spec):
+                smb_conf, _ = service_registry.get_service('smb').generate_config(
+                    CephadmDaemonDeploySpec(
+                        host='test',
+                        daemon_id='foo.test.0',
+                        service_name=service_name,
+                    )
+                )
+                files = smb_conf.get('files', {})
+                assert files.get('remote_control.ssl.crt') == ceph_generated_cert
+                assert files.get('remote_control.ssl.key') == ceph_generated_key
+                assert files.get('remote_control.ca.crt') == cephadm_root_ca
+
 
 
 class TestMgmtGateway:
