@@ -134,8 +134,3 @@ export enum QatOptions {
   sw = 'sw',
   none = 'none'
 }
-
-export enum CertificateType {
-  internal = 'internal',
-  external = 'external'
-}
