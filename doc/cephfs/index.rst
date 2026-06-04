@@ -93,6 +93,7 @@ Administration
     CephFS Top Utility <cephfs-top>
     Scheduled Snapshots <snap-schedule>
     CephFS Snapshot Mirroring <cephfs-mirroring>
+    CephFS Snapshot Mirroring Checkpoints <cephfs-mirroring-checkpoints>
     Purge Queue <purge-queue>
 
 .. raw:: html
