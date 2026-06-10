@@ -15,6 +15,9 @@ const GLOBAL = 'global';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalCdsService } from '../services/modal-cds.service';
 
+/** Modules that require --force when not all mgr daemons support them. */
+const FORCE_ENABLE_MODULES = new Set(['feedback']);
+
 @Injectable({
   providedIn: 'root'
 })
@@ -62,9 +65,11 @@ export class MgrModuleService {
   /**
    * Enable the Ceph Mgr module.
    * @param {string} module The name of the mgr module.
+   * @param {boolean} force Force enablement when not all mgr daemons support the module.
    */
-  enable(module: string) {
-    return this.http.post(`${this.url}/${module}/enable`, null);
+  enable(module: string, force: boolean = false) {
+    const useForce = force || FORCE_ENABLE_MODULES.has(module);
+    return this.http.post(`${this.url}/${module}/enable`, useForce ? { force: true } : null);
   }
 
   /**
@@ -95,9 +100,10 @@ export class MgrModuleService {
     notificationText?: string,
     navigateByUrl?: boolean,
     reconnectingMessage: string = $localize`Reconnecting, please wait ...`,
-    activeModal?: NgbActiveModal | ModalCdsService
+    activeModal?: NgbActiveModal | ModalCdsService,
+    force: boolean = false
   ): void {
-    const moduleToggle$ = enabled ? this.disable(module) : this.enable(module);
+    const moduleToggle$ = enabled ? this.disable(module) : this.enable(module, force);
 
     moduleToggle$.subscribe({
       next: () => {
