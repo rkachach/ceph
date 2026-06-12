@@ -138,6 +138,7 @@ import CloudMonitoring16 from '@carbon/icons/es/cloud--monitoring/16';
 @NgModule({
   imports: [
     CommonModule,
+    ProductiveCardComponent,
     FormsModule,
     ReactiveFormsModule,
     NgbAlertModule,
