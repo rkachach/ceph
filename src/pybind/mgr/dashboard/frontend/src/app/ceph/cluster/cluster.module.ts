@@ -91,6 +91,7 @@ import { MultiClusterFormComponent } from './multi-cluster/multi-cluster-form/mu
 import { MultiClusterListComponent } from './multi-cluster/multi-cluster-list/multi-cluster-list.component';
 import { DashboardV3Module } from '../dashboard-v3/dashboard-v3.module';
 import { MultiClusterDetailsComponent } from './multi-cluster/multi-cluster-details/multi-cluster-details.component';
+import { CertificateAuthorityFormComponent } from '~/app/shared/components/certificate-authority-form/certificate-authority-form.component';
 import { TextLabelListComponent } from '~/app/shared/components/text-label-list/text-label-list.component';
 import { LicenceAgreementComponent } from './license-agreement/license-agreement.component';
 
@@ -129,6 +130,7 @@ import { LicenceAgreementComponent } from './license-agreement/license-agreement
     TagModule,
     TabsModule,
     TextLabelListComponent,
+    CertificateAuthorityFormComponent,
     SelectModule,
     LayoutModule,
     NumberModule,
