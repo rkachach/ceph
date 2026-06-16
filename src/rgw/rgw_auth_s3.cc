@@ -733,8 +733,9 @@ get_v4_canonical_headers(const req_info& info,
     }
     const char* const t = info.env->get(token_env.c_str());
     if (!t) {
-      dout(10) << "warning env var not available " << token_env.c_str() << dendl;
-      continue;
+      dout(5) << "Signature rejected: CanonicalHeaders contains `"
+              << token << "` but the header is not present." << dendl;
+      return boost::none;
     }
 
     std::string token_value(t);
