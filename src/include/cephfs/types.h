@@ -498,7 +498,7 @@ private:
 template<template<typename> class Allocator>
 class quarantine_md_t {
 public:
-  static constexpr int STRUCT_V = 2;
+  static constexpr int STRUCT_V = 1;
   static constexpr int COMPAT_V = 1;
 
   bool enabled = true;
@@ -517,10 +517,8 @@ public:
   void decode(ceph::buffer::list::const_iterator& p) {
     DECODE_START(STRUCT_V, p);
     ceph::decode(enabled, p);
-    if (struct_v >= 2) {
-      ceph::decode(quarantined_at_sec, p);
-      ceph::decode(quarantined_at_nsec, p);
-    }
+    ceph::decode(quarantined_at_sec, p);
+    ceph::decode(quarantined_at_nsec, p);
     DECODE_FINISH(p);
   }
 
