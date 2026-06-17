@@ -498,6 +498,7 @@ enum {
 #define EOLDSNAPC    85  /* ORDERSNAP flag set; writer has old snapc*/
 #define EBLOCKLISTED 108 /* blocklisted */
 #define EBLACKLISTED 108 /* deprecated */
+#define EQUARANTINED 1000
 
 /* xattr comparison */
 enum {

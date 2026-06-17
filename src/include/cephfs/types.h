@@ -496,14 +496,48 @@ private:
 };
 
 template<template<typename> class Allocator>
+class quarantine_md_t {
+public:
+  static constexpr int STRUCT_V = 1;
+  static constexpr int COMPAT_V = 1;
+
+  quarantine_md_t() = default;
+
+  void encode(ceph::buffer::list& bl, uint64_t features) const {
+    ENCODE_START(STRUCT_V, COMPAT_V, bl);
+    ceph::encode(flag, bl);
+    ENCODE_FINISH(bl);
+  }
+  void decode(ceph::buffer::list::const_iterator& p) {
+    DECODE_START(STRUCT_V, p);
+    ceph::decode(flag, p);
+    DECODE_FINISH(p);
+  }
+
+  void print(std::ostream& os) const {
+    os << "quarantine_md_t(flag=" << flag << ")";
+  }
+  void dump(ceph::Formatter* f) const {
+    f->dump_bool("is_quarantined", flag);
+  }
+
+private:
+  bool flag = true; // value of flag is moot
+                    // presence of this metadata is enough to declare dir as
+                    // quarantined
+};
+
+template<template<typename> class Allocator>
 struct optmetadata_server_t {
   using opts = std::variant<
     unknown_md_t<Allocator>,
-    charmap_md_t<Allocator>
+    charmap_md_t<Allocator>,
+    quarantine_md_t<Allocator>
   >;
   enum kind_t : uint64_t {
     UNKNOWN,
     CHARMAP,
+    QUARANTINE,
     _MAX
   };
 };
@@ -512,11 +546,13 @@ template<template<typename> class Allocator>
 struct optmetadata_client_t {
   using opts = std::variant<
     unknown_md_t<Allocator>,
-    charmap_md_t<Allocator>
+    charmap_md_t<Allocator>,
+    quarantine_md_t<Allocator>
   >;
   enum kind_t : uint64_t {
     UNKNOWN,
     CHARMAP,
+    QUARANTINE,
     _MAX
   };
 };
@@ -841,6 +877,25 @@ struct inode_t {
     optmetadata.del_opt(optmetadata_singleton_server_t::kind_t::CHARMAP);
   }
 
+  bool is_quarantined() const {
+    return optmetadata.has_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
+  }
+
+  auto& set_quarantine() {
+    auto& opt = optmetadata.get_or_create_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
+    return opt.template get_meta< quarantine_md_t >();
+  }
+
+  void del_quarantine() {
+    optmetadata.del_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
+  }
+
+  const std::vector<uint64_t>& get_referent_inodes() { return referent_inodes; }
+  void add_referent_ino(inodeno_t ref_ino) { referent_inodes.push_back(ref_ino); }
+  void remove_referent_ino(inodeno_t ref_ino) {
+    referent_inodes.erase(remove(referent_inodes.begin(), referent_inodes.end(), ref_ino), referent_inodes.end());
+  }
+
   void encode(ceph::buffer::list &bl, uint64_t features) const;
   void decode(ceph::buffer::list::const_iterator& bl);
   void dump(ceph::Formatter *f) const;
@@ -945,6 +1000,9 @@ struct inode_t {
 
   optmetadata_multiton<optmetadata_singleton_server_t,Allocator> optmetadata;
 
+  inodeno_t remote_ino = 0; // referent inode - remote inode link
+  std::vector<uint64_t> referent_inodes;
+
 private:
   bool older_is_consistent(const inode_t &other) const;
 };
@@ -1014,6 +1072,9 @@ void inode_t<Allocator>::encode(ceph::buffer::list &bl, uint64_t features) const
   encode(fscrypt_last_block, bl);
 
   encode(optmetadata, bl, features);
+
+  encode(remote_ino, bl);
+  encode(referent_inodes, bl);
 
   ENCODE_FINISH(bl);
 }
@@ -1135,6 +1196,11 @@ void inode_t<Allocator>::decode(ceph::buffer::list::const_iterator &p)
 
   if (struct_v >= 20) {
     decode(optmetadata, p);
+  }
+
+  if (struct_v >= 21) {
+    decode(remote_ino, p);
+    decode(referent_inodes, p);
   }
 
   DECODE_FINISH(p);
@@ -1321,7 +1387,13 @@ int inode_t<Allocator>::compare(const inode_t<Allocator> &other, bool *divergent
         !(accounted_rstat == other.accounted_rstat) ||
         file_data_version != other.file_data_version ||
         xattr_version != other.xattr_version ||
-        backtrace_version != other.backtrace_version) {
+        backtrace_version != other.backtrace_version ||
+	fscrypt_auth != other.fscrypt_auth ||
+	fscrypt_file != other.fscrypt_file ||
+	fscrypt_last_block != other.fscrypt_last_block ||
+	optmetadata != other.optmetadata ||
+	remote_ino != other.remote_ino ||
+	referent_inodes != other.referent_inodes) {
       *divergent = true;
     }
     return 0;
@@ -1386,4 +1458,9 @@ struct keys_and_values
   qi::rule<Iterator, std::string()> key, value;
 };
 
+enum {
+  QUARANTINE_NONE = 0,
+  QUARANTINE_ADD  = 1,
+  QUARANTINE_DEL  = 2
+};
 #endif
