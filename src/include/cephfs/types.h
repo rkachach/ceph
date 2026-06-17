@@ -498,33 +498,48 @@ private:
 template<template<typename> class Allocator>
 class quarantine_md_t {
 public:
-  static constexpr int STRUCT_V = 1;
+  static constexpr int STRUCT_V = 2;
   static constexpr int COMPAT_V = 1;
+
+  bool enabled = true;
+  uint64_t quarantined_at_sec = 0;
+  uint32_t quarantined_at_nsec = 0;
 
   quarantine_md_t() = default;
 
   void encode(ceph::buffer::list& bl, uint64_t features) const {
     ENCODE_START(STRUCT_V, COMPAT_V, bl);
-    ceph::encode(flag, bl);
+    ceph::encode(enabled, bl);
+    ceph::encode(quarantined_at_sec, bl);
+    ceph::encode(quarantined_at_nsec, bl);
     ENCODE_FINISH(bl);
   }
   void decode(ceph::buffer::list::const_iterator& p) {
     DECODE_START(STRUCT_V, p);
-    ceph::decode(flag, p);
+    ceph::decode(enabled, p);
+    if (struct_v >= 2) {
+      ceph::decode(quarantined_at_sec, p);
+      ceph::decode(quarantined_at_nsec, p);
+    }
     DECODE_FINISH(p);
   }
 
-  void print(std::ostream& os) const {
-    os << "quarantine_md_t(flag=" << flag << ")";
+  void set_timestamp(utime_t t) {
+    quarantined_at_sec = t.sec();
+    quarantined_at_nsec = t.nsec();
   }
-  void dump(ceph::Formatter* f) const {
-    f->dump_bool("is_quarantined", flag);
+  utime_t get_timestamp() const {
+    return utime_t(quarantined_at_sec, quarantined_at_nsec);
   }
 
-private:
-  bool flag = true; // value of flag is moot
-                    // presence of this metadata is enough to declare dir as
-                    // quarantined
+  void print(std::ostream& os) const {
+    os << "quarantine_md_t(enabled=" << enabled
+       << " at=" << utime_t(quarantined_at_sec, quarantined_at_nsec) << ")";
+  }
+  void dump(ceph::Formatter* f) const {
+    f->dump_bool("enabled", enabled);
+    f->dump_stream("quarantined_at") << utime_t(quarantined_at_sec, quarantined_at_nsec);
+  }
 };
 
 template<template<typename> class Allocator>
@@ -877,8 +892,11 @@ struct inode_t {
     optmetadata.del_opt(optmetadata_singleton_server_t::kind_t::CHARMAP);
   }
 
-  bool is_quarantined() const {
-    return optmetadata.has_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
+  bool has_quarantined() const {
+    if (!optmetadata.has_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE))
+      return false;
+    auto& opt = optmetadata.get_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
+    return opt.template get_meta< quarantine_md_t >().enabled;
   }
 
   auto& set_quarantine() {
@@ -888,12 +906,6 @@ struct inode_t {
 
   void del_quarantine() {
     optmetadata.del_opt(optmetadata_singleton_server_t::kind_t::QUARANTINE);
-  }
-
-  const std::vector<uint64_t>& get_referent_inodes() { return referent_inodes; }
-  void add_referent_ino(inodeno_t ref_ino) { referent_inodes.push_back(ref_ino); }
-  void remove_referent_ino(inodeno_t ref_ino) {
-    referent_inodes.erase(remove(referent_inodes.begin(), referent_inodes.end(), ref_ino), referent_inodes.end());
   }
 
   void encode(ceph::buffer::list &bl, uint64_t features) const;
@@ -1000,9 +1012,6 @@ struct inode_t {
 
   optmetadata_multiton<optmetadata_singleton_server_t,Allocator> optmetadata;
 
-  inodeno_t remote_ino = 0; // referent inode - remote inode link
-  std::vector<uint64_t> referent_inodes;
-
 private:
   bool older_is_consistent(const inode_t &other) const;
 };
@@ -1072,9 +1081,6 @@ void inode_t<Allocator>::encode(ceph::buffer::list &bl, uint64_t features) const
   encode(fscrypt_last_block, bl);
 
   encode(optmetadata, bl, features);
-
-  encode(remote_ino, bl);
-  encode(referent_inodes, bl);
 
   ENCODE_FINISH(bl);
 }
@@ -1196,11 +1202,6 @@ void inode_t<Allocator>::decode(ceph::buffer::list::const_iterator &p)
 
   if (struct_v >= 20) {
     decode(optmetadata, p);
-  }
-
-  if (struct_v >= 21) {
-    decode(remote_ino, p);
-    decode(referent_inodes, p);
   }
 
   DECODE_FINISH(p);
@@ -1391,9 +1392,7 @@ int inode_t<Allocator>::compare(const inode_t<Allocator> &other, bool *divergent
 	fscrypt_auth != other.fscrypt_auth ||
 	fscrypt_file != other.fscrypt_file ||
 	fscrypt_last_block != other.fscrypt_last_block ||
-	optmetadata != other.optmetadata ||
-	remote_ino != other.remote_ino ||
-	referent_inodes != other.referent_inodes) {
+	optmetadata != other.optmetadata) {
       *divergent = true;
     }
     return 0;
