@@ -22,6 +22,7 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "include/interval_set.h"
 #include "include/elist.h"
@@ -47,6 +48,9 @@ class ScatterLock;
 class SimpleLock;
 struct sr_t;
 struct MDLockCache;
+class QuarantineTracker;
+
+using QtineMgrRef = std::shared_ptr<QuarantineTracker>;
 
 struct MutationImpl : public TrackedOp {
 public:
@@ -485,6 +489,20 @@ struct MDRequestImpl : public MutationImpl {
 
   // indicator for vxattr osdmap update
   bool waited_for_osdmap = false;
+
+  // referent straydn
+  bool referent_straydn = false;
+
+  // quarantine fields
+  unsigned qtine_op = QUARANTINE_NONE;
+  // qtine_mgr is a temporary pointer holder until the pointer is registered
+  // with the MDSRank. This typically happens when the cli command handler
+  // creates an MDR and forwards the request to traverse the path on the auth
+  // mds to find the inode number of the subvol. During request handling, the
+  // first thing that the handler does is register the qtine_mgr with the
+  // MDSRank against the subvol root inode number.
+  QtineMgrRef qtine_mgr;
+  inodeno_t qtine_root_ino = 0;
 
 protected:
   void _dump(ceph::Formatter *f) const override {
