@@ -2883,6 +2883,61 @@ paths:
       - jwt: []
       tags:
       - RbdNamespace
+  /api/call_home/accept_call_home:
+    post:
+      parameters: []
+      responses:
+        '201':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Resource created.
+        '202':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Operation is still executing. Please check the task queue.
+        '400':
+          description: Operation exception. Please check the response body for details.
+        '401':
+          description: Unauthenticated access. Please login first.
+        '403':
+          description: Unauthorized access. Please check your permissions.
+        '500':
+          description: Unexpected error. Please check the response body for the stack
+            trace.
+      security:
+      - jwt: []
+      summary: Confirm that the user has acknowledged the use of IBM Call Home
+      tags:
+      - CallHome
+  /api/call_home/connectivity:
+    post:
+      parameters: []
+      responses:
+        '201':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Resource created.
+        '202':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Operation is still executing. Please check the task queue.
+        '400':
+          description: Operation exception. Please check the response body for details.
+        '401':
+          description: Unauthenticated access. Please login first.
+        '403':
+          description: Unauthorized access. Please check your permissions.
+        '500':
+          description: Unexpected error. Please check the response body for the stack
+            trace.
+      security:
+      - jwt: []
+      tags:
+      - CallHome
   /api/call_home/download/{report_type}:
     get:
       parameters:
@@ -3335,21 +3390,13 @@ paths:
       responses:
         '201':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource created.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -3377,12 +3424,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -3415,10 +3458,6 @@ paths:
       responses:
         '201':
           content:
-            application/json:
-              schema:
-                properties: {}
-                type: object
             application/vnd.ceph.api.v1.0+json:
               schema:
                 properties: {}
@@ -3426,12 +3465,8 @@ paths:
           description: Resource created.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -3445,47 +3480,6 @@ paths:
       security:
       - jwt: []
       summary: Enable mirroring for a filesystem
-      tags:
-      - CephfsMirror
-  /api/cephfs/mirror/snapshot-mirror-status/{fs_name}:
-    get:
-      parameters:
-      - in: path
-        name: fs_name
-        required: true
-        schema:
-          type: string
-      - allowEmptyValue: true
-        in: query
-        name: mirrored_dir_path
-        schema:
-          type: string
-      - allowEmptyValue: true
-        in: query
-        name: peer_uuid
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-            application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
-          description: OK
-        '400':
-          description: Operation exception. Please check the response body for details.
-        '401':
-          description: Unauthenticated access. Please login first.
-        '403':
-          description: Unauthorized access. Please check your permissions.
-        '500':
-          description: Unexpected error. Please check the response body for the stack
-            trace.
-      security:
-      - jwt: []
       tags:
       - CephfsMirror
   /api/cephfs/mirror/token:
@@ -3585,6 +3579,241 @@ paths:
       security:
       - jwt: []
       summary: Get peers
+      tags:
+      - CephfsMirror
+  /api/cephfs/mirror/{fs_name}/status:
+    get:
+      parameters:
+      - description: File system name
+        in: path
+        name: fs_name
+        required: true
+        schema:
+          type: string
+      - default: ''
+        description: Mirrored directory path
+        in: query
+        name: path
+        schema:
+          type: string
+      - default: ''
+        description: Peer UUID
+        in: query
+        name: peer_id
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              schema:
+                properties:
+                  metrics:
+                    description: Snapshot mirror sync metrics grouped by mirrored
+                      directory path
+                    properties:
+                      /dir_path:
+                        description: Mirror directory metrics keyed by absolute path
+                        properties:
+                          peer:
+                            description: Peer sync statistics for the mirrored directory
+                            properties:
+                              peer_uuid:
+                                description: Sync statistics keyed by peer UUID
+                                properties:
+                                  current_syncing_snap:
+                                    description: Snapshot currently being synchronized
+                                    properties:
+                                      avg_read_throughput_bytes:
+                                        description: Average read throughput
+                                        type: string
+                                      avg_write_throughput_bytes:
+                                        description: Average write throughput
+                                        type: string
+                                      bytes:
+                                        description: Byte sync progress
+                                        properties:
+                                          sync_bytes:
+                                            description: Bytes synced so far
+                                            type: string
+                                          sync_percent:
+                                            description: Sync completion percentage
+                                            type: string
+                                          total_bytes:
+                                            description: Total bytes to sync
+                                            type: string
+                                        required:
+                                        - sync_bytes
+                                        - total_bytes
+                                        - sync_percent
+                                        type: object
+                                      crawl:
+                                        description: Directory crawl progress
+                                        properties:
+                                          duration:
+                                            description: Phase duration
+                                            type: string
+                                          state:
+                                            description: Phase state, e.g. completed,
+                                              in-progress, or waiting
+                                            type: string
+                                        required:
+                                        - state
+                                        - duration
+                                        type: object
+                                      datasync_queue_wait:
+                                        description: Data sync queue wait progress
+                                        properties:
+                                          duration:
+                                            description: Phase duration
+                                            type: string
+                                          state:
+                                            description: Phase state, e.g. completed,
+                                              in-progress, or waiting
+                                            type: string
+                                        required:
+                                        - state
+                                        - duration
+                                        type: object
+                                      eta:
+                                        description: Estimated time remaining for
+                                          the current sync
+                                        type: string
+                                      files:
+                                        description: File sync progress
+                                        properties:
+                                          sync_files:
+                                            description: Files synced so far
+                                            type: string
+                                          sync_percent:
+                                            description: Sync completion percentage
+                                            type: string
+                                          total_files:
+                                            description: Total files to sync
+                                            type: string
+                                        required:
+                                        - sync_files
+                                        - total_files
+                                        - sync_percent
+                                        type: object
+                                      id:
+                                        description: Snapshot ID
+                                        type: integer
+                                      name:
+                                        description: Snapshot name
+                                        type: string
+                                      sync-mode:
+                                        description: 'Snapshot sync mode: full or
+                                          delta'
+                                        type: string
+                                    required:
+                                    - id
+                                    - name
+                                    - sync-mode
+                                    - avg_read_throughput_bytes
+                                    - avg_write_throughput_bytes
+                                    - crawl
+                                    - datasync_queue_wait
+                                    - bytes
+                                    - files
+                                    - eta
+                                    type: object
+                                  failure_reason:
+                                    description: Last sync failure reason when state
+                                      is failed
+                                    type: string
+                                  last_synced_snap:
+                                    description: Last successfully synchronized snapshot
+                                    properties:
+                                      crawl_duration:
+                                        description: Time taken to scan directory
+                                        type: string
+                                      datasync_queue_wait_duration:
+                                        description: Time in data sync queue
+                                        type: string
+                                      id:
+                                        description: Snapshot ID
+                                        type: integer
+                                      name:
+                                        description: Snapshot name
+                                        type: string
+                                      sync_bytes:
+                                        description: Bytes synced for the snapshot
+                                        type: string
+                                      sync_duration:
+                                        description: Snapshot sync duration
+                                        type: string
+                                      sync_files:
+                                        description: Number of files synced for the
+                                          snapshot
+                                        type: integer
+                                      sync_time_stamp:
+                                        description: Time of the last sync
+                                        type: string
+                                    required:
+                                    - id
+                                    - name
+                                    - crawl_duration
+                                    - datasync_queue_wait_duration
+                                    - sync_duration
+                                    - sync_time_stamp
+                                    - sync_bytes
+                                    - sync_files
+                                    type: object
+                                  metrics_updated_at:
+                                    description: Wall-clock time when metrics were
+                                      last updated
+                                    type: number
+                                  snaps_deleted:
+                                    description: Total number of snapshots deleted
+                                      on the peer
+                                    type: integer
+                                  snaps_renamed:
+                                    description: Total number of snapshots renamed
+                                      on the peer
+                                    type: integer
+                                  snaps_synced:
+                                    description: Total number of snapshots synchronized
+                                    type: integer
+                                  state:
+                                    description: 'Mirror sync state: idle, syncing,
+                                      stale, or failed'
+                                    type: string
+                                required:
+                                - state
+                                - failure_reason
+                                - current_syncing_snap
+                                - last_synced_snap
+                                - snaps_synced
+                                - snaps_deleted
+                                - snaps_renamed
+                                - metrics_updated_at
+                                type: object
+                            required:
+                            - peer_uuid
+                            type: object
+                        required:
+                        - peer
+                        type: object
+                    required:
+                    - /dir_path
+                    type: object
+                required:
+                - metrics
+                type: object
+          description: OK
+        '400':
+          description: Operation exception. Please check the response body for details.
+        '401':
+          description: Unauthenticated access. Please login first.
+        '403':
+          description: Unauthorized access. Please check your permissions.
+        '500':
+          description: Unexpected error. Please check the response body for the stack
+            trace.
+      security:
+      - jwt: []
+      summary: Get snapshot mirror sync metrics
       tags:
       - CephfsMirror
   /api/cephfs/mirror/{fs_name}/{peer_uuid}:
@@ -5479,6 +5708,68 @@ paths:
       summary: Update the cluster status
       tags:
       - Cluster
+  /api/cluster/license/{image_name}:
+    get:
+      parameters:
+      - description: Image Name
+        in: path
+        name: image_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: OK
+        '400':
+          description: Operation exception. Please check the response body for details.
+        '401':
+          description: Unauthenticated access. Please login first.
+        '403':
+          description: Unauthorized access. Please check your permissions.
+        '500':
+          description: Unexpected error. Please check the response body for the stack
+            trace.
+      security:
+      - jwt: []
+      summary: Get the cluster license information
+      tags:
+      - License
+    put:
+      parameters:
+      - description: Image Name
+        in: path
+        name: image_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Resource updated.
+        '202':
+          content:
+            application/vnd.ceph.api.v1.0+json:
+              type: object
+          description: Operation is still executing. Please check the task queue.
+        '400':
+          description: Operation exception. Please check the response body for details.
+        '401':
+          description: Unauthenticated access. Please login first.
+        '403':
+          description: Unauthorized access. Please check your permissions.
+        '500':
+          description: Unexpected error. Please check the response body for the stack
+            trace.
+      security:
+      - jwt: []
+      summary: Accept the cluster license
+      tags:
+      - License
   /api/cluster/upgrade:
     get:
       parameters:
@@ -5590,6 +5881,9 @@ paths:
                   type: string
                 image:
                   type: string
+                license_accepted:
+                  default: false
+                  type: boolean
                 limit:
                   type: string
                 services:
@@ -10983,21 +11277,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -11079,12 +11365,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -12392,12 +12674,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -12455,12 +12733,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -12825,21 +13099,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15023,21 +15289,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15093,21 +15351,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15575,12 +15825,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15621,21 +15867,13 @@ paths:
       responses:
         '201':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource created.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15674,21 +15912,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15720,21 +15950,13 @@ paths:
       responses:
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '204':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource deleted.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -15765,12 +15987,8 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: OK
         '400':
           description: Operation exception. Please check the response body for details.
@@ -20772,7 +20990,7 @@ paths:
                   write_iops_limit:
                     description: 'QoS: max write IOPS (0=disabled)'
                     type: integer
-                required: &id158
+                required:
                 - resource_type
                 - cluster_id
                 - share_id
@@ -20787,71 +21005,6 @@ paths:
                 - write_bw_limit
                 - read_delay_max
                 - write_delay_max
-                type: object
-            application/vnd.ceph.api.v1.0+json:
-              schema:
-                properties:
-                  browseable:
-                    description: Indicates if the share is browseable
-                    type: boolean
-                  cephfs:
-                    description: Configuration for the CephFS share
-                    properties:
-                      path:
-                        description: Path within the CephFS file system
-                        type: string
-                      provider:
-                        description: Provider of the CephFS share, e.g., 'samba-vfs'
-                        type: string
-                      subvolume:
-                        description: Subvolume within the CephFS file system
-                        type: string
-                      subvolumegroup:
-                        description: Subvolume Group in CephFS file system
-                        type: string
-                      volume:
-                        description: Name of the CephFS file system
-                        type: string
-                    required: *id157
-                    type: object
-                  cluster_id:
-                    description: Unique identifier for the cluster
-                    type: string
-                  intent:
-                    description: Desired state of the resource, e.g., 'present' or
-                      'removed'
-                    type: string
-                  name:
-                    description: Name of the share
-                    type: string
-                  read_bw_limit:
-                    description: 'QoS: max read bandwidth B/s (0=disabled)'
-                    type: integer
-                  read_delay_max:
-                    description: 'QoS: max read delay in seconds (0-300)'
-                    type: integer
-                  read_iops_limit:
-                    description: 'QoS: max read IOPS (0=disabled)'
-                    type: integer
-                  readonly:
-                    description: Indicates if the share is read-only
-                    type: boolean
-                  resource_type:
-                    description: ceph.smb.share
-                    type: string
-                  share_id:
-                    description: Unique identifier for the share
-                    type: string
-                  write_bw_limit:
-                    description: 'QoS: max write bandwidth B/s (0=disabled)'
-                    type: integer
-                  write_delay_max:
-                    description: 'QoS: max write delay in seconds (0-300)'
-                    type: integer
-                  write_iops_limit:
-                    description: 'QoS: max write IOPS (0=disabled)'
-                    type: integer
-                required: *id158
                 type: object
           description: OK
         '400':
@@ -20963,7 +21116,7 @@ paths:
                             write_iops_limit:
                               description: 'QoS: max write IOPS (0=disabled)'
                               type: integer
-                          required: &id160
+                          required:
                           - resource_type
                           - cluster_id
                           - share_id
@@ -20998,94 +21151,6 @@ paths:
                 required:
                 - results
                 - success
-                type: object
-            application/vnd.ceph.api.v1.0+json:
-              schema:
-                properties:
-                  results:
-                    description: List of operation results
-                    items:
-                      properties:
-                        resource:
-                          description: Resource
-                          properties:
-                            browseable:
-                              description: Indicates if the share is browseable
-                              type: boolean
-                            cephfs:
-                              description: Configuration for the CephFS share
-                              properties:
-                                path:
-                                  description: Path within the CephFS file system
-                                  type: string
-                                provider:
-                                  description: Provider of the CephFS share, e.g.,
-                                    'samba-vfs'
-                                  type: string
-                                subvolume:
-                                  description: Subvolume within the CephFS file system
-                                  type: string
-                                subvolumegroup:
-                                  description: Subvolume Group in CephFS file system
-                                  type: string
-                                volume:
-                                  description: Name of the CephFS file system
-                                  type: string
-                              required: *id159
-                              type: object
-                            cluster_id:
-                              description: Unique identifier for the cluster
-                              type: string
-                            intent:
-                              description: Desired state of the resource, e.g., 'present'
-                                or 'removed'
-                              type: string
-                            name:
-                              description: Name of the share
-                              type: string
-                            read_bw_limit:
-                              description: 'QoS: max read bandwidth B/s (0=disabled)'
-                              type: integer
-                            read_delay_max:
-                              description: 'QoS: max read delay in seconds (0-300)'
-                              type: integer
-                            read_iops_limit:
-                              description: 'QoS: max read IOPS (0=disabled)'
-                              type: integer
-                            readonly:
-                              description: Indicates if the share is read-only
-                              type: boolean
-                            resource_type:
-                              description: ceph.smb.share
-                              type: string
-                            share_id:
-                              description: Unique identifier for the share
-                              type: string
-                            write_bw_limit:
-                              description: 'QoS: max write bandwidth B/s (0=disabled)'
-                              type: integer
-                            write_delay_max:
-                              description: 'QoS: max write delay in seconds (0-300)'
-                              type: integer
-                            write_iops_limit:
-                              description: 'QoS: max write IOPS (0=disabled)'
-                              type: integer
-                          required: *id160
-                          type: object
-                        state:
-                          description: The current state of the resource,                        e.g.,
-                            'created', 'updated', 'deleted'
-                          type: string
-                        success:
-                          description: Indicates if the operation was successful
-                          type: boolean
-                      required: *id161
-                      type: object
-                    type: array
-                  success:
-                    description: Indicates if the overall operation was successful
-                    type: boolean
-                required: *id162
                 type: object
           description: Resource created.
         '202':
@@ -21149,21 +21214,13 @@ paths:
       responses:
         '200':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Resource updated.
         '202':
           content:
-            application/json:
-              schema:
-                type: object
             application/vnd.ceph.api.v1.0+json:
-              schema:
-                type: object
+              type: object
           description: Operation is still executing. Please check the task queue.
         '400':
           description: Operation exception. Please check the response body for details.
@@ -21310,7 +21367,7 @@ paths:
                   write_iops_limit:
                     description: 'QoS: max write IOPS (0=disabled)'
                     type: integer
-                required: &id164
+                required:
                 - resource_type
                 - cluster_id
                 - share_id
@@ -21325,71 +21382,6 @@ paths:
                 - write_bw_limit
                 - read_delay_max
                 - write_delay_max
-                type: object
-            application/vnd.ceph.api.v1.0+json:
-              schema:
-                properties:
-                  browseable:
-                    description: Indicates if the share is browseable
-                    type: boolean
-                  cephfs:
-                    description: Configuration for the CephFS share
-                    properties:
-                      path:
-                        description: Path within the CephFS file system
-                        type: string
-                      provider:
-                        description: Provider of the CephFS share, e.g., 'samba-vfs'
-                        type: string
-                      subvolume:
-                        description: Subvolume within the CephFS file system
-                        type: string
-                      subvolumegroup:
-                        description: Subvolume Group in CephFS file system
-                        type: string
-                      volume:
-                        description: Name of the CephFS file system
-                        type: string
-                    required: *id163
-                    type: object
-                  cluster_id:
-                    description: Unique identifier for the cluster
-                    type: string
-                  intent:
-                    description: Desired state of the resource, e.g., 'present' or
-                      'removed'
-                    type: string
-                  name:
-                    description: Name of the share
-                    type: string
-                  read_bw_limit:
-                    description: 'QoS: max read bandwidth B/s (0=disabled)'
-                    type: integer
-                  read_delay_max:
-                    description: 'QoS: max read delay in seconds (0-300)'
-                    type: integer
-                  read_iops_limit:
-                    description: 'QoS: max read IOPS (0=disabled)'
-                    type: integer
-                  readonly:
-                    description: Indicates if the share is read-only
-                    type: boolean
-                  resource_type:
-                    description: ceph.smb.share
-                    type: string
-                  share_id:
-                    description: Unique identifier for the share
-                    type: string
-                  write_bw_limit:
-                    description: 'QoS: max write bandwidth B/s (0=disabled)'
-                    type: integer
-                  write_delay_max:
-                    description: 'QoS: max write delay in seconds (0-300)'
-                    type: integer
-                  write_iops_limit:
-                    description: 'QoS: max write IOPS (0=disabled)'
-                    type: integer
-                required: *id164
                 type: object
           description: OK
         '400':
@@ -23089,6 +23081,8 @@ tags:
   name: Iscsi
 - description: Get Iscsi Target Details
   name: IscsiTarget
+- description: License Management API
+  name: License
 - description: Logs Management API
   name: Logs
 - description: Mds Perf Counters Management API
