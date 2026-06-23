@@ -135,7 +135,9 @@ export enum Icons {
   arrowUpRight = 'arrow--up-right',
   inProgress = 'in-progress',
   arrowDown = 'arrow--down',
-  cloudMonitoring = 'cloud--monitoring'
+  cloudMonitoring = 'cloud--monitoring',
+  locked = 'locked', // Access denied, locked state
+  pendingFilled = 'pending--filled'
 }
 
 export enum IconSize {
@@ -184,7 +186,8 @@ export const ICON_TYPE = {
   arrowRight: 'arrow--right',
   trash: 'trash-can',
   replicate: 'replicate',
-  share: 'share'
+  share: 'share',
+  pendingFilled: 'pending--filled'
 } as const;
 
 export const EMPTY_STATE_IMAGE = {
