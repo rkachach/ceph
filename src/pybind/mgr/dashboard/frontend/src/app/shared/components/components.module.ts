@@ -92,6 +92,8 @@ import { TearsheetComponent } from './tearsheet/tearsheet.component';
 import { TearsheetStepComponent } from './tearsheet-step/tearsheet-step.component';
 import { DetailsCardComponent } from './details-card/details-card.component';
 import { SidePanelComponent } from './side-panel/side-panel.component';
+import { ClickableTileComponent } from './clickable-tile/clickable-tile.component';
+
 // Icons
 import CopyIcon from '@carbon/icons/es/copy/32';
 import { IconComponent } from './icon/icon.component';
@@ -227,6 +229,7 @@ import CloudMonitoring16 from '@carbon/icons/es/cloud--monitoring/16';
     TearsheetComponent,
     TearsheetStepComponent,
     SidePanelComponent,
+    ClickableTileComponent,
     SidebarLayoutComponent,
     DetailsCardComponent,
     CallHomeModalComponent,
@@ -279,6 +282,7 @@ import CloudMonitoring16 from '@carbon/icons/es/cloud--monitoring/16';
     TearsheetComponent,
     TearsheetStepComponent,
     SidePanelComponent,
+    ClickableTileComponent,
     SidebarLayoutComponent,
     ProductiveCardComponent,
     CallHomeModalComponent,

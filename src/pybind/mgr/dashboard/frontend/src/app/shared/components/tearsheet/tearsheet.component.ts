@@ -22,6 +22,7 @@ import { Location } from '@angular/common';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
+import { ActionLabelsI18n } from '../../constants/app.constants';
 
 /**
 <cd-tearsheet
@@ -29,6 +30,9 @@ import { Subject } from 'rxjs';
     [title]="title"
     [isSubmitLoading]="isSubmitLoading"
     [description]="description"
+    modalHeaderLabel="Top label header"
+    progressPosition="top"
+    previousButtonLabel="back"
     (submitRequested)="onSubmit()">
   <cd-tearsheet-step>
       <cd-step #tearsheetStep>
@@ -43,11 +47,11 @@ import { Subject } from 'rxjs';
 
 @Component({
   selector: 'cd-step',
-  template: `<form></form>,
+  template: `<form></form>`,
   standalone: false
 })
 export class StepComponent implements TearsheetStep {
-formgroup: CdFormGroup;
+  formGroup: CdFormGroup;
 }
 **/
 @Component({
@@ -60,13 +64,17 @@ formgroup: CdFormGroup;
 })
 export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() title!: string;
+  @Input() modalHeaderLabel: string;
   @Input() steps!: Array<Step>;
   @Input() description!: string;
+  @Input() descriptionTemplate: TemplateRef<any>;
   @Input() type: 'full' | 'wide' = 'wide';
   @Input() size: 'xs' | 'sm' | 'md' | 'lg' = 'lg';
-  @Input() submitButtonLabel: string = $localize`Create`;
-  @Input() submitButtonLoadingLabel: string = $localize`Creating`;
-  @Input() isSubmitLoading: boolean = true;
+  @Input() progressPosition: 'left' | 'top' = 'left';
+  @Input() submitButtonLabel: string;
+  @Input() submitButtonLoadingLabel: string;
+  @Input() previousButtonLabel: string;
+  @Input() isSubmitLoading: boolean = false;
 
   @Output() submitRequested = new EventEmitter<void>();
   @Output() closeRequested = new EventEmitter<void>();
@@ -113,10 +121,14 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
     private cdsModalService: ModalCdsService,
     private route: ActivatedRoute,
     private location: Location,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private actionLabels: ActionLabelsI18n
   ) {}
 
   ngOnInit() {
+    this.submitButtonLabel ??= this.actionLabels.CREATE;
+    this.submitButtonLoadingLabel ??= this.actionLabels.CREATING;
+    this.previousButtonLabel ??= this.actionLabels.PREVIOUS;
     this.lastStep = this.steps.length - 1;
     this.hasModalOutlet = this.route.outlet === 'modal';
   }

@@ -65,6 +65,7 @@ import { SmbOverviewComponent } from './ceph/smb/smb-overview/smb-overview.compo
 import { environment } from '~/environments/environment';
 import { NfsClusterFormComponent } from './ceph/nfs/nfs-cluster-form/nfs-cluster-form.component';
 import { CephfsMirroringListComponent } from './ceph/cephfs/cephfs-mirroring-list/cephfs-mirroring-list.component';
+import { CephfsAddMirroringPathComponent } from './ceph/cephfs/cephfs-add-mirroring-path/cephfs-add-mirroring-path.component';
 import { CephfsMirroringFsTabsComponent } from './ceph/cephfs/cephfs-mirroring-fs-tabs/cephfs-mirroring-fs-tabs.component';
 import { CephfsMirroringFsOverviewComponent } from './ceph/cephfs/cephfs-mirroring-fs-overview/cephfs-mirroring-fs-overview.component';
 import { CephfsMirroringFsMirrorPathsComponent } from './ceph/cephfs/cephfs-mirroring-fs-mirror-paths/cephfs-mirroring-fs-mirror-paths.component';
@@ -444,7 +445,14 @@ const routes: Routes = [
                 data: {
                   breadcrumbs: 'File/Mirroring',
                   pageHeader: CEPHFS_MIRRORING_PAGE_HEADER
-                }
+                },
+                children: [
+                  {
+                    path: 'add-path/:fsId/:fsName',
+                    component: CephfsAddMirroringPathComponent,
+                    outlet: 'modal'
+                  }
+                ]
               },
               {
                 path: ':fsName',
