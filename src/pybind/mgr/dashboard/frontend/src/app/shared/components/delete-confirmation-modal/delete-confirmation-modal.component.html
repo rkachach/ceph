@@ -103,7 +103,7 @@
                         [submitText]="(actionDescription | titlecase) + ' ' + itemDescription"
                         [modalForm]="true"
                         [disabled]="(submitDisabled$ | async) || deletionForm.disabled || (impact === impactEnum.high ? (!deletionForm.controls.confirmInput.value || !forceDeleteAckSatisfied) : !deletionForm.controls.confirmation.value)"
-                        [submitBtnType]="(actionDescription === 'delete' || actionDescription === 'remove') ? 'danger' : 'primary'"></cd-form-button-panel>
+                        [submitBtnType]="(actionDescription === 'delete' || actionDescription === 'remove' || actionDescription === 'disable') ? 'danger' : 'primary'"></cd-form-button-panel>
 
 </cds-modal>
 <ng-template #deletionHeading>
@@ -113,9 +113,12 @@
       {{(actionDescription | titlecase) + ' ' + itemDescription}}
   </h2>
   <h2 class="cds--type-heading-03"
-      cdsModalHeaderHeading
-      i18n>
-    Confirm {{ actionDescription }}
+      cdsModalHeaderHeading>
+    @if (bodyContext?.confirmHeading) {
+    {{ bodyContext.confirmHeading }}
+    } @else {
+    <ng-container i18n>Confirm {{ actionDescription }}</ng-container>
+    }
   </h2>
   } @else {
   <h3 cdsModalHeaderHeading
