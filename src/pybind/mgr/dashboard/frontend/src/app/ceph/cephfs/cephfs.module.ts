@@ -63,8 +63,7 @@ import {
   TreeviewModule,
   TabsModule,
   NotificationModule,
-  ProgressBarModule,
-  FileUploaderModule
+  ProgressBarModule
 } from 'carbon-components-angular';
 
 import AddIcon from '@carbon/icons/es/add/32';
@@ -119,8 +118,7 @@ import FolderIcon16 from '@carbon/icons/es/folder/16';
     RadioModule,
     TilesModule,
     NotificationModule,
-    ProgressBarModule,
-    FileUploaderModule
+    ProgressBarModule
   ],
   declarations: [
     CephfsDetailComponent,
