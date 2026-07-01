@@ -24,25 +24,21 @@ def _create_image(image_ref: str, key: str) -> ContainerImage:
 
 
 class DefaultImages(Enum):
-    PROMETHEUS = _create_image('quay.io/prometheus/prometheus:v3.6.0', 'prometheus')
-    LOKI = _create_image('docker.io/grafana/loki:3.0.0', 'loki')
-    PROMTAIL = _create_image('docker.io/grafana/promtail:3.0.0', 'promtail')
-    ALLOY = _create_image('docker.io/grafana/alloy:latest', 'alloy')
-    NODE_EXPORTER = _create_image('quay.io/prometheus/node-exporter:v1.9.1', 'node_exporter')
-    ALERTMANAGER = _create_image('quay.io/prometheus/alertmanager:v0.28.1', 'alertmanager')
-    GRAFANA = _create_image('quay.io/ceph/grafana:12.3.1', 'grafana')
-    HAPROXY = _create_image('quay.io/ceph/haproxy:2.3', 'haproxy')
-    KEEPALIVED = _create_image('quay.io/ceph/keepalived:2.2.4', 'keepalived')
-    NVMEOF = _create_image('quay.io/ceph/nvmeof:1.7', 'nvmeof')
-    SNMP_GATEWAY = _create_image('docker.io/maxwo/snmp-notifier:v1.2.1', 'snmp_gateway')
-    SAMBA = _create_image(
-        'quay.io/samba.org/samba-server:ceph20-centos-amd64', 'samba'
-    )
-    SAMBA_METRICS = _create_image(
-        'quay.io/samba.org/samba-metrics:ceph20-centos-amd64', 'samba_metrics'
-    )
-    NGINX = _create_image('quay.io/ceph/nginx:sclorg-nginx-126', 'nginx')
-    OAUTH2_PROXY = _create_image('quay.io/oauth2-proxy/oauth2-proxy:v7.6.0', 'oauth2_proxy')
+    PROMETHEUS = _create_image('registry.redhat.io/openshift4/ose-prometheus:v4.15', 'prometheus')
+    LOKI = _create_image('registry.redhat.io/openshift-logging/logging-loki-rhel8:v3.1.0', 'loki')
+    PROMTAIL = _create_image('registry.redhat.io/rhceph/rhceph-promtail-rhel9:v3.0.0', 'promtail')
+    ALLOY = _create_image('registry.redhat.io/rhceph/alloy-rhel10:v9.2', 'alloy')
+    NODE_EXPORTER = _create_image('registry.redhat.io/openshift4/ose-prometheus-node-exporter:v4.15', 'node_exporter')
+    ALERTMANAGER = _create_image('registry.redhat.io/openshift4/ose-prometheus-alertmanager:v4.15', 'alertmanager')
+    GRAFANA = _create_image('registry.redhat.io/rhceph/grafana-rhel10:v9.2', 'grafana')
+    HAPROXY = _create_image('registry.redhat.io/rhceph/rhceph-haproxy-rhel10:v9.2', 'haproxy')
+    KEEPALIVED = _create_image('registry.redhat.io/rhceph/keepalived-rhel10:v9.2', 'keepalived')
+    NVMEOF = _create_image('cp.icr.io/cp/ibm-ceph/nvmeof-rhel10:1.7', 'nvmeof')
+    SNMP_GATEWAY = _create_image('registry.redhat.io/rhceph/snmp-notifier-rhel10:v9.2', 'snmp_gateway')
+    SAMBA = _create_image('cp.icr.io/cp/ibm-ceph/samba-server-rhel10:v9.2', 'samba')
+    SAMBA_METRICS = _create_image('cp.icr.io/cp/ibm-ceph/samba-metrics-rhel10:v9.2', 'samba_metrics')
+    NGINX = _create_image('registry.redhat.io/rhel10/nginx-126:latest', 'nginx')
+    OAUTH2_PROXY = _create_image('registry.redhat.io/rhceph/oauth2-proxy-rhel10:v7.14.0', 'oauth2_proxy')
 
     @property
     def image_ref(self) -> str:
@@ -73,3 +69,4 @@ class NonCephImageServiceTypes(Enum):
     jaeger_agent = 'jaeger-agent'
     samba = 'smb'
     oauth2_proxy = 'oauth2-proxy'
+
