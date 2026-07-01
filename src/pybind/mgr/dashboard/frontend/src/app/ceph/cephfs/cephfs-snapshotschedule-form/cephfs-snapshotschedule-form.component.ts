@@ -1,4 +1,13 @@
-import { ChangeDetectorRef, Component, Inject, OnInit, Optional } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  Input,
+  OnChanges,
+  OnInit,
+  Optional,
+  SimpleChanges
+} from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
 import { padStart, uniq } from 'lodash';
@@ -33,6 +42,7 @@ import {
   SnapshotScheduleFormValue
 } from '~/app/shared/models/snapshot-schedule';
 import { TaskWrapperService } from '~/app/shared/services/task-wrapper.service';
+import { TearsheetStep } from '~/app/shared/models/tearsheet-step';
 
 const VALIDATON_TIMER = 300;
 const DEBOUNCE_TIMER = 300;
@@ -42,7 +52,37 @@ const DEBOUNCE_TIMER = 300;
   templateUrl: './cephfs-snapshotschedule-form.component.html',
   styleUrls: ['./cephfs-snapshotschedule-form.component.scss']
 })
-export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnInit {
+export class CephfsSnapshotscheduleFormComponent
+  extends CdForm
+  implements OnInit, OnChanges, TearsheetStep
+{
+  @Input() embedded = false;
+  @Input() hideDirectory = false;
+
+  @Input()
+  set fsIdInput(value: number) {
+    if (value) {
+      this.id = value;
+    }
+  }
+
+  @Input()
+  set fsNameInput(value: string) {
+    if (value) {
+      this.fsName = value;
+    }
+  }
+
+  @Input()
+  set schedulePath(value: string) {
+    if (value) {
+      this.path = value;
+      if (this.snapScheduleForm && this.hideDirectory) {
+        this.applyDirectoryPath(value);
+      }
+    }
+  }
+
   subvol!: string;
   group!: string;
   icons = Icons;
@@ -57,6 +97,10 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
   minDate!: string;
 
   snapScheduleForm!: CdFormGroup;
+
+  get formGroup(): CdFormGroup {
+    return this.snapScheduleForm;
+  }
 
   action!: string;
   resource!: string;
@@ -89,16 +133,27 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
     }-${currentDatetime.getUTCDate()}`;
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.schedulePath && this.snapScheduleForm && this.hideDirectory && this.path) {
+      this.applyDirectoryPath(this.path);
+    }
+  }
+
   ngOnInit(): void {
     this.action = this.actionLabels.CREATE;
-    this.directoryStore.loadDirectories(this.id, '/', 3);
+    if (this.id) {
+      this.directoryStore.loadDirectories(this.id, '/', 3);
+    }
     this.createForm();
+    if (this.hideDirectory && this.path) {
+      this.applyDirectoryPath(this.path);
+    }
     this.isEdit ? this.populateForm() : this.loadingReady();
 
     this.snapScheduleForm
       .get('directory')
       .valueChanges.pipe(
-        filter(() => !this.isEdit),
+        filter(() => !this.isEdit && !this.hideDirectory),
         debounceTime(DEBOUNCE_TIMER),
         tap(() => {
           this.isSubvolume = false;
@@ -272,6 +327,51 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
       .join('|');
   }
 
+  getScheduleSummary(): string {
+    if (!this.snapScheduleForm) {
+      return '';
+    }
+
+    const values = this.snapScheduleForm.getRawValue() as SnapshotScheduleFormValue;
+    const schedule = this.parseSchedule(values?.repeatInterval, values?.repeatFrequency);
+    const retention = this.parseRetentionPolicies(values?.retentionPolicies);
+    const parts = [$localize`Every ${schedule}`];
+
+    if (retention) {
+      parts.push($localize`Retention: ${retention}`);
+    }
+
+    return parts.join(' · ');
+  }
+
+  buildCreatePayload(targetPath?: string): Record<string, unknown> {
+    const values = this.snapScheduleForm.getRawValue() as SnapshotScheduleFormValue;
+    const path = targetPath ?? values.directory;
+    const snapScheduleObj: Record<string, unknown> = {
+      fs: this.fsName,
+      path,
+      snap_schedule: this.parseSchedule(values?.repeatInterval, values?.repeatFrequency),
+      start: new Date(values?.startDate.replace(/\//g, '-').replace(' ', 'T'))
+        .toISOString()
+        .slice(0, 19)
+    };
+
+    const retentionPoliciesValues = this.parseRetentionPolicies(values?.retentionPolicies);
+    if (retentionPoliciesValues) {
+      snapScheduleObj['retention_policy'] = retentionPoliciesValues;
+    }
+
+    if (this.isSubvolume) {
+      snapScheduleObj['subvol'] = this.subvolume;
+    }
+
+    if (this.isSubvolume && !this.isDefaultSubvolumeGroup) {
+      snapScheduleObj['group'] = this.subvolumeGroup;
+    }
+
+    return snapScheduleObj;
+  }
+
   submit() {
     this.validateSchedule()(this.snapScheduleForm).subscribe({
       next: () => {
@@ -279,8 +379,6 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
           this.snapScheduleForm.setErrors({ cdSubmitButton: true });
           return;
         }
-
-        const values = this.snapScheduleForm.value as SnapshotScheduleFormValue;
 
         if (this.isEdit) {
           const retentionPoliciesToAdd = (this.snapScheduleForm.get(
@@ -320,28 +418,7 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
               }
             });
         } else {
-          const snapScheduleObj = {
-            fs: this.fsName,
-            path: values.directory,
-            snap_schedule: this.parseSchedule(values?.repeatInterval, values?.repeatFrequency),
-            start: new Date(values?.startDate.replace(/\//g, '-').replace(' ', 'T'))
-              .toISOString()
-              .slice(0, 19)
-          };
-
-          const retentionPoliciesValues = this.parseRetentionPolicies(values?.retentionPolicies);
-
-          if (retentionPoliciesValues) {
-            snapScheduleObj['retention_policy'] = retentionPoliciesValues;
-          }
-
-          if (this.isSubvolume) {
-            snapScheduleObj['subvol'] = this.subvolume;
-          }
-
-          if (this.isSubvolume && !this.isDefaultSubvolumeGroup) {
-            snapScheduleObj['group'] = this.subvolumeGroup;
-          }
+          const snapScheduleObj = this.buildCreatePayload();
           this.taskWrapper
             .wrapTaskAroundCall({
               task: new FinishedTask('cephfs/snapshot/schedule/' + URLVerbs.CREATE, {
@@ -367,6 +444,9 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
       const directory = frm.get('directory');
       const repeatFrequency = frm.get('repeatFrequency');
       const repeatInterval = frm.get('repeatInterval');
+      const directoryPath = this.hideDirectory
+        ? directory?.getRawValue?.() ?? directory?.value
+        : directory?.value;
 
       if (this.isEdit) {
         return of(null);
@@ -376,7 +456,7 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
         switchMap(() =>
           this.snapScheduleService
             .checkScheduleExists(
-              directory?.value,
+              directoryPath,
               this.fsName,
               repeatInterval?.value,
               repeatFrequency?.value,
@@ -402,6 +482,29 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
     return (frm.get(frmArrayName) as FormArray)?.controls?.[idx]?.get?.(ctrl);
   }
 
+  private applyDirectoryPath(path: string): void {
+    const directoryControl = this.snapScheduleForm.get('directory');
+    directoryControl.setValue(path);
+    directoryControl.disable();
+    this.subvolumeGroup = path?.split?.('/')?.[2];
+    this.subvolume = path?.split?.('/')?.[3];
+
+    if (!this.subvolume || !this.subvolumeGroup || !this.fsName) {
+      return;
+    }
+
+    this.subvolumeService
+      .exists(
+        this.subvolume,
+        this.fsName,
+        this.subvolumeGroup === DEFAULT_SUBVOLUME_GROUP ? '' : this.subvolumeGroup
+      )
+      .subscribe((exists: boolean) => {
+        this.isSubvolume = exists;
+        this.isDefaultSubvolumeGroup = exists && this.subvolumeGroup === DEFAULT_SUBVOLUME_GROUP;
+      });
+  }
+
   validateRetention() {
     return (frm: FormGroup) => {
       return timer(VALIDATON_TIMER).pipe(
@@ -424,7 +527,7 @@ export class CephfsSnapshotscheduleFormComponent extends CdForm implements OnIni
           }
           return this.snapScheduleService
             .checkRetentionPolicyExists(
-              frm.get('directory').value,
+              frm.get('directory').getRawValue?.() ?? frm.get('directory').value,
               this.fsName,
               retentionList,
               this.retentionPoliciesToRemove?.map?.((rp) => rp.retentionFrequency) || [],
