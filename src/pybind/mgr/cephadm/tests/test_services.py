@@ -3656,7 +3656,7 @@ class TestIngressService:
         _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
 
         def fake_resolve_ip(hostname: str) -> str:
-            if hostname in ('host1', "192.168.122.111"):
+            if hostname in ('host1', "192.168.122.111", 'test'):
                 return '192.168.122.111'
             elif hostname in ('host2', '192.168.122.222'):
                 return '192.168.122.222'
@@ -3795,6 +3795,12 @@ class TestIngressService:
             '        name = "client.nfs.foo.test.0.0-rgw";\n'
             '}\n'
             '\n'
+            'GRPC {\n'
+            '        GRPC_Server_Cert = "/etc/ganesha/certs/server.crt";\n'
+            '        GRPC_Server_Key  = "/etc/ganesha/certs/server.key";\n'
+            '        GRPC_CA_Cert     = "/etc/ganesha/certs/ca.crt";\n'
+            '}\n'
+            '\n'
             '%url    rados://.nfs/foo/conf-nfs.foo'
         )
         nfs_expected_conf = {
@@ -3887,6 +3893,18 @@ class TestIngressService:
         )
         assert nfs_generated_conf == nfs_expected_conf
 
+        # gRPC server cert files are always auto-generated; verify they exist
+        # and remove them before comparing the rest of the config.
+        # gRPC server cert files are always auto-generated; verify they exist
+        # and remove them before comparing the rest of the config.
+        # Client cert is NOT deployed to the daemon (goes to mgr host instead).
+        for fname in ['grpc_server.crt', 'grpc_server.key', 'grpc_ca.crt']:
+            assert fname in nfs_generated_conf['files'], f'Missing gRPC file: {fname}'
+            nfs_generated_conf['files'].pop(fname)
+        assert 'grpc_client.crt' not in nfs_generated_conf['files']
+        assert 'grpc_client.key' not in nfs_generated_conf['files']
+        assert nfs_generated_conf == nfs_expected_conf
+
     @patch("cephadm.services.nfs.NFSService.fence_old_ranks", MagicMock())
     @patch("cephadm.services.nfs.NFSService.run_grace_tool", MagicMock())
     @patch("cephadm.services.nfs.NFSService.purge", MagicMock())
@@ -3964,6 +3982,7 @@ class TestIngressService:
             ),
         ]
         _get_daemons_by_service.return_value = nfs_daemons
+        _get_addr.side_effect = lambda h: {'host1': '10.10.2.20', 'host2': '10.10.2.21'}.get(h, '10.10.2.20')
 
         ingress_svc = service_registry.get_service('ingress')
         nfs_svc = service_registry.get_service('nfs')
@@ -4616,6 +4635,115 @@ class TestNFS:
     @patch("cephadm.services.nfs.NFSService.run_grace_tool", MagicMock())
     @patch("cephadm.services.nfs.NFSService.purge", MagicMock())
     @patch("cephadm.services.nfs.NFSService.create_rados_config_obj", MagicMock())
+    def test_nfs_grpc_default(self, _run_cephadm, cephadm_module: CephadmOrchestrator):
+        """gRPC certs always generated with cephadm-signed source even when user sets nothing."""
+        _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
+
+        with with_host(cephadm_module, 'test', addr='1.2.3.7'):
+            nfs_spec = NFSServiceSpec(service_id='foo', placement=PlacementSpec(hosts=['test']))
+            with with_service(cephadm_module, nfs_spec) as _:
+                conf, _ = service_registry.get_service('nfs').generate_config(
+                    CephadmDaemonDeploySpec(host='test', daemon_id='foo.test.0.0',
+                                            service_name=nfs_spec.service_name()))
+
+                ganesha_conf = conf['files']['ganesha.conf']
+
+                # GRPC block must always be present with quoted paths
+                assert 'GRPC {' in ganesha_conf
+                assert 'GRPC_Server_Cert = "/etc/ganesha/certs/server.crt"' in ganesha_conf
+                assert 'GRPC_Server_Key  = "/etc/ganesha/certs/server.key"' in ganesha_conf
+                assert 'GRPC_CA_Cert     = "/etc/ganesha/certs/ca.crt"' in ganesha_conf
+
+                # No client cert in ganesha.conf — Ganesha never makes outgoing gRPC calls
+                assert 'GRPC_Client_Cert' not in ganesha_conf
+                assert 'GRPC_Client_Key' not in ganesha_conf
+
+                # Only server cert files in config-json — client cert NOT deployed to daemon
+                for fname in ['grpc_server.crt', 'grpc_server.key', 'grpc_ca.crt']:
+                    assert fname in conf['files'], f'Missing file: {fname}'
+                    assert conf['files'][fname].startswith('-----BEGIN'), \
+                        f'{fname} is not a PEM string'
+                assert 'grpc_client.crt' not in conf['files']
+                assert 'grpc_client.key' not in conf['files']
+
+    @patch("cephadm.serve.CephadmServe._run_cephadm")
+    @patch("cephadm.services.nfs.NFSService.fence_old_ranks", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.run_grace_tool", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.purge", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.create_rados_config_obj", MagicMock())
+    def test_nfs_grpc_inline(self, _run_cephadm, cephadm_module: CephadmOrchestrator):
+        """Inline source: user-provided server cert deployed to daemon, client cert not in daemon config."""
+        _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
+
+        with with_host(cephadm_module, 'test', addr='1.2.3.7'):
+            nfs_spec = NFSServiceSpec(
+                service_id='foo',
+                placement=PlacementSpec(hosts=['test']),
+                grpc_certificate_source='inline',
+                grpc_server_cert=ceph_generated_cert,
+                grpc_server_key=ceph_generated_key,
+                grpc_client_cert=ceph_generated_cert,
+                grpc_client_key=ceph_generated_key,
+                grpc_ca_cert=cephadm_root_ca,
+            )
+            with with_service(cephadm_module, nfs_spec) as _:
+                conf, _ = service_registry.get_service('nfs').generate_config(
+                    CephadmDaemonDeploySpec(host='test', daemon_id='foo.test.0.0',
+                                            service_name=nfs_spec.service_name()))
+
+                ganesha_conf = conf['files']['ganesha.conf']
+
+                # ganesha.conf has GRPC block with quoted paths, no client cert entries
+                assert 'GRPC {' in ganesha_conf
+                assert 'GRPC_Server_Cert = "/etc/ganesha/certs/server.crt"' in ganesha_conf
+                assert 'GRPC_CA_Cert     = "/etc/ganesha/certs/ca.crt"' in ganesha_conf
+                assert 'GRPC_Client_Cert' not in ganesha_conf
+                assert 'GRPC_Client_Key' not in ganesha_conf
+
+                # user-provided server cert and CA deployed to daemon
+                assert conf['files']['grpc_server.crt'] == ceph_generated_cert
+                assert conf['files']['grpc_server.key'] == ceph_generated_key
+                assert conf['files']['grpc_ca.crt'] == cephadm_root_ca
+
+                # client cert NOT in daemon config-json (goes to mgr host instead)
+                assert 'grpc_client.crt' not in conf['files']
+                assert 'grpc_client.key' not in conf['files']
+
+    @patch("cephadm.serve.CephadmServe._run_cephadm")
+    @patch("cephadm.services.nfs.NFSService.fence_old_ranks", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.run_grace_tool", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.purge", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.create_rados_config_obj", MagicMock())
+    def test_nfs_grpc_get_client_files(self, _run_cephadm, cephadm_module: CephadmOrchestrator):
+        """get_client_files deploys gRPC client cert to admin hosts after NFS service is deployed."""
+        _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
+
+        with with_host(cephadm_module, 'test', addr='1.2.3.7'):
+            cephadm_module.inventory.add_label('test', '_admin')
+            nfs_spec = NFSServiceSpec(service_id='foo', placement=PlacementSpec(hosts=['test']))
+            with with_service(cephadm_module, nfs_spec, status_running=True) as _:
+                # trigger cert generation by calling generate_config
+                nfs_daemons = wait(cephadm_module, cephadm_module.list_daemons(daemon_type='nfs'))
+                daemon_spec = CephadmDaemonDeploySpec.from_daemon_description(nfs_daemons[0])
+                service_registry.get_service('nfs').generate_config(daemon_spec)
+
+                client_files = service_registry.get_service('nfs').get_client_files()
+                assert isinstance(client_files, dict)
+
+                # certs are deployed only to admin hosts (_admin label)
+                assert 'test' in client_files, 'admin host missing from get_client_files() result'
+                # client certs are stored under /var/lib/ceph/<fsid>/nfs_grpc-client-certs/<svc_name>/
+                svc_name = nfs_spec.service_name()  # 'nfs.foo'
+                fsid = cephadm_module._cluster_fsid
+                for fname in ['ca.crt', 'client.crt', 'client.key']:
+                    path = f'/var/lib/ceph/{fsid}/nfs_grpc-client-certs/{svc_name}/{fname}'
+                    assert path in client_files['test'], f'Missing {fname} for admin host'
+
+    @patch("cephadm.serve.CephadmServe._run_cephadm")
+    @patch("cephadm.services.nfs.NFSService.fence_old_ranks", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.run_grace_tool", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.purge", MagicMock())
+    @patch("cephadm.services.nfs.NFSService.create_rados_config_obj", MagicMock())
     def test_nfs_enable_nfsv3(self, _run_cephadm, cephadm_module: CephadmOrchestrator):
         _run_cephadm.side_effect = async_side_effect(('{}', '', 0))
 
@@ -5049,7 +5177,6 @@ def test_smb_get_dependencies(cephadm_module):
             )
         ]
     )
-
 
     deps = SMBService.get_dependencies(cephadm_module, spec, spec.service_type)
     assert deps == [
