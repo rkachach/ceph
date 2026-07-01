@@ -130,7 +130,6 @@ import FolderIcon16 from '@carbon/icons/es/folder/16';
     CephfsDirectoriesComponent,
     CephfsSubvolumeListComponent,
     CephfsSubvolumeFormComponent,
-    CephfsDirectoriesComponent,
     CephfsSubvolumeGroupComponent,
     CephfsSubvolumegroupFormComponent,
     CephfsSubvolumeSnapshotsListComponent,
