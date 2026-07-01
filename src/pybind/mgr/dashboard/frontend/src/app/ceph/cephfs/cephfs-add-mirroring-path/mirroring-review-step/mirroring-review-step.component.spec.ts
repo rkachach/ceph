@@ -1,85 +1,55 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
 
-import { CephfsService } from '~/app/shared/api/cephfs.service';
 import { MirroringReviewStepComponent } from './mirroring-review-step.component';
 
 describe('MirroringReviewStepComponent', () => {
   let component: MirroringReviewStepComponent;
   let fixture: ComponentFixture<MirroringReviewStepComponent>;
 
-  const cephfsServiceMock = {
-    listDaemonStatus: jest.fn().mockReturnValue(
-      of([
-        {
-          daemon_id: 1,
-          filesystems: [
-            {
-              name: 'testfs',
-              peers: [
-                {
-                  remote: {
-                    cluster_name: 'remote-cluster',
-                    fs_name: 'remote-fs'
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ])
-    )
-  };
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [MirroringReviewStepComponent],
-      providers: [{ provide: CephfsService, useValue: cephfsServiceMock }],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MirroringReviewStepComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
-    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
+  it('should initialise with default values', () => {
+    expect(component.destinationCluster).toBe('—');
+    expect(component.destinationFilesystem).toBe('—');
+    expect(component.totalPaths).toBe(0);
+    expect(component.snapshotInterval).toBe('—');
+    expect(component.retention).toBe('—');
+    expect(component.existingScheduleCount).toBe(0);
+  });
+
   it('should have an empty formGroup', () => {
-    fixture.detectChanges();
     expect(component.formGroup).toBeDefined();
     expect(Object.keys(component.formGroup.controls)).toHaveLength(0);
   });
 
-  it('should load destination info from daemon status', () => {
-    component.fsName = 'testfs';
+  it('should accept input values', () => {
+    component.destinationCluster = 'remote-cluster';
+    component.destinationFilesystem = 'remote-fs';
+    component.totalPaths = 3;
+    component.snapshotInterval = 'Every 2 hours';
+    component.retention = '7 daily';
+    component.existingScheduleCount = 5;
     fixture.detectChanges();
 
-    expect(cephfsServiceMock.listDaemonStatus).toHaveBeenCalled();
     expect(component.destinationCluster).toBe('remote-cluster');
     expect(component.destinationFilesystem).toBe('remote-fs');
-  });
-
-  it('should derive review values from wizard steps', () => {
-    component.pathsStep = {
-      getSubmitPaths: () => ({ toAdd: ['/volumes/a', '/volumes/b'], alreadyMirrored: [] })
-    } as any;
-    component.scheduleStep = {
-      snapScheduleForm: {
-        getRawValue: () => ({
-          repeatInterval: 2,
-          repeatFrequency: 'h',
-          retentionPolicies: [{ retentionInterval: 7, retentionFrequency: 'd' }]
-        })
-      }
-    } as any;
-    fixture.detectChanges();
-
-    expect(component.totalPaths).toBe(2);
-    expect(component.snapshotInterval).toContain('2');
-    expect(component.retention).toBe('7 Daily');
+    expect(component.totalPaths).toBe(3);
+    expect(component.snapshotInterval).toBe('Every 2 hours');
+    expect(component.retention).toBe('7 daily');
+    expect(component.existingScheduleCount).toBe(5);
   });
 });
