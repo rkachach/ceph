@@ -1,7 +1,7 @@
 # constants.py - constant values used throughout the cephadm sources
 
 # Default container images -----------------------------------------------------
-DEFAULT_IMAGE = 'registry.redhat.io/rhceph/rhceph-9-rhel9:latest'
+DEFAULT_IMAGE = 'registry.redhat.io/rhceph/rhceph-9-rhel10:latest'
 DEFAULT_IMAGE_IS_MAIN = False
 DEFAULT_IMAGE_RELEASE = 'tentacle'
 DEFAULT_REGISTRY = 'registry.redhat.io'  # normalize unqualified digests to this
