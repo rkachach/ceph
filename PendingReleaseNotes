@@ -139,6 +139,12 @@
 * Monitoring: Added new Prometheus alerts for certificate management:
   - CephCertificateError: Fires when a Ceph certificate has expired (critical severity).
   - CephCertificateWarning: Fires when a Ceph certificate is about to expire (warning severity).
+* RBD: It's possible to specify source cluster's ``mon_host`` and ``key`` for
+  ``native`` format migration via the migration spec now.  This eliminates the
+  dependency on ``<cluster-name>.conf`` file in a known location which is
+  rather rigid and also challenging to disseminate in some environments.  The
+  key can be embedded in the migration spec or just referenced from there while
+  stored in the MON config-key store.
 
 >=20.0.0
 
