@@ -162,18 +162,29 @@ class NFSService(CephService):
             deps.append(f'kmip_ca_cert: {str(utils.md5_hash(nfs_spec.kmip_ca_cert))}')
             deps.append(f'kmip_host_list: {nfs_spec.kmip_host_list}')
 
-        # add dependency of tls fields
-        deps.append(f'tls_ktls: {nfs_spec.tls_ktls}')
-        deps.append(f'tls_debug: {nfs_spec.tls_debug}')
-        deps.append(f'tls_min_version: {nfs_spec.tls_min_version}')
-        deps.append(f'tls_ciphers: {nfs_spec.tls_ciphers}')
+        # choose_next_action() ignores False/None in the symmetric diff, so
+        # False <-> None transitions do not trigger reconfig or redeploy.
 
-        # RDMA dependency
-        deps.append(f'enable_rdma: {nfs_spec.enable_rdma}')
-        deps.append(f'rdma_port: {nfs_spec.rdma_port}')
+        # RDMA related
+        if nfs_spec.enable_rdma:
+            deps.append(f'enable_rdma: {nfs_spec.enable_rdma}')
+            if nfs_spec.rdma_port is not None:
+                deps.append(f'rdma_port: {nfs_spec.rdma_port}')
+        # TLS related
+        if nfs_spec.tls_ktls:
+            deps.append(f'tls_ktls: {nfs_spec.tls_ktls}')
+        if nfs_spec.tls_debug:
+            deps.append(f'tls_debug: {nfs_spec.tls_debug}')
+        if nfs_spec.tls_min_version is not None:
+            deps.append(f'tls_min_version: {nfs_spec.tls_min_version}')
+        if nfs_spec.tls_ciphers is not None:
+            deps.append(f'tls_ciphers: {nfs_spec.tls_ciphers}')
+        # TSM related
+        if nfs_spec.enable_tsm:
+            deps.append(f'enable_tsm: {nfs_spec.enable_tsm}')
+            if nfs_spec.tsm_port:
+                deps.append(f'tsm_port: {nfs_spec.tsm_port}')
 
-        deps.append(f'enable_tsm: {nfs_spec.enable_tsm}')
-        deps.append(f'tsm_port: {nfs_spec.tsm_port}')
         parent_deps = super().get_dependencies(mgr, spec, daemon_type)
         return sorted(deps + parent_deps)
 
