@@ -18,7 +18,6 @@
 #include "common/cmdparse.h"
 #include "common/errno.h"
 #include "common/Formatter.h"
-#include "common/JSONFormatter.h"
 
 #define dout_context g_ceph_context
 #define dout_subsys ceph_subsys_mds
