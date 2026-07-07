@@ -97,7 +97,7 @@ export class MgrModuleService {
   updateModuleState(
     modules: string | string[],
     enabled: boolean = false,
-    table: TableComponent = null,
+    table: TableComponent | undefined = undefined,
     navigateTo: string = '',
     notificationText?: string,
     navigateByUrl?: boolean,
