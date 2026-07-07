@@ -1740,9 +1740,9 @@ export class ServiceFormComponent extends CdForm implements OnInit {
     const serviceId = this.serviceForm.getValue('service_id');
     const serviceName = serviceId ? `${serviceType}.${serviceId}` : serviceType;
 
-    const accessKey = this.serviceForm.getValue('accessKey');
-    const secretKey = this.serviceForm.getValue('secretKey');
-    const endpointUrl = this.serviceForm.getValue('endpointUrl')?.trim();
+    const accessKey = this.serviceForm.getValue('accessKey') ?? '';
+    const secretKey = this.serviceForm.getValue('secretKey') ?? '';
+    const endpointUrl = this.serviceForm.getValue('endpointUrl')?.trim() ?? '';
     const region = this.serviceForm.getValue('region') || 'default';
     const ssl = this.serviceForm.getValue('obSsl');
     const port = this.serviceForm.getValue('browserPort') || (ssl ? 9443 : 8095);
