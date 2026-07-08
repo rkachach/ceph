@@ -17,7 +17,6 @@ import { configureTestBed, FormHelper, Mocks } from '~/testing/unit-test-helper'
 import { ServiceFormComponent } from './service-form.component';
 import { PoolService } from '~/app/shared/api/pool.service';
 import { TextLabelListComponent } from '~/app/shared/components/text-label-list/text-label-list.component';
-import { USER } from '~/app/shared/constants/app.constants';
 import {
   CheckboxModule,
   InputModule,
