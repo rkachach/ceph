@@ -2677,7 +2677,7 @@ else:
 
             if allow_all:
                 return NVMeoFClient(gw_group=gw_group,
-                                    traddr=server_address).stub.add_host(
+                                    server_address=server_address).stub.add_host(
                     NVMeoFClient.pb2.add_host_req(
                         subsystem_nqn=subsystem_nqn,
                         host_nqn="*",
@@ -2689,7 +2689,7 @@ else:
                 key = h.get("dhchap_key")
 
                 response = NVMeoFClient(gw_group=gw_group,
-                                        traddr=server_address).stub.add_host(
+                                        server_address=server_address).stub.add_host(
                     NVMeoFClient.pb2.add_host_req(
                         subsystem_nqn=subsystem_nqn,
                         host_nqn=nqn,
@@ -2728,7 +2728,7 @@ else:
 
             for del_nqn in to_delete_nqns:
                 response = NVMeoFClient(gw_group=gw_group,
-                                        traddr=server_address).stub.remove_host(
+                                        server_address=server_address).stub.remove_host(
                     NVMeoFClient.pb2.remove_host_req(subsystem_nqn=subsystem_nqn, host_nqn=del_nqn)
                 )
                 if response.status != 0:
@@ -2773,7 +2773,7 @@ else:
 
             for nqn in all_host_nqns:
                 response = NVMeoFClient(gw_group=gw_group,
-                                        traddr=server_address).stub.namespace_add_host(
+                                        server_address=server_address).stub.namespace_add_host(
                     NVMeoFClient.pb2.namespace_add_host_req(subsystem_nqn=subsystem_nqn,
                                                             nsid=int(nsid),
                                                             host_nqn=nqn,
@@ -2813,7 +2813,7 @@ else:
 
             for del_nqn in to_delete_nqns:
                 response = NVMeoFClient(gw_group=gw_group,
-                                        traddr=server_address).stub.namespace_delete_host(
+                                        server_address=server_address).stub.namespace_delete_host(
                     NVMeoFClient.pb2.namespace_delete_host_req(
                         subsystem_nqn=subsystem_nqn,
                         nsid=int(nsid),
