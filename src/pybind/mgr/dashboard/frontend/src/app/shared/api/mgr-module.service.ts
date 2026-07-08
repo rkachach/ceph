@@ -1,19 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { BlockUIService } from 'ng-block-ui';
 
-import { Observable, Subject, timer } from 'rxjs';
-import { NotificationService } from '../services/notification.service';
+import { from, Observable, Subject, timer } from 'rxjs';
+import { catchError, concatMap, delay, map, retryWhen, switchMap, tap } from 'rxjs/operators';
+
 import { TableComponent } from '../datatable/table/table.component';
-import { Router } from '@angular/router';
-import { MgrModuleInfo } from '../models/mgr-modules.interface';
 import { NotificationType } from '../enum/notification-type.enum';
-import { delay, retryWhen, switchMap, tap } from 'rxjs/operators';
+import { MgrModuleInfo } from '../models/mgr-modules.interface';
+import { ModalCdsService } from '../services/modal-cds.service';
+import { NotificationService } from '../services/notification.service';
 import { SummaryService } from '../services/summary.service';
 
 const GLOBAL = 'global';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ModalCdsService } from '../services/modal-cds.service';
 
 /** Modules that require --force when not all mgr daemons support them. */
 const FORCE_ENABLE_MODULES = new Set(['feedback']);
@@ -91,9 +92,10 @@ export class MgrModuleService {
 
   /**
    * Update the Ceph Mgr module state to enabled or disabled.
+   * @param modules One module name or a list of module names to enable/disable sequentially.
    */
   updateModuleState(
-    module: string,
+    modules: string | string[],
     enabled: boolean = false,
     table: TableComponent = null,
     navigateTo: string = '',
@@ -103,67 +105,94 @@ export class MgrModuleService {
     activeModal?: NgbActiveModal | ModalCdsService,
     force: boolean = false
   ): void {
+    const moduleList = Array.isArray(modules) ? modules : [modules];
+
+    from(moduleList)
+      .pipe(
+        concatMap((module) =>
+          this.toggleModuleWithReconnect(module, enabled, force, reconnectingMessage)
+        )
+      )
+      .subscribe({
+        complete: () => {
+          this.completeModuleStateUpdate(
+            table,
+            navigateTo,
+            notificationText,
+            navigateByUrl,
+            activeModal
+          );
+        }
+      });
+  }
+
+  private toggleModuleWithReconnect(
+    module: string,
+    enabled: boolean,
+    force: boolean,
+    reconnectingMessage: string
+  ): Observable<void> {
     const moduleToggle$ = enabled ? this.disable(module) : this.enable(module, force);
 
-    moduleToggle$.subscribe({
-      next: () => {
-        // Module toggle succeeded
-        this.updateCompleted$.next();
-      },
-      error: () => {
-        // Module toggle failed, trigger reconnect flow
-        this.notificationService.suspendToasties(true);
-        this.blockUI.start(GLOBAL, reconnectingMessage);
+    return moduleToggle$.pipe(
+      map(() => undefined),
+      catchError(() => this.reconnectAfterModuleToggle(reconnectingMessage))
+    );
+  }
 
-        timer(this.REFRESH_INTERVAL)
-          .pipe(
-            switchMap(() => this.list()),
-            retryWhen((errors) =>
-              errors.pipe(
-                tap(() => {
-                  // Keep retrying until list() succeeds
-                }),
-                delay(this.REFRESH_INTERVAL)
-              )
-            )
-          )
-          .subscribe({
-            next: () => {
-              // Reconnection successful
-              this.notificationService.suspendToasties(false);
-              this.blockUI.stop(GLOBAL);
+  private reconnectAfterModuleToggle(reconnectingMessage: string): Observable<void> {
+    this.notificationService.suspendToasties(true);
+    this.blockUI.start(GLOBAL, reconnectingMessage);
 
-              if (table) {
-                table.refreshBtn();
-              }
+    return timer(this.REFRESH_INTERVAL).pipe(
+      switchMap(() => this.list()),
+      retryWhen((errors) =>
+        errors.pipe(
+          tap(() => {
+            // Keep retrying until list() succeeds
+          }),
+          delay(this.REFRESH_INTERVAL)
+        )
+      ),
+      tap(() => {
+        this.notificationService.suspendToasties(false);
+        this.blockUI.stop(GLOBAL);
+      }),
+      map(() => undefined)
+    );
+  }
 
-              if (activeModal && 'close' in activeModal) {
-                activeModal.close();
-              } else if (activeModal && 'dismissAll' in activeModal) {
-                activeModal.dismissAll();
-              }
+  private completeModuleStateUpdate(
+    table: TableComponent,
+    navigateTo: string,
+    notificationText?: string,
+    navigateByUrl?: boolean,
+    activeModal?: NgbActiveModal | ModalCdsService
+  ): void {
+    if (table) {
+      table.refreshBtn();
+    }
 
-              if (notificationText) {
-                this.notificationService.show(
-                  NotificationType.success,
-                  $localize`${notificationText}`
-                );
-              }
+    if (activeModal && 'close' in activeModal) {
+      activeModal.close();
+    } else if (activeModal && 'dismissAll' in activeModal) {
+      activeModal.dismissAll();
+    }
 
-              if (navigateTo) {
-                const navigate = () => this.router.navigate([navigateTo]);
-                if (navigateByUrl) {
-                  this.router.navigateByUrl('/', { skipLocationChange: true }).then(navigate);
-                } else {
-                  navigate();
-                }
-              }
+    if (notificationText) {
+      this.notificationService.show(NotificationType.success, $localize`${notificationText}`);
+    }
 
-              this.updateCompleted$.next();
-              this.summaryService.startPolling();
-            }
-          });
+    if (navigateTo) {
+      const navigate = () => this.router.navigate([navigateTo]);
+      if (navigateByUrl) {
+        this.router.navigateByUrl('/', { skipLocationChange: true }).then(navigate);
+      } else {
+        navigate();
       }
-    });
+    }
+
+    this.updateCompleted$.next();
+    this.summaryService.startPolling();
   }
 }
