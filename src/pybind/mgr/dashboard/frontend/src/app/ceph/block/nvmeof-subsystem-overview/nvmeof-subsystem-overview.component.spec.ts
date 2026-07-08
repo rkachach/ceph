@@ -33,7 +33,7 @@ describe('NvmeofSubsystemOverviewComponent', () => {
     enable_ha: true,
     allow_any_host: true,
     gw_group: 'gateway-prod',
-    psk: 'some-key'
+    has_dhchap_key: true
   };
 
   const defaultActivatedRoute = {
