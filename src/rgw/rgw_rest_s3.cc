@@ -4432,7 +4432,7 @@ void RGWPutBucketOwnershipControls_ObjStore_S3::send_response()
     set_req_state_err(s, op_ret);
   }
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 void RGWGetBucketOwnershipControls_ObjStore_S3::send_response()
@@ -4462,7 +4462,7 @@ void RGWDeleteBucketOwnershipControls_ObjStore_S3::send_response()
 
   set_req_state_err(s, op_ret);
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 void RGWGetRequestPayment_ObjStore_S3::send_response()
@@ -4544,7 +4544,7 @@ void RGWSetRequestPayment_ObjStore_S3::send_response()
   if (op_ret)
     set_req_state_err(s, op_ret);
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 int RGWInitMultipart_ObjStore_S3::get_params(optional_yield y)
@@ -5155,7 +5155,7 @@ void RGWPutObjRetention_ObjStore_S3::send_response()
     set_req_state_err(s, op_ret);
   }
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 void RGWGetObjRetention_ObjStore_S3::send_response()
@@ -5180,7 +5180,7 @@ void RGWPutObjLegalHold_ObjStore_S3::send_response()
     set_req_state_err(s, op_ret);
   }
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 void RGWGetObjLegalHold_ObjStore_S3::send_response()
@@ -5225,7 +5225,7 @@ void RGWPutBucketPublicAccessBlock_ObjStore_S3::send_response()
     set_req_state_err(s, op_ret);
   }
   dump_errno(s);
-  end_header(s);
+  end_header(s, this);
 }
 
 void RGWGetBucketPublicAccessBlock_ObjStore_S3::send_response()
