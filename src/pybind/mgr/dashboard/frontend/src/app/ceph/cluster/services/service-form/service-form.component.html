@@ -136,7 +136,7 @@
       }
 
       <!-- Service id -->
-      @if (serviceForm.controls.service_type.value !== 'snmp-gateway') {
+      @if (serviceForm.controls.service_type.value !== 'snmp-gateway' && serviceForm.controls.service_type.value !== 'object-browser') {
       <div class="form-item">
         @if (isPrefixedNamedService) {
         <div class="cds-input-group">

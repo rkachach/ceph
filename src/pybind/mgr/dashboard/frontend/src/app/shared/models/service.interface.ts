@@ -111,6 +111,7 @@ export interface CephServiceAdditionalSpec {
   enable_auth: boolean;
   encryption_key?: string;
   qat: QatSepcs;
+  args: any[]; // any[] because the custom container can have any arguments passed to it.
 }
 
 export interface CephServicePlacement {

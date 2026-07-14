@@ -1737,8 +1737,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
       serviceSpec = {};
     }
     const serviceType = 'container';
-    const serviceId = this.serviceForm.getValue('service_id');
-    const serviceName = serviceId ? `${serviceType}.${serviceId}` : serviceType;
+    const serviceId = 'object-browser';
+    const serviceName = `${serviceType}.${serviceId}`;
 
     const accessKey = this.serviceForm.getValue('accessKey') ?? '';
     const secretKey = this.serviceForm.getValue('secretKey') ?? '';
@@ -1765,6 +1765,7 @@ export class ServiceFormComponent extends CdForm implements OnInit {
     }
 
     serviceSpec['service_name'] = serviceName;
+    serviceSpec['service_id'] = serviceId;
     serviceSpec['service_type'] = serviceType;
     serviceSpec['spec'] = {
       uid: 1001,

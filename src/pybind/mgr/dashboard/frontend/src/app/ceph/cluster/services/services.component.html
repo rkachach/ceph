@@ -42,10 +42,10 @@
 
 <ng-template #urlTpl
              let-row="data.row">
-  <ng-container *ngIf="serviceUrls[row.service_type] else noUrl">
+  <ng-container *ngIf="serviceUrls[row.service_type] || serviceUrls[row.service_id] else noUrl">
     <a *ngIf="!isMgmtGateway else mgmtGateway"
        target="_blank"
-       [href]="serviceUrls[row.service_type]">
+       [href]="serviceUrls[row.service_type] || serviceUrls[row.service_id]">
       {{ row.service_name }}
       <i class="fa fa-external-link"></i>
     </a>

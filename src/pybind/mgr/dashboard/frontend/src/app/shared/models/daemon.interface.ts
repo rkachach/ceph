@@ -11,4 +11,5 @@ export interface Daemon {
   status: number;
   status_desc: string;
   last_refresh: Date;
+  ports?: string[];
 }
