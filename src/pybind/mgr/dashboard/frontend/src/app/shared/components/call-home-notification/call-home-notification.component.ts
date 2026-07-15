@@ -13,7 +13,8 @@ import { CallHomeService } from '../../api/call-home.service';
 @Component({
   selector: 'cd-call-home-notification',
   templateUrl: './call-home-notification.component.html',
-  styleUrls: ['./call-home-notification.component.scss']
+  styleUrls: ['./call-home-notification.component.scss'],
+  standalone: false
 })
 export class CallHomeNotificationComponent implements OnInit {
   @Input() callHomeEnabled: boolean | null = null;

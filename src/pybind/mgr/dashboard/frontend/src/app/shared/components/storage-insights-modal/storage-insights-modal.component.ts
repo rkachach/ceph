@@ -12,7 +12,8 @@ import { CdForm } from '../../forms/cd-form';
 @Component({
   selector: 'cd-storage-insights-modal',
   templateUrl: './storage-insights-modal.component.html',
-  styleUrls: ['./storage-insights-modal.component.scss']
+  styleUrls: ['./storage-insights-modal.component.scss'],
+  standalone: false
 })
 export class StorageInsightsModalComponent extends CdForm implements OnInit {
   modalForm: CdFormGroup;

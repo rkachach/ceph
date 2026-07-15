@@ -18,7 +18,8 @@ import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-m
 @Component({
   selector: 'cd-call-home-modal',
   templateUrl: './call-home-modal.component.html',
-  styleUrls: ['./call-home-modal.component.scss']
+  styleUrls: ['./call-home-modal.component.scss'],
+  standalone: false
 })
 export class CallHomeModalComponent extends CdForm implements OnInit {
   @Output() callHomeEnabled = new EventEmitter<boolean>(); // Change the type as needed

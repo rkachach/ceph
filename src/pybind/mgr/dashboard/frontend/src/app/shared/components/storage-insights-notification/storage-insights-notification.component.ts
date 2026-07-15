@@ -13,7 +13,8 @@ import { CallHomeNotificationService } from '../../services/call-home-notificati
 @Component({
   selector: 'cd-storage-insights-notification',
   templateUrl: './storage-insights-notification.component.html',
-  styleUrls: ['./storage-insights-notification.component.scss']
+  styleUrls: ['./storage-insights-notification.component.scss'],
+  standalone: false
 })
 export class StorageInsightsNotificationComponent implements OnInit {
   mgrModuleConfig$: Observable<object>;

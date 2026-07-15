@@ -16,7 +16,8 @@ import { CdValidators } from '~/app/shared/forms/cd-validators';
 @Component({
   selector: 'cd-nfs-rate-limit-form',
   templateUrl: './nfs-rate-limit.component.html',
-  styleUrls: ['./nfs-rate-limit.component.scss']
+  styleUrls: ['./nfs-rate-limit.component.scss'],
+  standalone: false
 })
 export class NfsRateLimitComponent implements OnInit {
   @Input() action: string;
