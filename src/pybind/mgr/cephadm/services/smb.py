@@ -536,6 +536,7 @@ class SMBService(CephService):
         mgr: 'CephadmOrchestrator',
         spec: Optional[ServiceSpec] = None,
         daemon_type: Optional[str] = None,
+        hostname: Optional[str] = None
     ) -> List[str]:
         if not spec:
             return []
