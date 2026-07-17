@@ -133,7 +133,6 @@ import Locked16 from '@carbon/icons/es/locked/16';
 import WebServicesCluster20 from '@carbon/icons/es/web-services--cluster/20';
 import WebServicesCluster32 from '@carbon/icons/es/web-services--cluster/32';
 import CloudMonitoring16 from '@carbon/icons/es/cloud--monitoring/16';
-import { PageHeaderComponent } from './page-header/page-header.component';
 import { SidebarLayoutComponent } from './sidebar-layout/sidebar-layout.component';
 import { ProductiveCardComponent } from './productive-card/productive-card.component';
 import { CallHomeModalComponent } from './call-home-modal/call-home-modal.component';

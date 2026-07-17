@@ -7119,6 +7119,9 @@ paths:
                   cephfs:
                     description: ''
                     type: boolean
+                  dashboard:
+                    description: ''
+                    type: boolean
                   iscsi:
                     description: ''
                     type: boolean
