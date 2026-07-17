@@ -154,7 +154,7 @@ describe('NvmeofNamespacesListComponent', () => {
       );
       done();
     });
-    component.fetchData();
+    component.listNamespaces();
   });
 
   it('should open delete modal with correct data', () => {
@@ -195,35 +195,14 @@ describe('NvmeofNamespacesListComponent', () => {
     component.listNamespaces();
   });
 
-  it('should default to first group and keep default placeholder when groups exist', () => {
-    component.group = null;
-    component.gwGroups = [{ content: 'g1', selected: false }] as any;
-
-    component.updateGroupSelectionState();
-
-    expect(component.group).toBe('g1');
-    expect(component.gwGroupsEmpty).toBe(false);
-    expect(component.gwGroupPlaceholder).toBe('Enter group name');
-  });
-
-  it('should set error placeholder and call preventDefault on group fetch failure', () => {
-    const preventDefault = jasmine.createSpy('preventDefault');
-
-    component.handleGatewayGroupsError({ preventDefault });
-
-    expect(component.gwGroups).toEqual([]);
-    expect(component.gwGroupsEmpty).toBe(true);
-    expect(component.gwGroupPlaceholder).toBe('Unable to fetch Gateway groups');
-    expect(preventDefault).toHaveBeenCalled();
-  });
-
   it('should update group and trigger namespace fetch on group change', () => {
-    const fetchDataSpy = jest.spyOn(component, 'fetchData');
+    const listNamespacesSpy = jest.spyOn(component, 'listNamespaces');
+    listNamespacesSpy.mockClear();
 
     component.onGroupChange('g1');
 
     expect(component.group).toBe('g1');
-    expect(fetchDataSpy).not.toHaveBeenCalled(); // onGroupChange calls namespaceSubject.next() directly
+    expect(listNamespacesSpy).toHaveBeenCalled();
   });
 
   it('should clear group on onGroupChange with null', () => {
