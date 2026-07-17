@@ -142,7 +142,6 @@ import { StorageInsightsNotificationComponent } from './storage-insights-notific
 import { CallHomeConnectionInfoComponent } from './call-home-connection-info/call-home-connection-info.component';
 import { CallHomeConnectivityStatusComponent } from './call-home-connectivity-status/call-home-connectivity-status.component';
 import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.component';
-import CloudMonitoring16 from '@carbon/icons/es/cloud--monitoring/16';
 
 @NgModule({
   imports: [
@@ -334,8 +333,6 @@ export class ComponentsModule {
       ArrowUpRight16,
       InProgress16,
       ArrowDown16,
-      Deploy16,
-      Warning16,
       Launch16,
       Cube16,
       ChevronLeft16,

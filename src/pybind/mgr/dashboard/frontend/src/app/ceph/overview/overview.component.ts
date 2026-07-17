@@ -41,6 +41,7 @@ import { environment } from '~/environments/environment';
 import { Permissions } from '~/app/shared/models/permissions';
 import { AuthStorageService } from '~/app/shared/services/auth-storage.service';
 import { CallHomeService } from '~/app/shared/api/call-home.service';
+import { PrometheusService } from '~/app/shared/api/prometheus.service';
 
 const SECONDS_PER_HOUR = 3600;
 const SECONDS_PER_DAY = 86400;
