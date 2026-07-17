@@ -95,6 +95,7 @@ import { SidePanelComponent } from './side-panel/side-panel.component';
 import { ClickableTileComponent } from './clickable-tile/clickable-tile.component';
 
 // Icons
+import InfoIcon from '@carbon/icons/es/information/16';
 import CopyIcon from '@carbon/icons/es/copy/32';
 import { IconComponent } from './icon/icon.component';
 import downloadIcon from '@carbon/icons/es/download/16';
@@ -303,6 +304,7 @@ export class ComponentsModule {
       downloadIcon,
       CheckmarkFilledIcon,
       ErrorFilledIcon,
+      InfoIcon,
       InformationFilledIcon,
       WarningFilledIcon,
       NotificationFilledIcon,
