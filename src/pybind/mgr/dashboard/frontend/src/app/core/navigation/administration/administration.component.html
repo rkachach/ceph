@@ -27,7 +27,12 @@
 </cds-overflow-menu>
 
 <ng-template #customTrigger>
-  @if (userPermission.read || configOptPermission.read) {
+  @if (
+    userPermission.create ||
+    userPermission.update ||
+    userPermission.delete ||
+    configOptPermission.read
+  ) {
     <svg
       cdsIcon="settings"
       size="20"
