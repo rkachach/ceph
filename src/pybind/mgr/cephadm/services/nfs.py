@@ -40,6 +40,21 @@ class NFSService(CephService):
     def allow_colo(self) -> bool:
         return True
 
+    def get_certificate_ips(
+        self,
+        spec: NFSServiceSpec,
+        daemon_spec: CephadmDaemonDeploySpec,
+    ) -> List[str]:
+        ips: List[str] = []
+        host_ip = self.mgr.inventory.get_addr(daemon_spec.host)
+        if host_ip:
+            ips.append(host_ip)
+
+        if spec.virtual_ip and spec.virtual_ip not in ips:
+            ips.append(spec.virtual_ip)
+
+        return ips
+
     @property
     def needs_monitoring(self) -> bool:
         return True
@@ -393,7 +408,11 @@ class NFSService(CephService):
                     config['files'][f'{kmip_cert_key_field}.pem'] = getattr(spec, kmip_cert_key_field)
 
             if spec.ssl:
-                tls_creds = self.get_certificates(daemon_spec, ca_cert_required=True)
+                tls_creds = self.get_certificates(
+                    daemon_spec,
+                    ips=self.get_certificate_ips(spec, daemon_spec),
+                    ca_cert_required=True,
+                )
                 config['files'].update({
                     'tls_cert.pem': tls_creds.cert,
                     'tls_key.pem': tls_creds.key,
