@@ -173,39 +173,6 @@ if(WITH_RADOSGW_KAFKA_ENDPOINT)
   list(APPEND librgw_common_srcs rgw_kafka.cc)
 endif()
 
-if(WITH_RADOSGW_DBSTORE)
-  add_subdirectory(driver/dbstore)
-  list(APPEND librgw_common_srcs rgw_sal_dbstore.cc)
-endif()
-if(WITH_RADOSGW_MOTR)
-  list(APPEND librgw_common_srcs driver/motr/rgw_sal_motr.cc)
-endif()
-if(WITH_RADOSGW_DAOS)
-  list(APPEND librgw_common_srcs driver/motr/rgw_sal_daos.cc)
-endif()
-
-if(WITH_RADOSGW_POSIX)
-  #add_subdirectory(driver/posix)
-  find_package(LMDB REQUIRED)
-  add_compile_definitions(LMDB_SAFE_NO_CPP_UTILITIES)
-  list(APPEND librgw_common_srcs
-	      driver/posix/lmdb-safe.cc
-	      driver/posix/notify.cpp
-          driver/posix/posixDB.cc
-	      driver/posix/rgw_sal_posix.cc)
-endif()
-
-if(WITH_RADOSGW_NSFS)
-  find_package(LMDB REQUIRED)
-  add_compile_definitions(LMDB_SAFE_NO_CPP_UTILITIES)
-  list(APPEND librgw_common_srcs
-	      driver/nsfs/rgw_sal_nsfs.cc
-	      driver/posix/posixDB.cc
-	      driver/nsfs/fs_strategy.cc
-	      driver/posix/lmdb-safe.cc
-	      driver/posix/notify.cpp)
-endif()
-
 if(WITH_JAEGER)
   list(APPEND librgw_common_srcs rgw_tracer.cc)
 endif()
@@ -351,11 +318,11 @@ set(rgw_common_libs)
 if(WITH_RADOSGW_RADOS)
   list(APPEND librgw_driver_srcs ${librgw_rados_srcs})
 endif()
-if(WITH_RADOSGW_DBSTORE OR WITH_RADOSGW_STANDALONE)
+if(WITH_RADOSGW_DBSTORE)
   list(APPEND librgw_driver_srcs ${librgw_dbstore_srcs})
   list(APPEND librgw_driver_standalone_srcs ${librgw_dbstore_srcs})
   list(APPEND rgw_common_libs sqlite3)
-set(SQLITE_COMPILE_FLAGS "-DSQLITE_THREADSAFE=1")
+  set(SQLITE_COMPILE_FLAGS "-DSQLITE_THREADSAFE=1")
 endif()
 if(WITH_RADOSGW_MOTR)
   list(APPEND librgw_driver_srcs ${librgw_motr_srcs})
@@ -368,12 +335,18 @@ if(WITH_RADOSGW_POSIX)
   add_compile_definitions(LMDB_SAFE_NO_CPP_UTILITIES)
   list(APPEND librgw_driver_srcs ${librgw_posix_srcs})
   list(APPEND librgw_driver_standalone_srcs ${librgw_posix_srcs})
+  list(APPEND librgw_driver_srcs ${librgw_dbstore_srcs})
+  list(APPEND librgw_driver_standalone_srcs ${librgw_dbstore_srcs})
+  set(SQLITE_COMPILE_FLAGS "-DSQLITE_THREADSAFE=1")
 endif()
 if(WITH_RADOSGW_NSFS)
   find_package(LMDB REQUIRED)
   add_compile_definitions(LMDB_SAFE_NO_CPP_UTILITIES)
   list(APPEND librgw_driver_srcs ${librgw_nsfs_srcs})
   list(APPEND librgw_driver_standalone_srcs ${librgw_nsfs_srcs})
+  list(APPEND librgw_driver_srcs ${librgw_dbstore_srcs})
+  list(APPEND librgw_driver_standalone_srcs ${librgw_dbstore_srcs})
+  set(SQLITE_COMPILE_FLAGS "-DSQLITE_THREADSAFE=1")
 endif()
 if(WITH_RADOSGW_D4N)
   list(APPEND librgw_driver_srcs ${librgw_d4n_srcs})
@@ -446,7 +419,7 @@ if(WITH_RADOSGW_RADOS)
     PUBLIC "-DWITH_RADOSGW_RADOS")
 endif()
 
-if(WITH_RADOSGW_DBSTORE OR WITH_RADOSGW_STANDALONE)
+if(WITH_RADOSGW_DBSTORE OR WITH_RADOSGW_POSIX OR WITH_RADOSGW_NSFS)
   target_compile_OPTIONS(rgw_common PUBLIC "-DSQLITE_THREADSAFE=1")
 endif()
 
@@ -498,19 +471,6 @@ if(WITH_RADOSGW_RADOS)
 	  librados
 	  libneorados
   )
-endif()
-
-if(WITH_RADOSGW_DBSTORE)
-  target_link_libraries(rgw_common PRIVATE global dbstore)
-endif()
-
-
-if(WITH_RADOSGW_POSIX)
-  target_link_libraries(rgw_common PRIVATE global dbstore)
-endif()
-
-if(WITH_RADOSGW_NSFS)
-  target_link_libraries(rgw_common PRIVATE global dbstore)
 endif()
 
 if(WITH_RADOSGW_MOTR)
