@@ -7441,9 +7441,13 @@ void RGWCompleteMultipart::execute(optional_yield y)
   op_ret = serializer->try_lock(this, dur, y);
   if (op_ret < 0) {
     ldpp_dout(this, 0) << "failed to acquire lock" << dendl;
-    if (op_ret == -ENOENT && check_previously_completed(parts)) {
-      ldpp_dout(this, 1) << "NOTICE: This multipart completion is already completed" << dendl;
-      op_ret = 0;
+    if (op_ret == -ENOENT) {
+      if (check_previously_completed(parts)) {
+	ldpp_dout(this, 1) << "NOTICE: This multipart completion is already completed" << dendl;
+	op_ret = 0;
+	return;
+      }
+      op_ret = -ERR_NO_SUCH_UPLOAD;
       return;
     }
     op_ret = -ERR_INTERNAL_ERROR;
