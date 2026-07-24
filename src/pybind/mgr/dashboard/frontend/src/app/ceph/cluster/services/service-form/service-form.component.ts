@@ -767,6 +767,9 @@ export class ServiceFormComponent extends CdForm implements OnInit {
     });
 
     if (this.editing) {
+      if (this.serviceName === 'container.object-browser') {
+        this.serviceType = 'object-browser';
+      }
       this.action = this.actionLabels.EDIT;
       this.disableForEditing(this.serviceType);
       this.cephServiceService
@@ -995,6 +998,40 @@ export class ServiceFormComponent extends CdForm implements OnInit {
                 this.serviceForm.get('ssl_cert').setValue(response[0].spec?.ssl_cert);
                 this.serviceForm.get('ssl_key').setValue(response[0].spec?.ssl_key);
               }
+              break;
+            case 'object-browser':
+              this.serviceForm.get('service_type').setValue('object-browser');
+              const spec = response[0].spec;
+              const files = response[0].spec?.files || {};
+
+              // accesskey, secretkey, endpoint, region are stored in envs as key=value pairs
+              const envMap = {};
+              if (spec.envs) {
+                spec.envs.forEach(envString => {
+                  const [key, ...valueParts] = envString.split('=');
+                  envMap[key] = valueParts.join('=');
+                });
+              }
+              let port = '';
+              if (spec.args) {
+                const portIndex = spec.args.indexOf('-p');
+                if (portIndex >= 0 && spec.args.length > portIndex + 1) {
+                  port = spec.args[portIndex + 1].split(':')[0];
+                }
+              }
+              const sslCert = files['CERT_DIR/tls.crt'] || '';
+              const sslKey = files['CERT_DIR/tls.key'] || '';
+              this.serviceForm.patchValue({
+                accessKey: envMap['ACCESS_KEY'] || '',
+                secretKey: envMap['SECRET_KEY'] || '',
+                endpointUrl: envMap['ENDPOINT'] || '',
+                region: envMap['REGION'] || '',
+                browserPort: port,
+                obSsl: sslCert && sslKey ? true : false,
+                obSslCert: sslCert || '',
+                obSslKey: sslKey || ''
+              });
+              break;
           }
         });
     }

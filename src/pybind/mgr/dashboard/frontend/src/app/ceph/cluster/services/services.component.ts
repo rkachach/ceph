@@ -241,6 +241,10 @@ export class ServicesComponent extends ListWithDetails implements OnChanges, OnI
       }
     }
     if (action === 'update') {
+      if (this.selection.first()?.service_type === 'container' && this.selection.first()?.service_name === 'container.object-browser') {
+        return false;
+      }
+
       const disableEditServices = ['osd', 'container'];
       if (disableEditServices.indexOf(this.selection.first()?.service_type) >= 0) {
         return true;
@@ -356,7 +360,10 @@ export class ServicesComponent extends ListWithDetails implements OnChanges, OnI
 
     if (objectBrowserService && objectBrowserService.status.running > 0) {
       this.cephServiceService.getDaemons(objectBrowserService.service_name).subscribe((daemons) => {
-        const sslEnabled = objectBrowserService.spec?.ssl;
+        const files = objectBrowserService.spec?.files || {};
+        const sslCert = files['CERT_DIR/tls.crt'] || '';
+        const sslKey = files['CERT_DIR/tls.key'] || '';
+        const sslEnabled = sslCert && sslKey && sslCert.length > 0 && sslKey.length > 0;
         const protocol = sslEnabled ? 'https' : 'http';
         const targetContainerPort = sslEnabled ? '8443' : '8080';
 

@@ -112,6 +112,8 @@ export interface CephServiceAdditionalSpec {
   encryption_key?: string;
   qat: QatSepcs;
   args: any[]; // any[] because the custom container can have any arguments passed to it.
+  envs: any[]; // any[] because the custom container can have any environment variables passed to it.
+  files: any[]; // any[] because the custom container can have any files passed to it.
 }
 
 export interface CephServicePlacement {
