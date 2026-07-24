@@ -14,7 +14,7 @@ import {
   ViewEncapsulation,
   ChangeDetectorRef
 } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { Step } from 'carbon-components-angular';
 import { TearsheetStepComponent } from '../tearsheet-step/tearsheet-step.component';
 import { ModalCdsService } from '../../services/modal-cds.service';
@@ -182,7 +182,7 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
     const legacyForm = wrapper?.resolvedFormGroup;
     if (legacyForm) {
       legacyForm.markAllAsTouched();
-      legacyForm.updateValueAndValidity({ emitEvent: true });
+      this.markControlsDirtyAndValidate(legacyForm);
       this._updateStepInvalid(this.currentStep, legacyForm.invalid);
     }
 
@@ -210,7 +210,7 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!form) return;
 
       form.markAllAsTouched();
-      form.updateValueAndValidity({ emitEvent: true });
+      this.markControlsDirtyAndValidate(form);
       this._updateStepInvalid(index, form.invalid);
     });
 
@@ -222,6 +222,22 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const mergedPayloads = this.getMergedPayload();
     this.submitRequested.emit(mergedPayloads);
+  }
+
+  // Full tearsheet template binds submit to onSubmit().
+  onSubmit() {
+    this.handleSubmit();
+  }
+
+  private markControlsDirtyAndValidate(control: AbstractControl | null) {
+    if (!control) {
+      return;
+    }
+    if (control instanceof FormGroup || control instanceof FormArray) {
+      Object.values(control.controls).forEach((child) => this.markControlsDirtyAndValidate(child));
+    }
+    control.markAsDirty({ onlySelf: true });
+    control.updateValueAndValidity({ onlySelf: true, emitEvent: true });
   }
 
   closeFullTearsheet() {
