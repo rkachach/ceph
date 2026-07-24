@@ -2060,6 +2060,7 @@ fi
 %{_datadir}/ceph/mgr/test_orchestrator
 %{_datadir}/ceph/mgr/volumes
 %{_datadir}/ceph/mgr/nvmeof
+%{_datadir}/ceph/mgr/ceph_secrets
 
 %files mgr-rook
 %{_datadir}/ceph/mgr/rook

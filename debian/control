@@ -246,7 +246,8 @@ Depends: ceph-base (= ${binary:Version}),
 Recommends: ceph-mgr-dashboard,
             ceph-mgr-diskprediction-local,
             ceph-mgr-k8sevents,
-            ceph-mgr-cephadm
+            ceph-mgr-cephadm,
+            ceph-mgr-ceph-secrets,
 Suggests: python3-influxdb
 Replaces: ceph (<< 0.93-417),
 Breaks: ceph (<< 0.93-417),
