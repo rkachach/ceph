@@ -13,7 +13,12 @@ describe('RgwAccountRoleFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule, SharedModule, ReactiveFormsModule],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule,
+        SharedModule,
+        ReactiveFormsModule
+      ],
       declarations: [RgwAccountRoleFormComponent]
     }).compileComponents();
 
