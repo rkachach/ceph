@@ -229,4 +229,43 @@ describe('NvmeofInitiatorsListComponent', () => {
 
     expect(component.allowAllHosts).toBe(true);
   }));
+
+  it('should keep Add action enabled when all hosts are allowed', fakeAsync(() => {
+    const allowAllSubsystem = { ...mockSubsystem, allow_any_host: true };
+    spyOn(nvmeofService, 'getInitiators').and.returnValue(
+      of([{ nqn: ALLOW_ALL_HOST, use_dhchap: false }])
+    );
+    spyOn(nvmeofService, 'getSubsystem').and.returnValue(of(allowAllSubsystem));
+
+    component.listInitiators();
+    component.getSubsystem();
+    tick();
+
+    const addAction = component.tableActions.find((action) => action.name === 'Add');
+    expect(addAction).toBeTruthy();
+    expect(addAction.disable).toBeUndefined();
+  }));
+
+  it('should open add form with disableAllowAll when all hosts are allowed', fakeAsync(() => {
+    const router = TestBed.inject(Router);
+    const allowAllSubsystem = { ...mockSubsystem, allow_any_host: true };
+    spyOn(nvmeofService, 'getInitiators').and.returnValue(
+      of([{ nqn: ALLOW_ALL_HOST, use_dhchap: false }])
+    );
+    spyOn(nvmeofService, 'getSubsystem').and.returnValue(of(allowAllSubsystem));
+
+    component.listInitiators();
+    component.getSubsystem();
+    tick();
+
+    const addAction = component.tableActions.find((action) => action.name === 'Add');
+    addAction.click();
+
+    expect(router.navigate).toHaveBeenCalledWith(
+      [{ outlets: { modal: ['add', 'initiator'] } }],
+      jasmine.objectContaining({
+        state: { disableAllowAll: true }
+      })
+    );
+  }));
 });

@@ -73,7 +73,11 @@ export class NvmeofInitiatorsFormComponent implements OnInit {
   }
 
   private getDisableAllowAllState(): boolean {
-    return this.router.getCurrentNavigation()?.extras?.state?.['disableAllowAll'] === true;
+    const navState =
+      this.router.getCurrentNavigation()?.extras?.state ??
+      this.router.lastSuccessfulNavigation?.extras?.state ??
+      history.state;
+    return navState?.['disableAllowAll'] === true;
   }
 
   rebuildSteps() {
@@ -114,6 +118,9 @@ export class NvmeofInitiatorsFormComponent implements OnInit {
       .subscribe((response: NvmeofSubsystemInitiator[] | { hosts: NvmeofSubsystemInitiator[] }) => {
         const initiators = Array.isArray(response) ? response : response?.hosts || [];
         this.existingHosts = initiators.map((i) => i.nqn);
+        if (this.existingHosts.includes(ALLOW_ALL_HOST)) {
+          this.allowAllHosts = false;
+        }
       });
   }
 

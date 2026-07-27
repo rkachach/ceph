@@ -62,6 +62,7 @@ describe('NvmeofInitiatorsFormComponent', () => {
   it('should set allowAllHosts to true when disableAllowAll is not set', () => {
     const router = TestBed.inject(Router);
     spyOn(router, 'getCurrentNavigation').and.returnValue(null);
+    spyOnProperty(router, 'lastSuccessfulNavigation', 'get').and.returnValue(null);
     component.ngOnInit();
     expect(component.allowAllHosts).toBe(true);
   });
@@ -72,6 +73,18 @@ describe('NvmeofInitiatorsFormComponent', () => {
       extras: { state: { disableAllowAll: true } }
     } as any);
     component.ngOnInit();
+    expect(component.allowAllHosts).toBe(false);
+  });
+
+  it('should set allowAllHosts to false when wildcard host already exists', () => {
+    nvmeofService = TestBed.inject(NvmeofService);
+    spyOn(nvmeofService, 'getInitiators').and.returnValue(
+      of([{ nqn: ALLOW_ALL_HOST, use_dhchap: false }])
+    );
+    component.subsystemNQN = 'nqn.test';
+    component.group = mockGroupName;
+    component.allowAllHosts = true;
+    component.fetchExistingHosts();
     expect(component.allowAllHosts).toBe(false);
   });
 
