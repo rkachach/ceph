@@ -1302,6 +1302,10 @@
               id="ssl"
               i18n
               >SSL
+              <cd-help-text>
+                Secure client connections by using SSL. When enabled, provide a certificate and the
+                corresponding private key.
+              </cd-help-text>
             </cds-checkbox>
           </div>
         }
@@ -1333,16 +1337,157 @@
                 context: {
                   controlName: 'ssl_cert',
                   title: 'Certificate Input',
+                  placeholder: 'Paste the certificate in PEM format',
                   helperText:
-                    'Uploaded files will populate the certificate details automatically. Or paste the PEM content directly in the text area.',
-                  description: 'Upload a .crt file, or paste the certificate PEM content directly.',
+                    'Uploading a certificate file automatically populates this field. Alternatively, paste the certificate in PEM format.',
+                  description:
+                    'Upload a certificate (.crt) file or paste the certificate in PEM format.',
                   invalidTemplate: invalidSslCertError,
                   isRequired: false
                 }
               "
             ></ng-container>
             <ng-template #invalidSslCertError>
-            @if (serviceForm.showError('ssl_cert', frm, 'required')) {
+              @if (serviceForm.showError('ssl_cert', frm, 'required')) {
+                <span
+                  class="invalid-feedback"
+                  i18n
+                  >This field is required.</span
+                >
+              }
+              @if (serviceForm.showError('ssl_cert', frm, 'pattern')) {
+                <span
+                  class="invalid-feedback"
+                  i18n
+                  >Invalid SSL certificate.</span
+                >
+              }
+            </ng-template>
+          </div>
+        }
+        @if (showExternalSslKey) {
+          <div class="form-item">
+            <ng-container
+              *ngTemplateOutlet="
+                fileUploaderTextarea;
+                context: {
+                  controlName: 'ssl_key',
+                  title: 'Private Key Input',
+                  placeholder:
+                    'Uploading a private key file automatically populates this field. Alternatively, paste the private key in PEM format.',
+                  helperText:
+                    'Uploaded files will populate the private key details automatically. Or paste the PEM content directly in the text area.',
+                  description: 'Upload a .key file, or paste the private key PEM content directly.',
+                  invalidTemplate: invalidSslKeyError,
+                  isRequired: false
+                }
+              "
+            ></ng-container>
+            <ng-template #invalidSslKeyError>
+              @if (serviceForm.showError('ssl_key', frm, 'required')) {
+                <span
+                  class="invalid-feedback"
+                  i18n
+                  >This field is required.</span
+                >
+              }
+              @if (serviceForm.showError('ssl_key', frm, 'pattern')) {
+                <span
+                  class="invalid-feedback"
+                  i18n
+                  >Invalid SSL private key.</span
+                >
+              }
+            </ng-template>
+          </div>
+          <!-- ssl_ca_cert - Only show for NFS when SSL is enabled AND certificate type is external -->
+          @if (
+            serviceForm.controls.ssl.value &&
+            serviceForm.controls.certificateType.value === CertificateType.external &&
+            serviceForm.controls.service_type.value === 'nfs'
+          ) {
+            <div class="form-item">
+              <ng-container
+                *ngTemplateOutlet="
+                  fileUploaderTextarea;
+                  context: {
+                    controlName: 'ssl_ca_cert',
+                    title: 'CA Certificate Input',
+                    placeholder: 'Paste the certificate in PEM format',
+                    helperText:
+                      'Uploaded files will populate the CA certificate details automatically. Or paste the PEM content directly in the text area.',
+                    description:
+                      'Upload a CA certificate file, or paste the CA certificate PEM content directly.',
+                    invalidTemplate: invalidSslCaCertError,
+                    isRequired: false
+                  }
+                "
+              ></ng-container>
+              <ng-template #invalidSslCaCertError>
+                @if (serviceForm.showError('ssl_ca_cert', frm, 'required')) {
+                  <span
+                    class="invalid-feedback"
+                    i18n
+                    >This field is required.</span
+                  >
+                }
+                @if (serviceForm.showError('ssl_ca_cert', frm, 'pattern')) {
+                  <span
+                    class="invalid-feedback"
+                    i18n
+                    >Invalid CA certificate.</span
+                  >
+                }
+              </ng-template>
+            </div>
+          }
+        }
+
+        <!-- RGW QAT Compression -->
+        @if (serviceForm.controls.service_type.value === 'rgw') {
+          <div
+            class="form-item"
+            formGroupName="qat"
+          >
+            <cds-select
+              formControlName="compression"
+              name="compression"
+              label="QAT compression mode"
+              id="compression"
+              helperText="QAT compression is optional. Choose Hardware or Software to enable compression, or select None to disable it."
+              i18n-helperText
+            >
+              <option
+                *ngFor="let option of qatCompressionOptions"
+                [value]="option.value"
+                i18n
+              >
+                {{ option.label }}
+              </option>
+            </cds-select>
+          </div>
+        }
+      }
+      <!-- Grafana -->
+      @if (serviceForm.controls.service_type.value === 'grafana') {
+        <div class="form-item">
+          <cds-number
+            label="Grafana port"
+            i18n-label
+            formControlName="grafana_port"
+            id="grafana_port"
+            min="1"
+            max="65535"
+            helperText="The default port used by grafana."
+            i18n-helperText
+            [invalid]="
+              serviceForm.controls.grafana_port.invalid && serviceForm.controls.grafana_port.dirty
+            "
+            [invalidText]="invalidGrafanaPortError"
+          >
+          </cds-number>
+          <ng-template #invalidGrafanaPortError>
+            @if (serviceForm.showError('grafana_port', frm, 'required')) {
               <span
                 class="invalid-feedback"
                 i18n
@@ -1545,6 +1690,7 @@
                   context: {
                     controlName: 'root_ca_cert',
                     title: 'Root CA Certificate Input',
+                    placeholder: 'Paste the certificate in PEM format',
                     helperText:
                       'Uploaded files will populate the Root CA certificate details automatically. Or paste the PEM content directly in the text area.',
                     description:
@@ -1573,6 +1719,7 @@
                   context: {
                     controlName: 'client_cert',
                     title: 'Client Certificate Input',
+                    placeholder: 'Paste the certificate in PEM format',
                     helperText:
                       'Uploaded files will populate the client certificate details automatically. Or paste the PEM content directly in the text area.',
                     description:
@@ -1601,6 +1748,8 @@
                   context: {
                     controlName: 'client_key',
                     title: 'Client Key Input',
+                    placeholder:
+                      'Uploading a private key file automatically populates this field. Alternatively, paste the private key in PEM format.',
                     helperText:
                       'Uploaded files will populate the client key details automatically. Or paste the PEM content directly in the text area.',
                     description:
@@ -1629,6 +1778,7 @@
                   context: {
                     controlName: 'server_cert',
                     title: 'Gateway Server Certificate Input',
+                    placeholder: 'Paste the certificate in PEM format',
                     helperText:
                       'Uploaded files will populate the gateway server certificate details automatically. Or paste the PEM content directly in the text area.',
                     description:
@@ -1657,6 +1807,8 @@
                   context: {
                     controlName: 'server_key',
                     title: 'Gateway Server Key Input',
+                    placeholder:
+                      'Uploading a private key file automatically populates this field. Alternatively, paste the private key in PEM format.',
                     helperText:
                       'Uploaded files will populate the gateway server key details automatically. Or paste the PEM content directly in the text area.',
                     description:
@@ -1704,6 +1856,7 @@
   let-description="description"
   let-invalidTemplate="invalidTemplate"
   let-isRequired="isRequired"
+  let-placeholder="placeholder"
 >
   <cds-textarea-label
     [attr.cdRequiredField]="isRequired ? title : null"
@@ -1726,7 +1879,7 @@
       cdsTextArea
       [id]="controlName"
       [theme]="'dark'"
-      placeholder="Paste certificate or private key PEM content"
+      [placeholder]="placeholder"
       [formControl]="serviceForm.controls[controlName]"
       cols="50"
       rows="5"
