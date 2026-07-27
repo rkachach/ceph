@@ -248,9 +248,11 @@ import { NumberWithUnitComponent } from './number-with-unit/number-with-unit.com
     CallHomeConnectivityStatusComponent,
     NumberWithUnitComponent,
     SidebarLayoutComponent,
-    ToastComponent
+    ToastComponent,
+    DetailsCardComponent
   ],
   providers: [provideCharts(withDefaultRegisterables())],
+  exports: [
     SparklineComponent,
     HelperComponent,
     SelectBadgesComponent,

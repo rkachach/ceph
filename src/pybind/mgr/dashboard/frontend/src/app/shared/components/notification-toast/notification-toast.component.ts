@@ -16,6 +16,7 @@ import { NotificationService } from '../../services/notification.service';
   selector: 'cd-toast',
   templateUrl: './notification-toast.component.html',
   styleUrls: ['./notification-toast.component.scss'],
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('toastAnimation', [

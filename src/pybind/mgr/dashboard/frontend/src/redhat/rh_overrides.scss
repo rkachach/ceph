@@ -1191,7 +1191,7 @@ cd-prometheus-form {
   @extend .pf-c-check__input;
 }
 
-h3 {
+h3:not(.cds--toast-notification__title) {
   font-size: 1.4rem !important;
 }
 
@@ -1302,3 +1302,4 @@ cd-table-actions.btn-group.multisite-actions cds-overflow-menu .cds--btn--icon-o
     min-block-size: 0% !important;
   }
 }
+

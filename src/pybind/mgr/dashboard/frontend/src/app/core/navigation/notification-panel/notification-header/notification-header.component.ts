@@ -4,6 +4,7 @@ import { NotificationService } from '~/app/shared/services/notification.service'
 
 @Component({
   selector: 'cd-notification-header',
+  standalone: false,
   templateUrl: './notification-header.component.html',
   styleUrls: ['./notification-header.component.scss']
 })

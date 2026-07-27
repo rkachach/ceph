@@ -11,6 +11,7 @@ import {
   NotificationType
 } from '~/app/shared/enum/notification-type.enum';
 import { NotificationService } from '~/app/shared/services/notification.service';
+import { environment } from '~/environments/environment';
 
 @Component({
   selector: 'cd-notification-item',
@@ -43,6 +44,8 @@ export class NotificationItemComponent {
   @Output() deleted = new EventEmitter<string>();
 
   readonly NotificationApplication = NotificationApplication;
+  readonly brandIcon =
+    environment.build === 'ibm' ? 'assets/StorageCeph_favicon.svg' : 'assets/RedHat_favicon_0319.svg';
 
   constructor(private notificationService: NotificationService) {}
 

@@ -3,6 +3,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'cd-notification-panel',
+  standalone: false,
   templateUrl: './notification-panel.component.html',
   styleUrls: ['./notification-panel.component.scss'],
   animations: [
