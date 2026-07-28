@@ -86,6 +86,14 @@ export class DocService {
     return sections[section];
   }
 
+  alertDocUrl(alertName: string, releaseVersion = ''): string | null {
+    const baseUrl = this.urlGenerator('managing-alerts', releaseVersion);
+    if (!baseUrl || !alertName) {
+      return null;
+    }
+    return `${baseUrl}#${encodeURIComponent(`managing-alerts__${alertName.toLowerCase()}`)}`;
+  }
+
   subscribeOnce(
     section: string,
     next: (url: string) => void,
