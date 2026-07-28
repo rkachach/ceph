@@ -8,7 +8,7 @@ from threading import Thread
 from contextlib import contextmanager
 from io import StringIO
 from shlex import quote
-from typing import TYPE_CHECKING, Optional, List, Tuple, Dict, Iterator, TypeVar, Awaitable, Union
+from typing import TYPE_CHECKING, Optional, List, Tuple, Dict, Iterator, TypeVar, Awaitable, Union, Any
 from orchestrator import OrchestratorError
 
 try:
@@ -143,6 +143,9 @@ class EventLoopThread(Thread):
 
 class SSHManager:
 
+    SSH_RETRY_COUNT = 3
+    CHANNEL_OPEN_RECOVERABLE_CODES = {1, 2, 4}
+
     def __init__(self, mgr: "CephadmOrchestrator"):
         self.mgr: "CephadmOrchestrator" = mgr
         self.cons: Dict[str, "SSHClientConnection"] = {}
@@ -267,28 +270,89 @@ class SSHManager:
             address = host
         if log_command:
             logger.debug(f'Running command: {rcmd}')
-        try:
-            r = await conn.run(str(rcmd), input=stdin)
-        # handle these Exceptions otherwise you might get a weird error like
-        # TypeError: __init__() missing 1 required positional argument: 'reason' (due to the asyncssh error interacting with raise_if_exception)
-        except asyncssh.ChannelOpenError as e:
-            # SSH connection closed or broken, will create new connection next call
-            logger.debug(f'Connection to {host} failed. {str(e)}')
-            await self._reset_con(host)
-            self.mgr.offline_hosts.add(host)
-            raise HostConnectionError(f'Unable to reach remote host {host}. {str(e)}', host, address)
-        except asyncssh.ProcessError as e:
-            msg = f"Cannot execute the command '{rcmd}' on the {host}. {str(e.stderr)}."
-            logger.debug(msg)
-            await self._reset_con(host)
-            self.mgr.offline_hosts.add(host)
-            raise HostConnectionError(msg, host, address)
-        except Exception as e:
-            msg = f"Generic error while executing command '{rcmd}' on the host {host}. {str(e)}."
-            logger.debug(msg)
-            await self._reset_con(host)
-            self.mgr.offline_hosts.add(host)
-            raise HostConnectionError(msg, host, address)
+
+        # Retry logic for transient connection/channel errors
+        for attempt in range(self.SSH_RETRY_COUNT):
+            try:
+                run_kw: Dict[str, Any] = {}
+                if stdin is not None:
+                    run_kw['input'] = stdin
+                    # Bytes stdin: use encoding=None (else asyncssh expects str).
+                    if isinstance(stdin, bytes):
+                        run_kw['encoding'] = None
+                r = await conn.run(str(rcmd), **run_kw)
+                break  # Success, exit retry loop
+            # Handle retryable exceptions (connection/channel errors)
+            # Note: handle these Exceptions otherwise you might get a weird error like
+            # TypeError: __init__() missing 1 required positional argument: 'reason'
+            # (due to the asyncssh error interacting with raise_if_exception)
+
+            # Retryable exception types for SSH command execution
+            except (
+                asyncssh.ChannelOpenError,
+                asyncssh.ConnectionLost,
+                asyncssh.DisconnectError,
+                asyncio.TimeoutError,
+                OSError,
+            ) as e:
+                error_type = type(e).__name__
+                logger.exception('Command exection failed with %s', error_type)
+                # For ChannelOpenError, check if the error code is recoverable
+                if isinstance(e, asyncssh.ChannelOpenError):
+                    error_code = getattr(e, 'code', None)
+                    logger.debug(
+                        f'{error_type} (code={error_code}) on attempt '
+                        f'{attempt + 1}/{self.SSH_RETRY_COUNT} '
+                        f'for host {host}: {str(e)}')
+                    # Check if this error code is recoverable/retryable
+                    if error_code not in self.CHANNEL_OPEN_RECOVERABLE_CODES:
+                        # Non-recoverable error code, don't retry
+                        logger.debug(
+                            f'ChannelOpenError code {error_code} is not recoverable, '
+                            f'not retrying for host {host}')
+                        await self._reset_con(host)
+                        self.mgr.offline_hosts.add(host)
+                        raise HostConnectionError(
+                            f'Unable to reach remote host {host}. {str(e)}',
+                            host, address)
+                else:
+                    logger.debug(
+                        f'{error_type} on attempt {attempt + 1}/{self.SSH_RETRY_COUNT} '
+                        f'for host {host}: {str(e)}')
+
+                # Reset connection and get a new one for retry
+                await self._reset_con(host)
+                if attempt < self.SSH_RETRY_COUNT - 1:
+                    # Not the last attempt, try to get a new connection
+                    try:
+                        conn = await self._remote_connection(host, addr)
+                    except Exception as conn_e:
+                        logger.debug(
+                            f'Failed to re-establish connection to {host} '
+                            f'on retry: {str(conn_e)}')
+                        # Continue to next attempt, connection will be retried
+                        continue
+                else:
+                    # Last attempt failed, raise the error
+                    self.mgr.offline_hosts.add(host)
+                    raise HostConnectionError(
+                        f'Unable to reach remote host {host} after '
+                        f'{self.SSH_RETRY_COUNT} attempts. {str(e)}',
+                        host, address)
+            except asyncssh.ProcessError as e:
+                msg = f"ProcessError cannot execute the command '{rcmd}' on the {host}. {str(e.stderr)}."
+                logger.exception(msg)
+                await self._reset_con(host)
+                self.mgr.offline_hosts.add(host)
+                raise HostConnectionError(msg, host, address)
+            except Exception as e:
+                error_type = type(e).__name__
+                msg = (f"Generic error {error_type} while executing command '{rcmd}' "
+                       f"on the host {host}. {str(e)}.")
+                logger.exception(msg)
+                await self._reset_con(host)
+                self.mgr.offline_hosts.add(host)
+                raise HostConnectionError(msg, host, address)
 
         def _rstrip(v: Union[bytes, str, None]) -> str:
             if not v:
