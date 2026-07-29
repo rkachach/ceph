@@ -76,7 +76,7 @@ export class CreateClusterComponent implements OnInit, OnDestroy, AfterViewInit 
   selectedOption = {};
   simpleDeployment = true;
   stepsToSkip: { [steps: string]: boolean } = {};
-  icons = IconSize;
+  iconSize = IconSize;
 
   @Output()
   submitAction = new EventEmitter();
