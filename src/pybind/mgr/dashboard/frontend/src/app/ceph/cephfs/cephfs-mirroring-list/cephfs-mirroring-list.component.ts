@@ -295,16 +295,23 @@ export class CephfsMirroringListComponent implements OnInit, OnDestroy {
         continue;
       }
       for (const fs of daemon.filesystems) {
-        if (fs.peers?.length) {
-          for (const peer of fs.peers) {
-            rows.push(this.peerToRow(daemon, fs, peer));
+        if (!fs.peers?.length) {
+          continue;
+        }
+        for (const peer of fs.peers) {
+          if (!this.hasPeerInfo(peer)) {
+            continue;
           }
-        } else {
-          rows.push(this.noPeerRow(daemon, fs));
+          rows.push(this.peerToRow(daemon, fs, peer));
         }
       }
     }
     return rows;
+  }
+
+  private hasPeerInfo(peer: Peer): boolean {
+    const remote = peer?.remote;
+    return !!(remote?.cluster_name || remote?.fs_name || remote?.client_name);
   }
 
   private peerToRow(daemon: Daemon, fs: Filesystem, peer: Peer): MirroringRow {
@@ -324,25 +331,6 @@ export class CephfsMirroringListComponent implements OnInit, OnDestroy {
       sync_status: failureCount > 0 ? MirroringSyncStatus.ERROR : MirroringSyncStatus.SYNCING,
       sync_status_label: failureCount > 0 ? $localize`Error` : $localize`Syncing`,
       id: `${daemon.daemon_id}-${fs.filesystem_id}`
-    };
-  }
-
-  private noPeerRow(daemon: Daemon, fs: Filesystem): MirroringRow {
-    return {
-      remote_cluster_name: '-',
-      local_fs_name: fs.name,
-      fs_name: fs.name,
-      client_name: '-',
-      directory_count: fs.directory_count ?? 0,
-      filesystem_id: fs.filesystem_id,
-      peerId: '-',
-      failure_count: 0,
-      recovery_count: 0,
-      sync_status: MirroringSyncStatus.NONE,
-      sync_status_label: '-',
-      id: `${daemon.daemon_id}-${fs.filesystem_id}`,
-      bytes_replicated: '-',
-      last_sync: '-'
     };
   }
 }

@@ -222,7 +222,7 @@ describe('CephfsMirroringListComponent', () => {
     );
   });
 
-  it('should handle empty peers and map "-" values', () => {
+  it('should omit filesystems with empty peers and peers without remote info', () => {
     const mockData: Daemon[] = [
       {
         daemon_id: 2,
@@ -232,6 +232,13 @@ describe('CephfsMirroringListComponent', () => {
             name: 'fs2',
             directory_count: 5,
             peers: [],
+            id: ''
+          },
+          {
+            filesystem_id: 21,
+            name: 'fs3',
+            directory_count: 1,
+            peers: [{ uuid: 'empty-peer', remote: {}, stats: {} } as any],
             id: ''
           }
         ]
@@ -246,7 +253,7 @@ describe('CephfsMirroringListComponent', () => {
     component.daemonStatus$.subscribe((v) => (emitted = v || []));
     component.loadDaemonStatus();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted.length).toBe(0);
     expect(cephfsServiceMock.getMirrorStatus).not.toHaveBeenCalled();
     expect(emitted[0]).toEqual({
       remote_cluster_name: '-',
