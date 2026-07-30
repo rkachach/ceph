@@ -96,7 +96,7 @@ The dedup estimate process skips the following RGW objects:
 - Objects with different RGW storage classes.
 
 The full dedup process skips all of the above and additionally skips
-**user-encrypted** objects.  Server-side **compressed** objects can
+**user-encrypted** RGW objects.  Server-side **compressed** RGW objects can
 optionally be skipped by setting :confval:`rgw_dedup_skip_compressed`.
 
 The minimum RGW object size to be deduplicated is controlled by the following
@@ -104,7 +104,7 @@ configuration option:
 
 .. confval:: rgw_dedup_min_obj_size_for_dedup
 
-Compressed objects are deduplicated by default.  To skip them:
+Compressed RGW objects are deduplicated by default.  To skip them:
 
 .. confval:: rgw_dedup_skip_compressed
 
@@ -121,7 +121,7 @@ is read exactly one time. The sharding allows processing to
 scale almost linearly, splitting the load evenly among participating
 daemons.
 
-The dedup estimate process does not access the object payload
+The dedup estimate process does not access the RGW object payload
 data, which means that processing time won't be significantly affected by the
 underlying media (SSD/HDD) storing the objects. Best practice places bucket index pools
 on fast storage: SSDs
@@ -130,14 +130,14 @@ in memory.
 
 Administrators can throttle the estimate process by setting a limit on the
 number of bucket index reads per second per RGW daemon. Each operation
-reads 1000 object entries:
+reads 1000 RGW object entries:
 
 .. prompt:: bash #
 
    radosgw-admin dedup throttle --max-bucket-index-ops=<count>
 
 A typical RGW server performs about 100 bucket index reads per second and thus
-100,000 object entries. For example, setting ``count`` to 50 would then
+100,000 RGW object entries. For example, setting ``count`` to 50 would then
 typically slow down the estimate process by half.
 
 
@@ -147,56 +147,56 @@ Full Dedup Processing
 The full dedup process begins by constructing a dedup table from the bucket
 indexes in a fashion similar to the estimate process described above.
 
-This table is then scanned linearly to exclude RADOS objects without duplicates,
+This table is then scanned linearly to exclude RGW objects without duplicates,
 leaving only dedup candidates.
 
 Dedup source selection
 ----------------------
 
-When several objects share the same dedup key (MD5 etag and logical size), dedup
+When several RGW objects share the same dedup key (MD5 etag and logical size), dedup
 chooses one as the **source** (SRC). All other copies become **targets** that
-will share the source tail objects. Source selection uses the dedup table built
-from bucket indexes and updated as object metadata is read:
+will share the source RADOS tail objects. Source selection uses the dedup table built
+from bucket indexes and updated as RGW object metadata is read:
 
-#. An object that is already a source from a prior dedup cycle (marked with a
+#. An RGW object that is already a source from a prior dedup cycle (marked with a
    shared manifest) is never replaced.
-#. Otherwise, prefer objects whose server-side compression matches the
+#. Otherwise, prefer RGW objects whose server-side compression matches the
    compression type configured on the tail **placement rule** (exact match).
-#. If no exact match exists, prefer objects that are compressed with a
-   different algorithm over uncompressed objects (partial match).
+#. If no exact match exists, prefer RGW objects that are compressed with a
+   different algorithm over uncompressed RGW objects (partial match).
 #. Otherwise keep the first valid candidate.
 
 The placement compression type is taken from the zone's **current** placement
-configuration, not from the setting in effect when each object was uploaded.
+configuration, not from the setting in effect when each RGW object was uploaded.
 
-Next, it iterates through these dedup candidate objects, reading their complete
-information from the object metadata, a per-object RADOS operation. During
-this step, **user-encrypted** objects are removed from consideration.
+Next, it iterates through these dedup candidate RGW objects, reading their complete
+information from the RGW object metadata, a per-object RADOS operation. During
+this step, **user-encrypted** RGW objects are removed from consideration.
 
-At this point, the dedup candidates are objects whose MD5 hash and size are
+At this point, the dedup candidates are RGW objects whose MD5 hash and size are
 identical -- the likelihood of a false positive is vanishingly small for
 naturally occurring data. To provide a cryptographic guarantee and guard
 against crafted MD5 collisions, we calculate a strong hash (Blake3) over the
-full object data. This requires reading the entire object, with cost
+full RGW object data. This requires reading the entire RGW object, with cost
 proportional to object size -- but the potential dedup savings also grow with
 size, and at this stage deduplication is almost certain to succeed.
 
-For compressed objects the hash is calculated on the uncompressed data -- each
+For compressed RGW objects the hash is calculated on the uncompressed data -- each
 compression block is decompressed on-the-fly and fed to the hasher, so memory
-usage stays bounded regardless of object size. This adds CPU cost for
+usage stays bounded regardless of RGW object size. This adds CPU cost for
 decompression, though at this stage deduplication is almost certain to succeed
-and the savings will justify the overhead. To skip compressed objects entirely,
+and the savings will justify the overhead. To skip compressed RGW objects entirely,
 set ``rgw_dedup_skip_compressed = true`` in the configuration.
 
-If the objects' strong hash matches, we proceed with deduplication:
+If the RGW objects' strong hash matches, we proceed with deduplication:
 
-- Increment the reference count on the source tail objects one by one.
-- Replace the target manifest and tail objects entirely with the source's
+- Increment the reference count on the source RADOS tail objects one by one.
+- Replace the target manifest and RADOS tail objects entirely with the source's
   (the target's previous tail layout is freed).
 - Mirror the compression attribute (``RGW_ATTR_COMPRESSION``) from source to
   target: if the source is compressed the attribute is copied to the target;
   if the source is uncompressed the attribute is removed from the target.
-- Remove all tail objects on the target.
+- Remove all RADOS tail objects on the target.
 
 Cross-mode compression
 ----------------------
@@ -206,13 +206,13 @@ same dedup candidate set because dedup keys use **logical** (uncompressed) size
 from the bucket index, not on-disk compressed size.
 
 When dedup succeeds between mixed compression states, each target adopts the
-source manifest, tail objects, and compression attribute. Because source
-selection prefers objects that match **current** placement compression, all
+source manifest, RADOS tail objects, and compression attribute. Because source
+selection prefers RGW objects that match **current** placement compression, all
 deduped copies typically converge on the compression state implied by the
-zone's placement policy at dedup time -- not on the mode each object had when
+zone's placement policy at dedup time -- not on the mode each RGW object had when
 it was uploaded. For example, if placement compression was disabled and later
 re-enabled, dedup may rewrite older uncompressed copies to share compressed
-tail objects from a source that matches the current placement.
+RADOS tail objects from a source that matches the current placement.
 
 In incremental dedup, a source established in an earlier cycle keeps shared-
 manifest priority even when newer copies would match current placement
@@ -221,12 +221,12 @@ compression more closely.
 Split Head Mode
 ===============
 
-The dedup code can split a head object into two objects:
+The dedup code can split a RADOS head object into two RADOS objects:
 
 - one with attributes and no data, and
-- a new tail object with only data.
+- a new RADOS tail object with only data.
 
-The new tail object will be deduplicated, unlike head objects, which cannot
+The new RADOS tail object will be deduplicated, unlike RADOS head objects, which cannot
 be deduplicated.
 
 :confval:`rgw_dedup_split_obj_head` (default: true). Setting
