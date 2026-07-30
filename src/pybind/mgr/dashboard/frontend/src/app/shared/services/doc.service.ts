@@ -55,7 +55,8 @@ export class DocService {
         'dashboard-landing-page-status': `${domain}dashboard-understanding-landing-page-ceph`,
         'dashboard-landing-page-performance': `${domain}dashboard-understanding-landing-page-ceph`,
         'dashboard-landing-page-capacity': `${domain}dashboard-understanding-landing-page-ceph`,
-        'dashboard-side-panel': `${domain}/rados/operations/health-checks/`
+        'dashboard-side-panel': `${domain}/rados/operations/health-checks/`,
+        'managing-alerts': `${domain}dashboard-managing-alerts`
       };
     } else {
       // redhat release take doc version as 9 when release is 9.0 or 9.1
