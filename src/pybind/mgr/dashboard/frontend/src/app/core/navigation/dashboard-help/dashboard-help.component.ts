@@ -4,6 +4,7 @@ import { Icons } from '~/app/shared/enum/icons.enum';
 import { Permission } from '~/app/shared/models/permissions';
 import { AuthStorageService } from '~/app/shared/services/auth-storage.service';
 import { DocService } from '~/app/shared/services/doc.service';
+import { environment } from '~/environments/environment';
 
 import { AboutComponent } from '../about/about.component';
 import { ModalCdsService } from '~/app/shared/services/modal-cds.service';
@@ -19,6 +20,7 @@ export class DashboardHelpComponent implements OnInit {
   docsUrl: string;
   icons = Icons;
   configOptPermission: Permission;
+  isDownstream = environment.build === 'ibm' || environment.build === 'redhat';
 
   constructor(
     private docService: DocService,

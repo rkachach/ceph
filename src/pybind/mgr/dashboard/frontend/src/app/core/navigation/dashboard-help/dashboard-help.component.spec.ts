@@ -33,7 +33,10 @@ describe('DashboardHelpComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show report issue when config-opt is readable', () => {
+  it('should show report issue when config-opt is readable and build is community', () => {
+    component.isDownstream = false;
+    fixture.detectChanges();
+
     const options = fixture.debugElement.queryAll(By.css('cds-overflow-menu-option'));
     // About + Report an issue (Documentation and API are plain <li> links)
     expect(options.length).toBe(2);
@@ -44,15 +47,27 @@ describe('DashboardHelpComponent', () => {
   });
 
   it('should hide report issue when config-opt is not readable', () => {
+    component.isDownstream = false;
     permissions.configOpt = new Permission([]);
     (TestBed.inject(AuthStorageService).getPermissions as jasmine.Spy).and.returnValue(permissions);
 
     fixture = TestBed.createComponent(DashboardHelpComponent);
     component = fixture.componentInstance;
+    component.isDownstream = false;
     fixture.detectChanges();
 
     const options = fixture.debugElement.queryAll(By.css('cds-overflow-menu-option'));
     // Only About remains; Documentation and API are plain <li> links
+    expect(options.length).toBe(1);
+    expect(options[0].nativeElement.textContent.trim()).toBe('About');
+  });
+
+  it('should hide report issue on downstream (IBM) build even when config-opt is readable', () => {
+    component.isDownstream = true;
+    fixture.detectChanges();
+
+    const options = fixture.debugElement.queryAll(By.css('cds-overflow-menu-option'));
+    // Only About remains
     expect(options.length).toBe(1);
     expect(options[0].nativeElement.textContent.trim()).toBe('About');
   });
