@@ -57,6 +57,13 @@ instances or all radosgw-admin options can be put into the ``[global]`` or the
 .. confval:: rgw_account_default_quota_max_size
 .. confval:: rgw_verify_ssl
 .. confval:: rgw_max_chunk_size
+.. confval:: rgw_smb_frontends
+.. confval:: rgw_smb_run_dedup_threads
+.. confval:: rgw_smb_run_quota_threads
+.. confval:: rgw_smb_run_restore_threads
+.. confval:: rgw_smb_run_gc_threads
+.. confval:: rgw_smb_run_lc_threads
+.. confval:: rgw_smb_run_sync_thread
 
 Lifecycle Settings
 ==================

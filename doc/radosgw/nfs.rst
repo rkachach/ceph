@@ -132,6 +132,14 @@ In particular, front-end selection is handled specially by the librgw.so runtime
 ``rgw nfs frontends`` config option.  Its syntax is identical to the ordinary ``rgw frontends`` option.
 Default options for non-default frontends are specified via ``rgw frontend defaults`` as normal.
 
+.. important::
+   **HTTP and NFS Protocols Can Coexist**
+
+   When RGW is started as a library instance serving NFS protocol, it will **not** start an HTTP listener by default.
+   However, HTTP/S3 and NFS protocols can run together in the same instance. You can enable HTTP/S3
+   access alongside NFS by configuring additional HTTP frontends using the ``rgw_nfs_frontends``
+   configuration option.
+
 ganesha.conf
 ------------
 
