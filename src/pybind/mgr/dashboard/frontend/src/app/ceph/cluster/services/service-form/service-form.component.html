@@ -489,36 +489,49 @@
         </ng-template>
       </div>
 
-      @if (!rgwModuleEnabled) {
-      <cd-alert-panel type="warning"
-                      spacingClass="mb-3"
-                      actionName="Enable"
-                      (action)="enableRgwModule()"
-                      i18n-actionName
-                      i18n>
-        The RGW mgr module must be enabled to configure S3 hostnames.
-        Enabling the module will cause temporary manager downtime while it loads.
-      </cd-alert-panel>
-      }
-      <div class="form-item">
-        <cds-checkbox i18n-label
-                      formControlName="virtual_host_enabled">
-          Enable virtual-host style bucket access
-          <cd-help-text i18n>
-            Allows bucket access via hostnames such as mybucket.s3.example.com.
-          </cd-help-text>
-        </cds-checkbox>
-      </div>
-      @if (serviceForm.controls.virtual_host_enabled.value) {
-      <div class="form-item">
-        <cd-text-label-list formControlName="zonegroup_hostnames"
-                            label="S3 hostname"
-                            i18n-label
-                            helperText="Domain names for S3 virtual-host bucket access (e.g., s3.example.com). Enables bucket URLs like bucket.s3.example.com instead of s3.example.com/bucket."
-                            i18n-helperText>
-        </cd-text-label-list>
-      </div>
-      }
+        @if (!rgwModuleEnabled) {
+          <cd-alert-panel
+            type="warning"
+            spacingClass="mb-3"
+            actionName="Enable"
+            (action)="enableRgwModule()"
+            i18n-actionName
+            i18n
+          >
+            The RGW mgr module must be enabled to configure S3 hostnames. Enabling the module will
+            cause temporary manager downtime while it loads.
+          </cd-alert-panel>
+        }
+        <div class="form-item">
+          <cds-checkbox
+            i18n-label
+            formControlName="virtual_host_enabled"
+          >
+            Enable virtual-host style bucket access
+            @if (realmList.length === 0) {
+              <cd-help-text i18n>
+                Requires a multisite realm, zonegroup, and zone. Create a realm to enable
+                virtual-host style bucket access.
+              </cd-help-text>
+            } @else {
+              <cd-help-text i18n>
+                Allows bucket access via hostnames such as mybucket.s3.example.com.
+              </cd-help-text>
+            }
+          </cds-checkbox>
+        </div>
+        @if (serviceForm.controls.virtual_host_enabled.value) {
+          <div class="form-item">
+            <cd-text-label-list
+              formControlName="zonegroup_hostnames"
+              label="S3 hostname"
+              i18n-label
+              helperText="Domain names for S3 virtual-host bucket access (e.g., s3.example.com). Enables bucket URLs like bucket.s3.example.com instead of s3.example.com/bucket."
+              i18n-helperText
+            >
+            </cd-text-label-list>
+          </div>
+        }
       }
 
       <!-- iSCSI -->
