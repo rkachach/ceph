@@ -1567,7 +1567,10 @@ class NFSServiceSpec(ServiceSpec):
         self.tsm_port = tsm_port
 
     def get_colocation_port_fields(self) -> List[str]:
-        """Return port fields for colocation; dynamically include rdma_port and/or tsm_port when enabled."""
+        """Return port fields for colocation.
+
+        Dynamically include rdma_port and/or tsm_port when enabled.
+        """
         fields = list(self.COLOCATION_PORT_FIELDS)
         if self.enable_rdma:
             fields.append('rdma_port')
@@ -1654,6 +1657,7 @@ class NFSServiceSpec(ServiceSpec):
                     f"Invalid NFS spec: colocation_ports[{idx}] missing required "
                     f"fields: {missing_str}. Expected format: {{{format_str}}}"
                 )
+
     def validate_port_number(self, port: Optional[int]) -> None:
         if port is None:
             return
@@ -1996,6 +2000,7 @@ class RGWSpec(ServiceSpec):
             for attr, value in self.DEFAULT_HAPROXY_CONCENTRATOR_VALUES.items():
                 if not getattr(self, attr, None):
                     setattr(self, attr, value)
+
     def _migrate_legacy_rgw_frontend_ssl_certificate(self) -> None:
 
         if self.rgw_frontend_ssl_certificate is None:
