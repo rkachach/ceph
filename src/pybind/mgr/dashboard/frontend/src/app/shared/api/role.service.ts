@@ -2,9 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable, of as observableOf } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 
 import { RoleFormModel } from '~/app/core/auth/role-form/role-form.model';
+import { environment } from '~/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,15 @@ import { RoleFormModel } from '~/app/core/auth/role-form/role-form.model';
 export class RoleService {
   constructor(private http: HttpClient) {}
 
-  list() {
-    return this.http.get('api/role');
+  list(): Observable<RoleFormModel[]> {
+    return this.http.get<RoleFormModel[]>('api/role').pipe(
+      map((roles) => {
+        if (environment.build !== 'ibm') {
+          return roles.filter((role) => role.name !== 'smb-manager');
+        }
+        return roles;
+      })
+    );
   }
 
   delete(name: string) {
