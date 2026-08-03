@@ -9,7 +9,6 @@ import { environment } from '~/environments/environment';
 import { AboutComponent } from '../about/about.component';
 import { ModalCdsService } from '~/app/shared/services/modal-cds.service';
 import { FeedbackComponent } from '~/app/ceph/shared/feedback/feedback.component';
-import { environment } from '~/environments/environment';
 
 @Component({
   selector: 'cd-dashboard-help',
