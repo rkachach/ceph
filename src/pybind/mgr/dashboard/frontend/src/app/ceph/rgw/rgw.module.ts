@@ -51,6 +51,7 @@ import { RgwSyncPrimaryZoneComponent } from './rgw-sync-primary-zone/rgw-sync-pr
 import { RgwSyncMetadataInfoComponent } from './rgw-sync-metadata-info/rgw-sync-metadata-info.component';
 import { RgwSyncDataInfoComponent } from './rgw-sync-data-info/rgw-sync-data-info.component';
 import { BucketTagModalComponent } from './bucket-tag-modal/bucket-tag-modal.component';
+import { NfsModule } from '../nfs/nfs.module';
 import { NfsFormComponent } from '../nfs/nfs-form/nfs-form.component';
 import { RgwMultisiteSyncPolicyComponent } from './rgw-multisite-sync-policy/rgw-multisite-sync-policy.component';
 import { RgwMultisiteSyncPolicyFormComponent } from './rgw-multisite-sync-policy-form/rgw-multisite-sync-policy-form.component';
@@ -86,7 +87,9 @@ import {
   ToggletipModule,
   IconService,
   LayoutModule,
-  SkeletonModule
+  SkeletonModule,
+  TilesModule,
+  ContentSwitcherModule
 } from 'carbon-components-angular';
 import EditIcon from '@carbon/icons/es/edit/16';
 import ScalesIcon from '@carbon/icons/es/scales/20';
@@ -122,6 +125,10 @@ import { RgwNotificationFormComponent } from './rgw-notification-form/rgw-notifi
 import { NfsClusterFormComponent } from '../nfs/nfs-cluster-form/nfs-cluster-form.component';
 import { RgwAccountRolesListComponent } from './rgw-account-roles-list/rgw-account-roles-list.component';
 import { RgwAccountRoleFormComponent } from './rgw-account-role-form/rgw-account-role-form.component';
+import { ProductiveCardComponent } from '~/app/shared/components/productive-card/productive-card.component';
+import { TimePickerComponent } from '~/app/shared/components/time-picker/time-picker.component';
+import { AreaChartComponent } from '@carbon/charts-angular';
+import { ComponentsModule } from '~/app/shared/components/components.module';
 
 @NgModule({
   imports: [
@@ -161,7 +168,14 @@ import { RgwAccountRoleFormComponent } from './rgw-account-role-form/rgw-account
     RadioModule,
     SelectModule,
     LayoutModule,
-    SkeletonModule
+    SkeletonModule,
+    TilesModule,
+    ProductiveCardComponent,
+    TimePickerComponent,
+    AreaChartComponent,
+    ComponentsModule,
+    ContentSwitcherModule,
+    NfsModule
   ],
   exports: [
     RgwDaemonDetailsComponent,
