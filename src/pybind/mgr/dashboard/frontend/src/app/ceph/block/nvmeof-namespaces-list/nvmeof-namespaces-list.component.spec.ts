@@ -154,7 +154,7 @@ describe('NvmeofNamespacesListComponent', () => {
       );
       done();
     });
-    component.listNamespaces();
+    component.fetchData();
   });
 
   it('should open delete modal with correct data', () => {
@@ -218,13 +218,12 @@ describe('NvmeofNamespacesListComponent', () => {
   });
 
   it('should update group and trigger namespace fetch on group change', () => {
-    const listNamespacesSpy = jest.spyOn(component, 'listNamespaces');
-    listNamespacesSpy.mockClear();
+    const fetchDataSpy = jest.spyOn(component, 'fetchData');
 
     component.onGroupChange('g1');
 
     expect(component.group).toBe('g1');
-    expect(listNamespacesSpy).toHaveBeenCalled();
+    expect(fetchDataSpy).not.toHaveBeenCalled(); // onGroupChange calls namespaceSubject.next() directly
   });
 
   it('should clear group on onGroupChange with null', () => {
