@@ -1,13 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  TemplateRef,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormControl, UntypedFormControl } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -30,7 +21,6 @@ export class NvmeofSubsystemsStepTwoComponent implements OnInit, TearsheetStep {
   @Input() group!: string;
   @Input() existingHosts: string[] = [];
   @Input() allowAllHosts = true;
-  @Output() hostTypeChanged = new EventEmitter<string>();
   @ViewChild('rightInfluencer', { static: true })
   rightInfluencer?: TemplateRef<any>;
   formGroup: CdFormGroup;
@@ -59,8 +49,7 @@ export class NvmeofSubsystemsStepTwoComponent implements OnInit, TearsheetStep {
   ngOnInit() {
     this.createForm();
 
-    this.formGroup.get('hostType')?.valueChanges.subscribe((hostType: string) => {
-      this.hostTypeChanged.emit(hostType);
+    this.formGroup.get('hostType')?.valueChanges.subscribe(() => {
       this.formGroup.get('hostname')?.updateValueAndValidity();
     });
 
@@ -68,7 +57,6 @@ export class NvmeofSubsystemsStepTwoComponent implements OnInit, TearsheetStep {
       this.formGroup.get('hostname')?.updateValueAndValidity();
     });
 
-    this.hostTypeChanged.emit(this.formGroup.get('hostType')?.value);
     this.formGroup.get('hostname')?.updateValueAndValidity();
   }
 
