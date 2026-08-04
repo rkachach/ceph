@@ -86,10 +86,6 @@ describe('UserFormComponent', () => {
       component.ngOnInit();
     });
 
-    it('should set submit label to Create User', () => {
-      expect(component.submitAction).toBe('Create User');
-    });
-
     it('should not disable fields', () => {
       [
         'username',
@@ -270,10 +266,6 @@ describe('UserFormComponent', () => {
       formHelper.setValue('roles', []);
       component.onRolesClear();
       expect(form.getValue('roles')).toContain('administrator');
-    });
-
-    it('should set submit label to Save changes', () => {
-      expect(component.submitAction).toBe('Save changes');
     });
 
     it('should alert if user is removing needed role permission', () => {

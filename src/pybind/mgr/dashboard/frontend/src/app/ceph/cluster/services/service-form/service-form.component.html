@@ -1580,7 +1580,7 @@
   <cd-form-button-panel
     (submitActionEvent)="onSubmit()"
     [form]="serviceForm"
-    [submitText]="submitAction"
+    [submitText]="(action | titlecase) + ' ' + resource"
     [modalForm]="true"
   ></cd-form-button-panel>
 </cds-modal>

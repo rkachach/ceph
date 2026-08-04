@@ -117,9 +117,9 @@ export class NvmeofInitiatorsListComponent implements OnInit, OnDestroy {
         name: this.actionLabels.ADD,
         permission: 'create',
         icon: Icons.add,
-        click: () => this.openAddInitiatorForm(this.hasAllHostsAllowed()),
+        click: () => this.openAddInitiatorForm(),
         canBePrimary: (selection: CdTableSelection) => !selection.hasSelection,
-        disable: () => false
+        disable: () => this.hasAllHostsAllowed()
       },
       {
         name: $localize`Edit host key`,

@@ -53,7 +53,6 @@ export class UserFormComponent extends CdForm implements OnInit {
   messages = new SelectMessages({ empty: $localize`There are no roles.` });
   action: string;
   resource: string;
-  submitAction: string;
   passwordPolicyHelpText = '';
   passwordStrengthLevelClass: string;
   passwordValuation: string;
@@ -148,11 +147,9 @@ export class UserFormComponent extends CdForm implements OnInit {
     if (this.router.url.startsWith('/user-management/users/edit')) {
       this.mode = this.userFormMode.editing;
       this.action = this.actionLabels.EDIT;
-      this.submitAction = this.actionLabels.SAVE_CHANGES;
       this.passwordexp = false;
     } else {
       this.action = this.actionLabels.CREATE;
-      this.submitAction = `${this.action} ${_.upperFirst(this.resource)}`;
       this.passwordexp = true;
     }
     this.userForm.get('password').updateValueAndValidity();
