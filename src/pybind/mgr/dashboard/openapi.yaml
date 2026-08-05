@@ -3286,6 +3286,81 @@ paths:
       responses:
         '200':
           content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    daemon_id:
+                      description: Daemon ID
+                      type: integer
+                    filesystems:
+                      description: List of filesystems on daemon
+                      items:
+                        properties:
+                          directory_count:
+                            description: Directory count
+                            type: integer
+                          filesystem_id:
+                            description: Filesystem ID
+                            type: integer
+                          name:
+                            description: Filesystem name
+                            type: string
+                          peers:
+                            description: List of peer objects
+                            items:
+                              properties:
+                                remote:
+                                  description: Remote peer information
+                                  properties:
+                                    client_name:
+                                      description: Ceph client name
+                                      type: string
+                                    cluster_name:
+                                      description: Remote site name
+                                      type: string
+                                    fs_name:
+                                      description: Remote filesystem name
+                                      type: string
+                                  required: &id017
+                                  - client_name
+                                  - cluster_name
+                                  - fs_name
+                                  type: object
+                                stats:
+                                  description: Peer statistics
+                                  properties:
+                                    failure_count:
+                                      description: Number of sync failures
+                                      type: integer
+                                    recovery_count:
+                                      description: Number of peer recoveries
+                                      type: integer
+                                  required: &id018
+                                  - failure_count
+                                  - recovery_count
+                                  type: object
+                                uuid:
+                                  description: Peer UUID
+                                  type: string
+                              required: &id019
+                              - uuid
+                              - remote
+                              - stats
+                              type: object
+                            type: array
+                        required: &id020
+                        - filesystem_id
+                        - name
+                        - directory_count
+                        - peers
+                        type: object
+                      type: array
+                  type: object
+                required: &id021
+                - daemon_id
+                - filesystems
+                type: array
             application/vnd.ceph.api.v1.0+json:
               schema:
                 items:
@@ -3317,7 +3392,7 @@ paths:
                                       description: Ceph client name
                                       type: string
                                     cluster_name:
-                                      description: Remote cluster name
+                                      description: Remote site name
                                       type: string
                                     fs_name:
                                       description: Remote filesystem name

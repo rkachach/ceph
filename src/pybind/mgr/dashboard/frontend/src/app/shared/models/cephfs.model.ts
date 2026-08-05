@@ -47,7 +47,7 @@ export interface Daemon {
 }
 
 export interface MirroringRow {
-  remote_cluster_name: string;
+  remote_site_name: string;
   fs_name: string;
   local_fs_name?: string;
   client_name: string;
@@ -288,7 +288,7 @@ export interface MirrorCheckpointMutationResponse {
 export interface DaemonOverviewInfo {
   mirrorPaths: number;
   failures: number;
-  clusterName: string;
+  siteName: string;
   destinationFsName: string;
   fsid: string;
   monitorEndpoint: string;
@@ -302,7 +302,6 @@ export interface MirroringFsOverviewStats {
 }
 
 export interface MirroringFsDestinationCluster {
-  clusterName: string;
   siteName: string;
   destinationFsName: string;
   fsid: string;

@@ -49,18 +49,31 @@
 </cds-tile>
 
 <cds-tile class="cds-mb-5">
-  <h4 class="cds--type-heading-03 cds-m-0 cds-mb-5"
-      i18n>Destination cluster</h4>
-  <div cdsStack="horizontal"
-       [gap]="8">
-    <div cdsStack="vertical"
-         [gap]="5"
-         class="cephfs-mirroring-fs-overview-destination-column cds-pr-8">
-      <div cdsStack="vertical"
-           [gap]="1">
-        <span class="cds--type-label-01"
-              i18n>Cluster name</span>
-        <span class="cds--type-body-compact-01">{{ fsData?.destination?.clusterName }}</span>
+  <h4
+    class="cds--type-heading-03 cds-m-0 cds-mb-5"
+    i18n
+  >
+    Destination cluster
+  </h4>
+  <div
+    cdsStack="horizontal"
+    [gap]="8"
+  >
+    <div
+      cdsStack="vertical"
+      [gap]="5"
+      class="cephfs-mirroring-fs-overview-destination-column cds-pr-8"
+    >
+      <div
+        cdsStack="vertical"
+        [gap]="1"
+      >
+        <span
+          class="cds--type-label-01"
+          i18n
+          >Site name</span
+        >
+        <span class="cds--type-body-compact-01">{{ fsData?.destination?.siteName }}</span>
       </div>
       <div cdsStack="vertical"
            [gap]="1">
