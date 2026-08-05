@@ -1929,6 +1929,7 @@ export class ServiceFormComponent extends CdForm implements OnInit {
       gid: 1001,
       image: this.objectBrowserImage,
       args: ['-p', ssl ? `${port}:8443` : `${port}:8080`],
+      ports: [port],
       envs: [
         `ACCESS_KEY=${accessKey}`,
         `SECRET_KEY=${secretKey}`,
