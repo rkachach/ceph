@@ -8,8 +8,8 @@ import {
   inject
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, of, Subscription } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, of, Subscription } from 'rxjs';
+import { catchError, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import { CephfsService } from '~/app/shared/api/cephfs.service';
 import { CephfsSnapshotScheduleService } from '~/app/shared/api/cephfs-snapshot-schedule.service';
 import { DeleteConfirmationModalComponent } from '~/app/shared/components/delete-confirmation-modal/delete-confirmation-modal.component';
@@ -23,8 +23,10 @@ import { FinishedTask } from '~/app/shared/models/finished-task';
 import { FormatterService } from '~/app/shared/services/formatter.service';
 import { MirrorDirStatus, MirrorCheckpoint, MirrorStatusResponse } from '~/app/shared/models/cephfs.model';
 import { MirrorPathSchedule } from '~/app/shared/models/snapshot-schedule';
+import { NotificationType } from '~/app/shared/enum/notification-type.enum';
 import { AuthStorageService } from '~/app/shared/services/auth-storage.service';
 import { ModalCdsService } from '~/app/shared/services/modal-cds.service';
+import { NotificationService } from '~/app/shared/services/notification.service';
 import { TaskWrapperService } from '~/app/shared/services/task-wrapper.service';
 
 type SnapshotReplicationStatus = 'in-progress' | 'replicated' | 'pending' | 'failed';
@@ -131,6 +133,7 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
   private formatterService = inject(FormatterService);
   private authStorageService = inject(AuthStorageService);
   private cdsModalService = inject(ModalCdsService);
+  private notificationService = inject(NotificationService);
   private taskWrapper = inject(TaskWrapperService);
 
   columns: CdTableColumn[] = [];
@@ -146,12 +149,40 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
   removingSchedule = '';
   snapshotPanels: SnapshotPanelViewModel[] = [];
   pathCheckpoints: MirrorCheckpoint[] = [];
-  checkpointsLoading = false;
   checkpointActionInProgress = '';
   expandedSnapshotNames = new Set<string>();
 
   private subscriptions = new Subscription();
   private mirrorPathsSubscription?: Subscription;
+  private readonly checkpointPath$ = new BehaviorSubject<string | null>(null);
+
+  readonly checkpointState$ = this.checkpointPath$.pipe(
+    switchMap((path) => {
+      if (!path || !this.fsName) {
+        this.pathCheckpoints = [];
+        this.refreshSnapshotPanels();
+        return of({ loading: false, checkpoints: [] as MirrorCheckpoint[] });
+      }
+
+      return this.cephfsService.listMirrorCheckpoints(this.fsName, path).pipe(
+        map((response) => ({
+          loading: false,
+          checkpoints: response.checkpoints ?? []
+        })),
+        catchError(() => of({ loading: false, checkpoints: [] as MirrorCheckpoint[] })),
+        tap((state) => {
+          if (this.selectedPath?.path !== path) {
+            return;
+          }
+          this.pathCheckpoints = state.checkpoints;
+          this.selectedPath.checkpointCount = state.checkpoints.length;
+          this.refreshSnapshotPanels();
+        }),
+        startWith({ loading: true, checkpoints: this.pathCheckpoints })
+      );
+    }),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
   ngOnInit(): void {
     this.initializeColumns();
@@ -160,6 +191,7 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
   }
 
   ngOnDestroy(): void {
+    this.checkpointPath$.complete();
     this.subscriptions.unsubscribe();
   }
 
@@ -183,12 +215,6 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
         name: $localize`Snapshots synced`,
         prop: 'snapshotCount',
         flexGrow: 1.5
-      },
-      {
-        name: $localize`Checkpoints`,
-        prop: 'checkpointCount',
-        flexGrow: 1.5,
-        sortable: true
       },
       {
         name: $localize`Current sync snapshot`,
@@ -234,9 +260,8 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
     }
 
     this.subscriptions.add(
-      this.cephfsService
-        .list()
-        .subscribe((filesystems: { id?: number; mdsmap?: { fs_name?: string } }[]) => {
+      this.cephfsService.list().subscribe({
+        next: (filesystems: { id?: number; mdsmap?: { fs_name?: string } }[]) => {
           const fsId =
             filesystems.find((fs) => fs.mdsmap?.fs_name === this.fsName)?.id ?? 0;
           const encodedFsName = encodeURIComponent(this.fsName);
@@ -249,7 +274,15 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
               }
             }
           );
-        })
+        },
+        error: () => {
+          this.notificationService.show(
+            NotificationType.error,
+            $localize`Error`,
+            $localize`Failed to load filesystems for adding a mirror path.`
+          );
+        }
+      })
     );
   }
 
@@ -295,51 +328,28 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
     }
 
     this.mirrorPathsSubscription?.unsubscribe();
-    this.mirrorPathsSubscription = this.cephfsService
-      .getMirrorStatus(this.fsName)
-      .pipe(
-        switchMap((data: MirrorStatusResponse) => {
-          const paths = this.parseMirrorStatus(data);
-          if (!paths.length) {
-            return of(paths);
-          }
-
-          return forkJoin(
-            paths.map((mirrorPath) =>
-              this.cephfsService.listMirrorCheckpoints(this.fsName, mirrorPath.path).pipe(
-                map((response) => response.checkpoints?.length ?? 0),
-                catchError(() => of(0))
-              )
-            )
-          ).pipe(
-            map((checkpointCounts) => {
-              paths.forEach((mirrorPath, index) => {
-                mirrorPath.checkpointCount = checkpointCounts[index];
-              });
-              return paths;
-            })
-          );
-        })
-      )
-      .subscribe(
-        (mirrorPaths) => {
-          this.mirrorPaths = mirrorPaths;
+    this.mirrorPathsSubscription = this.cephfsService.getMirrorStatus(this.fsName).subscribe({
+      next: (data: MirrorStatusResponse) => {
+        this.mirrorPaths = this.parseMirrorStatus(data);
+        if (this.selectedPath) {
+          this.selectedPath =
+            this.mirrorPaths.find((mirrorPath) => mirrorPath.path === this.selectedPath?.path) ??
+            null;
+          this.sidePanelOpen = !!this.selectedPath;
           if (this.selectedPath) {
-            this.selectedPath =
-              this.mirrorPaths.find((mirrorPath) => mirrorPath.path === this.selectedPath?.path) ??
-              null;
-            this.sidePanelOpen = !!this.selectedPath;
-            if (this.selectedPath) {
-              this.refreshSnapshotPanels();
-            }
+            this.loadPathCheckpoints(this.selectedPath.path);
+          } else {
+            this.clearCheckpoints();
           }
-        },
-        (_) => {
-          this.mirrorPaths = [];
-          this.selectedPath = null;
-          this.sidePanelOpen = false;
         }
-      );
+      },
+      error: () => {
+        this.mirrorPaths = [];
+        this.selectedPath = null;
+        this.sidePanelOpen = false;
+        this.clearCheckpoints();
+      }
+    });
     this.subscriptions.add(this.mirrorPathsSubscription);
   }
 
@@ -567,10 +577,6 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
     );
   }
 
-  get selectedPathCheckpointCount(): number {
-    return this.pathCheckpoints.length;
-  }
-
   get canMarkCheckpoint(): boolean {
     return !!this.permission?.create;
   }
@@ -583,7 +589,7 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
     this.sidePanelOpen = false;
     this.selectedPath = null;
     this.snapshotPanels = [];
-    this.pathCheckpoints = [];
+    this.clearCheckpoints();
     this.expandedSnapshotNames.clear();
 
     setTimeout(() => {
@@ -602,43 +608,23 @@ export class CephfsMirroringFsMirrorPathsComponent implements OnInit, OnDestroy 
     this.schedulePoliciesLoading = false;
     this.removingSchedule = '';
     this.snapshotPanels = [];
-    this.pathCheckpoints = [];
-    this.checkpointsLoading = false;
     this.checkpointActionInProgress = '';
     this.expandedSnapshotNames.clear();
+    this.clearCheckpoints();
+  }
+
+  private clearCheckpoints(): void {
+    this.checkpointPath$.next(null);
+    this.pathCheckpoints = [];
+    this.refreshSnapshotPanels();
   }
 
   loadPathCheckpoints(path: string): void {
-    if (!this.fsName || !path) {
-      this.pathCheckpoints = [];
-      this.refreshSnapshotPanels();
+    if (!this.fsName || !path || !this.sidePanelOpen) {
+      this.clearCheckpoints();
       return;
     }
-
-    this.checkpointsLoading = true;
-    this.subscriptions.add(
-      this.cephfsService.listMirrorCheckpoints(this.fsName, path).subscribe(
-        (response) => {
-          if (this.selectedPath?.path !== path) {
-            this.checkpointsLoading = false;
-            return;
-          }
-          this.pathCheckpoints = response.checkpoints ?? [];
-          if (this.selectedPath) {
-            this.selectedPath.checkpointCount = this.pathCheckpoints.length;
-          }
-          this.refreshSnapshotPanels();
-          this.checkpointsLoading = false;
-        },
-        () => {
-          if (this.selectedPath?.path === path) {
-            this.pathCheckpoints = [];
-            this.refreshSnapshotPanels();
-          }
-          this.checkpointsLoading = false;
-        }
-      )
-    );
+    this.checkpointPath$.next(path);
   }
 
   refreshSnapshotPanels(): void {
