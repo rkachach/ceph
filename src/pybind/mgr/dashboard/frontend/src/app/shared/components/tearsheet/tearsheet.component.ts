@@ -199,14 +199,14 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getMergedPayload(): any {
     return this.stepContents.toArray().reduce((acc, wrapper) => {
-      const stepFormValue = wrapper.stepComponent.formGroup.value;
+      const stepFormValue = wrapper.stepComponent?.formGroup?.value;
       return { ...acc, ...stepFormValue };
     }, {});
   }
 
   handleSubmit() {
     this.stepContents?.forEach((wrapper, index) => {
-      const form = wrapper.stepComponent?.formGroup;
+      const form = wrapper?.resolvedFormGroup;
       if (!form) return;
 
       form.markAllAsTouched();
@@ -257,7 +257,7 @@ export class TearsheetComponent implements OnInit, AfterViewInit, OnDestroy {
         // statusChanges so the flag stays in sync as the user types.
         // Initial state is NOT seeded here: these forms intentionally start
         // with Next enabled so the user can navigate freely before touching fields.
-        const form = wrapper.resolvedFormGroup;
+        const form = wrapper?.resolvedFormGroup;
         if (form) {
           form.statusChanges
             .pipe(takeUntil(this.setupTeardown$))
