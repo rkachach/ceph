@@ -7,22 +7,22 @@ extern "C" {
 
 namespace ceph {
 
-class LinuxKeyringTest : public ::testing::Test {
+class MemoryKeyringTest : public ::testing::Test {
  protected:
   std::unique_ptr<Keyring> keyring;
 
-  LinuxKeyringTest() : keyring(new LinuxKeyring()) {}
+  MemoryKeyringTest() : keyring(new MemoryKeyring()) {}
 
   void SetUp() override {
     std::error_code ec;
     if (!keyring->supported(&ec)) {
-      GTEST_SKIP() << "Linux Keyring is unsupported. " << ec
+      GTEST_SKIP() << "Memory Keyring is unsupported. " << ec
                    << ". Skipping test";
     }
   }
 };
 
-TEST_F(LinuxKeyringTest, Basics) {
+TEST_F(MemoryKeyringTest, Basics) {
   std::string secret("secret");
   auto maybe_keyring_secret = keyring->add("testkey", secret);
 
@@ -37,40 +37,40 @@ TEST_F(LinuxKeyringTest, Basics) {
   ASSERT_TRUE(keyring_secret->read(out));
 }
 
-TEST_F(LinuxKeyringTest, Lifecycle) {
+TEST_F(MemoryKeyringTest, Lifecycle) {
   std::string secret("secret");
   auto maybe = keyring->add("testkey", secret);
   ASSERT_TRUE(maybe.has_value());
-  auto* ptr = dynamic_cast<LinuxKeyringSecret*>(maybe.value().get());
+  auto* ptr = dynamic_cast<MemoryKeyringSecret*>(maybe.value().get());
   ASSERT_TRUE(ptr->initialized());
   auto next = std::move(*ptr);
   ASSERT_TRUE(next.initialized());
   ASSERT_FALSE(ptr->initialized());
 }
 
-TEST_F(LinuxKeyringTest, LifecycleMoveAssignResetsDestination) {
+TEST_F(MemoryKeyringTest, LifecycleMoveAssignResetsDestination) {
   std::string secret("secret");
   auto dest = keyring->add("testkey", secret);
   auto source = keyring->add("testkey2", secret);
   ASSERT_TRUE(dest.has_value());
   ASSERT_TRUE(source.has_value());
 
-  const auto* lks = dynamic_cast<LinuxKeyringSecret*>(dest.value().get());
+  const auto* lks = dynamic_cast<MemoryKeyringSecret*>(dest.value().get());
   auto dest_serial = lks->_serial;
   ASSERT_NE(-1, dest_serial);
 
   dest = std::move(source);
 
-  std::array<char, 1024> buf = {0};
-  auto ret = keyctl_describe(dest_serial, buf.data(), buf.size());
+  std::string buf;
+  auto ret = keyring->describe(dest_serial, buf);
 
-  EXPECT_EQ(-1, ret) << buf.data();
-  ASSERT_EQ(ENOKEY, errno);
+  EXPECT_EQ(!! ret, true) << buf;
+  ASSERT_EQ(ENOKEY, ret.value());
 }
 
-TEST_F(LinuxKeyringTest, ResetClearsState) {
+TEST_F(MemoryKeyringTest, ResetClearsState) {
   auto maybe = keyring->add("testkey", "secret");
-  auto* ptr = dynamic_cast<LinuxKeyringSecret*>(maybe.value().get());
+  auto* ptr = dynamic_cast<MemoryKeyringSecret*>(maybe.value().get());
   auto err = ptr->reset();
   ASSERT_FALSE(err) << err;
   ASSERT_FALSE(ptr->initialized());

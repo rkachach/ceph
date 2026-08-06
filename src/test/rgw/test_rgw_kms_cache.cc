@@ -50,6 +50,7 @@ class FakeKeyring : public Keyring {
     return std::make_unique<FakeKeyringSecret>(key, val);
   }
   bool supported(std::error_code* ec) noexcept override { return true; }
+  std::error_code describe(int, std::string&) const noexcept {return {};};
   std::string_view name() const noexcept override { return "fake"; };
 };
 
