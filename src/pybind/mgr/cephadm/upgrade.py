@@ -2720,21 +2720,5 @@ class CephadmUpgrade:
                 'who': name_to_config_section(daemon_type),
             })
 
-<<<<<<< HEAD
-        self._mark_upgrade_complete()
-=======
-        # Limited (--limit) upgrades end when the batch quota is exhausted,
-        # even if other daemons in the filter still need the target image.
-        if (
-            self.upgrade_state.remaining_count is not None
-            and self.upgrade_state.remaining_count <= 0
-        ):
-            self._mark_upgrade_complete()
-            return
-        if not self._filtered_scope_up_to_date(
-            target_digests, self.upgrade_state._target_name,
-        ):
-            return
         self._mark_upgrade_complete(target_digests, target_image)
->>>>>>> 07ef0d25eb6a (mgr/cephadm: fixups for setting ciphers during upgrade)
         return
