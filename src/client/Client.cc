@@ -7147,8 +7147,7 @@ int Client::mount(const std::string &mount_root, const UserPerm& perms,
 void Client::load_auth_caps()
 {
   auto& auth_keys = monclient->keyring->get_keys();
-  EntityName client_name;
-  client_name.set_name(entity_name_t::CLIENT(whoami.v));
+  auto client_name = cct->_conf->name;
 
   if (auth_keys.find(client_name) != auth_keys.end()) {
     auto& bl = auth_keys[client_name].caps["mds"];
@@ -7162,8 +7161,7 @@ bool Client::has_qtine_auth_caps(const std::string_view path)
     return mds_auth_caps.quarantine_access_in_caps(mdsmap->get_fs_name(), path);
   }
   auto& auth_keys = monclient->keyring->get_keys();
-  EntityName client_name;
-  client_name.set_name(entity_name_t::CLIENT(whoami.v));
+  auto client_name = cct->_conf->name;
   // is there's no cephx key then we have "all" caps
   auto& caps = auth_keys[client_name].caps;
   return (caps.find("key") == caps.end());
