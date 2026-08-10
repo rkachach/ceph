@@ -16,7 +16,7 @@
       <div class="card-footer">
         <cd-form-button-panel (submitActionEvent)="submit(model, formUISchema.taskInfo)"
                               [form]="formDir"
-                              [submitText]="formUISchema.title"
+                              [submitText]="submitAction"
                               [disabled]="!form.valid"
                               wrappingClass="text-right"></cd-form-button-panel>
       </div>
