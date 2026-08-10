@@ -411,10 +411,18 @@
   </a>
 </ng-template>
 
-<ng-template #timeAgoTpl
-             let-value="data.value">
-  <span data-toggle="tooltip"
-        [title]="value | cdDate">{{ value | relativeDate }}</span>
+<ng-template
+  #timeAgoTpl
+  let-value="data.value"
+>
+  <span
+    *ngIf="value; else missingTimeAgoTpl"
+    data-toggle="tooltip"
+    [title]="value | cdDate"
+  >
+    {{ value | relativeDate }}
+  </span>
+  <ng-template #missingTimeAgoTpl>-</ng-template>
 </ng-template>
 
 <ng-template #pathTpl
