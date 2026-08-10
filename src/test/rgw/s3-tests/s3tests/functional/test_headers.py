@@ -4,6 +4,7 @@ import botocore.config
 import requests
 
 from botocore.auth import S3SigV4Auth
+from botocore.auth import S3SigV4QueryAuth
 from botocore.awsrequest import AWSRequest
 from botocore.credentials import Credentials
 from botocore.exceptions import ClientError
@@ -24,7 +25,8 @@ from . import (
     get_main_aws_secret_key,
     get_new_bucket,
     get_new_bucket_name,
-    get_v2_client
+    get_v2_client,
+    get_config_ssl_verify
     )
 
 def _add_header_create_object(headers, client=None):
@@ -168,6 +170,16 @@ def _get_s3sigv4_signer():
         secret_key=get_main_aws_secret_key(),
     )
     return S3SigV4Auth(credentials=creds, service_name="s3", region_name=get_main_api_name())
+
+def _get_s3sigv4_query_signer():
+    """ Return a query-string (presigning) Signer based on default user/secret/region.
+    """
+    creds = Credentials(
+        access_key=get_main_aws_access_key(),
+        secret_key=get_main_aws_secret_key(),
+    )
+    return S3SigV4QueryAuth(credentials=creds, service_name="s3",
+                            region_name=get_main_api_name(), expires=100000)
 
 #
 # common tests
@@ -605,7 +617,7 @@ def test_sigv4_host_good():
     )
     signer.add_auth(req)
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 200)
 
 @pytest.mark.auth_aws4
@@ -623,7 +635,7 @@ def test_sigv4_host_bad():
     del req.headers['Authorization']
     req.headers['Authorization'] = authorization
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 403)
 
 @pytest.mark.auth_aws4
@@ -636,7 +648,7 @@ def test_sigv4_xamz_good():
     )
     signer.add_auth(req)
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 200)
 
 @pytest.mark.auth_aws4
@@ -650,7 +662,7 @@ def test_sigv4_xamz_bad():
     signer.add_auth(req)
     req.headers['x-amz-malevolent'] = 'evil-header'
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 403)
 
 @pytest.mark.auth_aws4
@@ -663,7 +675,7 @@ def test_sigv4_contenttype_good():
     )
     signer.add_auth(req)
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 200)
 
 @pytest.mark.auth_aws4
@@ -676,7 +688,7 @@ def test_sigv4_contenttype_bad():
     signer.add_auth(req)
     req.headers["content-type"] = "application/octet-stream"
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 403)
 
 @pytest.mark.auth_aws4
@@ -692,5 +704,34 @@ def test_sigv4_missing_header():
     signer.add_auth(req)
     del req.headers['x-amz-problematic']
     assert req.url is not None
-    resp = requests.get(req.url, headers=dict(req.headers))
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
     assert(resp.status_code == 403)
+
+@pytest.mark.auth_aws4
+def test_sigv4_xgoog_signed():
+    signer = _get_s3sigv4_signer()
+    req = AWSRequest(
+        method="GET",
+        url=get_config_endpoint() + "/",
+        headers={"x-goog-benevolent": "good-header"},
+    )
+    signer.add_auth(req)
+    assert req.url is not None
+    resp = requests.get(req.url, headers=dict(req.headers), verify=get_config_ssl_verify())
+    assert(resp.status_code == 200)
+
+@pytest.mark.auth_aws4
+def test_sigv4_presigned_xamz_bad():
+    signer = _get_s3sigv4_query_signer()
+    req = AWSRequest(method="GET", url=get_config_endpoint() + "/")
+    signer.add_auth(req)
+    resp = requests.get(req.url, headers={'x-amz-malevolent': 'evil-header'})
+    assert(resp.status_code == 403)
+
+@pytest.mark.auth_aws4
+def test_sigv4_presigned_good():
+    signer = _get_s3sigv4_query_signer()
+    req = AWSRequest(method="GET", url=get_config_endpoint() + "/")
+    signer.add_auth(req)
+    resp = requests.get(req.url)
+    assert(resp.status_code == 200)
