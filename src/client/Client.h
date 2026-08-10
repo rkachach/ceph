@@ -30,8 +30,8 @@
 #include "include/lru.h"
 #include "include/types.h"
 #include "include/cephfs/metrics/Types.h"
-#include "mds/mdstypes.h"
 #include "mds/MDSAuthCaps.h"
+#include "mds/mdstypes.h"
 #include "include/cephfs/types.h"
 #include "msg/Dispatcher.h"
 #include "msg/MessageRef.h"
@@ -1312,8 +1312,6 @@ protected:
    */
   void _finish_init();
 
-  void load_auth_caps();
-  bool has_qtine_auth_caps(const std::string_view path);
 
   // global client lock
   //  - protects Client and buffer cache both!
@@ -1338,8 +1336,6 @@ protected:
 
   client_t whoami;
 
-  MDSAuthCaps mds_auth_caps; // for qtine auth caps
-  bool has_mds_auth_caps = false;
 
   /* The state migration mechanism */
   enum _state {
