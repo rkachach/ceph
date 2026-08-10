@@ -1348,3 +1348,23 @@ int remove_sse_s3_bucket_key(const DoutPrefixProvider *dpp,
     return -EINVAL;
   }
 }
+
+bool rgw_s3_sse_kms_configured(CephContext *cct)
+{
+  if (RGW_SSE_KMS_BACKEND_TESTING == cct->_conf->rgw_crypt_s3_kms_backend)
+    return cct->_conf->rgw_crypt_s3_kms_encryption_keys != "";
+  if (RGW_SSE_KMS_BACKEND_BARBICAN == cct->_conf->rgw_crypt_s3_kms_backend)
+    return cct->_conf->rgw_barbican_url != "";
+  if (RGW_SSE_KMS_BACKEND_VAULT == cct->_conf->rgw_crypt_s3_kms_backend)
+    return cct->_conf->rgw_crypt_vault_addr != "";
+  if (RGW_SSE_KMS_BACKEND_KMIP == cct->_conf->rgw_crypt_s3_kms_backend)
+    return cct->_conf->rgw_crypt_kmip_addr != "";
+  return false;
+}
+
+bool rgw_s3_sse_s3_configured(CephContext *cct)
+{
+  if (RGW_SSE_KMS_BACKEND_VAULT == cct->_conf->rgw_crypt_sse_s3_backend)
+    return cct->_conf->rgw_crypt_sse_s3_vault_addr != "";
+  return false;
+}

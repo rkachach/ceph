@@ -9973,6 +9973,16 @@ void RGWPutBucketEncryption::execute(optional_yield y)
     return;
   }
 
+  stringstream ss;
+  const std::string &sse_algorithm { bucket_encryption_conf.sse_algorithm() };
+  if ((sse_algorithm == "AES256" && !rgw_s3_sse_s3_configured(s->cct))
+	|| (sse_algorithm == "aws:kms" && !rgw_s3_sse_kms_configured(s->cct))) {
+    ss << "The server side encryption " << sse_algorithm << " is not configured";
+    op_ret = -ENOENT;
+    s->err.message = ss.str();
+    return;
+  }
+
   op_ret = rgw_forward_request_to_master(this, *s->penv.site, s->owner.id,
                                          &data, nullptr, s->info, s->err, y);
   if (op_ret < 0) {

@@ -189,3 +189,6 @@ int handle_sse_s3_encryption(const DoutPrefixProvider *dpp,
   std::map<std::string, ceph::bufferlist>& attrs,
   std::unique_ptr<BlockCrypt>* block_crypt,
   std::map<std::string, std::string>* crypt_http_responses);
+
+bool rgw_s3_sse_kms_configured(CephContext *cct);
+bool rgw_s3_sse_s3_configured(CephContext *cct);
