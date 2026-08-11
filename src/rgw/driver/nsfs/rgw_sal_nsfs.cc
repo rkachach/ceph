@@ -992,12 +992,18 @@ int FSEnt::fill_cache(const DoutPrefixProvider *dpp, optional_yield y, fill_cach
 
   Attrs attrs;
   int ret = open(dpp);
-  if (ret < 0)
+  if (ret < 0) {
+    ldpp_dout(dpp, 10) << "FSEnt::fill_cache: open failed for " << get_name()
+      << ": " << cpp_strerror(-ret) << dendl;
     return ret;
+  }
 
   ret = get_x_attrs(y, dpp, get_fd(), attrs, get_name());
-  if (ret < 0)
+  if (ret < 0) {
+    ldpp_dout(dpp, 10) << "FSEnt::fill_cache: get_x_attrs failed for " << get_name()
+      << ": " << cpp_strerror(-ret) << dendl;
     return ret;
+  }
 
   ACLOwner acl_owner;
   ret = decode_acl_owner(attrs, acl_owner);
@@ -1618,7 +1624,12 @@ int Directory::fill_cache(const DoutPrefixProvider *dpp, optional_yield y,
     if (ret < 0)
       return ret;
 
-    ent->stat(dpp);
+    ret = ent->stat(dpp);
+    if (ret < 0) {
+      ldpp_dout(dpp, 10) << "fill_cache: stat failed for " << name
+	<< ": " << cpp_strerror(-ret) << dendl;
+      return ret;
+    }
 
     if (name == NSFS_FOLDER_OBJECT_NAME) {
       // directory object sentinel: emit with key = path_prefix
@@ -1673,8 +1684,11 @@ int Directory::fill_cache(const DoutPrefixProvider *dpp, optional_yield y,
     }
 
     ret = ent->fill_cache(dpp, y, cb, flags, path_prefix);
-    if (ret < 0)
+    if (ret < 0) {
+      ldpp_dout(dpp, 10) << "fill_cache: ent->fill_cache failed for " << name
+	<< ": " << cpp_strerror(-ret) << dendl;
       return ret;
+    }
     return 0;
   });
 
@@ -6286,15 +6300,21 @@ int NSFSMultipartUpload::complete(const DoutPrefixProvider *dpp,
 
   // assemble parts into a single file via copy_file_range
   std::string assembled_name = ".assembled";
+  ldpp_dout(dpp, 10) << "complete: assembling " << total_parts << " parts" << dendl;
   ret = assemble_parts(dpp, staging_fd, total_parts, assembled_name);
   if (ret < 0) {
+    ldpp_dout(dpp, 10) << "complete: assemble_parts failed: "
+      << cpp_strerror(-ret) << dendl;
     return ret;
   }
 
   // write xattrs on assembled file
   int afd = openat(staging_fd, assembled_name.c_str(), O_RDWR);
   if (afd < 0) {
-    return -errno;
+    ret = errno;
+    ldpp_dout(dpp, 10) << "complete: openat assembled failed: "
+      << cpp_strerror(ret) << dendl;
+    return -ret;
   }
 
   /* owner is already in attrs[RGW_ATTR_ACL] from the generic layer */
@@ -6310,8 +6330,11 @@ int NSFSMultipartUpload::complete(const DoutPrefixProvider *dpp,
     std::string xattr_name = make_xattr_name(k);
     ret = fsetxattr(afd, xattr_name.c_str(), v.c_str(), v.length(), 0);
     if (ret < 0) {
+      ret = errno;
+      ldpp_dout(dpp, 10) << "complete: fsetxattr failed for " << xattr_name
+	<< " (size=" << v.length() << "): " << cpp_strerror(ret) << dendl;
       ::close(afd);
-      return -errno;
+      return -ret;
     }
   }
   ::close(afd);
