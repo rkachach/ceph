@@ -2202,13 +2202,14 @@ class CephadmUpgrade:
 
     def _rotate_mgr_mon_auth_keys(self, target_image: str, target_digests: Optional[List[str]] = None) -> None:
         if self.upgrade_state:
+
             if self.upgrade_state.rotated_mgr_mon_auth_key_daemons is None:
                 self.upgrade_state.rotated_mgr_mon_auth_key_daemons = []
             # do mgr and mon keyrings as one off after mons have been upgraded
             mon_daemons = self.mgr.cache.get_daemons_by_service('mon')
-            _, mons_needing_upgrade, __, ___ = self._detect_need_upgrade(mon_daemons, target_digests, target_image)
+            _, mons_needing_upgrade, __, mons_done = self._detect_need_upgrade(mon_daemons, target_digests, target_image)
             need_rotate_self = False
-            if not mons_needing_upgrade:
+            if not mons_needing_upgrade and mons_done == len(mon_daemons):
                 if not self.upgrade_state.has_set_cephx_allowed_ciphers:
                     # all mons have been upgraded if we get here so keyrings can be rotated
                     # start by setting the allowed ciphers. Preferred ciphers should be left
