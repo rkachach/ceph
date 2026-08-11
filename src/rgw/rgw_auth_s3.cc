@@ -779,19 +779,19 @@ get_v4_canonical_headers(const req_info& info,
     return boost::none;
   }
   // Any header starting with `x-amz-` must be in CanonicalHeaders
-  for (const auto& [orig, _] : info.x_meta_map) {
-    std::string key;
-    key.reserve(orig.size());
-    // Still need to downcase so someone can't bypass with `X-Amz-`
-    std::ranges::transform(orig, std::back_inserter(key), [](char c) {
-      return std::tolower(static_cast<int>(c));
-    });
-    if (!key.starts_with("x-amz-")) {
-      continue;
-    }
-    if (!canonical_hdrs_map.contains(key)) {
-      dout(5) << "Signature rejected: '" << orig
-              << "' supplied, but not in CanonicalHeaders." << dendl;
+  const auto& emap = info.env->get_map();
+  static const std::string xamz{"HTTP_X_AMZ_"};
+  for (auto i = emap.lower_bound(xamz);
+       i != emap.end() && boost::istarts_with(i->first, xamz);
+       ++i) {
+    const std::string_view env_key =
+      std::string_view(i->first).substr(sarrlen("HTTP_"));
+    boost::container::small_vector<char, 64> buf(env_key.size());
+    lowercase_dash_transform(env_key, buf.begin(), true);
+    std::string_view lower_key{buf.data(), buf.size()};
+    if (!canonical_hdrs_map.contains(lower_key)) {
+      dout(5) << "Signature rejected: '" << lower_key
+      << "' supplied, but not in CanonicalHeaders." << dendl;
       return boost::none;
     }
   }
