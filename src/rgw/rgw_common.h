@@ -2011,6 +2011,36 @@ uppercase_dash_transform(
       });
 }
 
+/*
+ * Converts uppercase to lowercase and underscores to dashes
+ *
+ * `THIS_KIND_OF_STRING` to `this-kind-of-string`
+ *
+ * \param[in] in Range to transform
+ * \param[out] out Output iterator
+ * \param[in] bidirectional Transform '-' to '_'
+ *
+ * \return A structure of input and output iterators, as with std::transform.
+ */
+inline auto
+lowercase_dash_transform(
+    std::ranges::input_range auto&& in,
+    std::output_iterator<char> auto out,
+    bool bidirectional = false)
+{
+  return std::ranges::transform(
+      std::forward<decltype(in)>(in), out, [bidirectional](char c) -> char {
+        switch (c) {
+        case '_':
+          return '-';
+        case '-':
+          return bidirectional ? '_' : '-';
+        default:
+          return tolower(static_cast<unsigned char>(c));
+        }
+      });
+}
+
 void rgw_setup_saved_curl_handles();
 void rgw_release_all_curl_handles();
 
