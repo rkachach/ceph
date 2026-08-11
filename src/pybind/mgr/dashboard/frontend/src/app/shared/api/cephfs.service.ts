@@ -129,7 +129,7 @@ export class CephfsService {
   }
 
   listDaemonStatus(): Observable<Daemon[]> {
-    return this.http.get<Daemon[]>(`${this.baseURL}/mirror/daemon-status`);
+    return this.http.get<Daemon[]>(`${this.baseURL}/mirror/daemon/status`);
   }
 
   enableMirror(@cdEncodeNot fsName: string): Observable<any> {

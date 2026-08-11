@@ -3280,7 +3280,7 @@ paths:
       summary: Create bootstrap peer
       tags:
       - CephfsMirror
-  /api/cephfs/mirror/daemon-status:
+  /api/cephfs/mirror/daemon/status:
     get:
       parameters: []
       responses:
@@ -4135,7 +4135,8 @@ paths:
                                           snapshot
                                         type: integer
                                       sync_time_stamp:
-                                        description: Time of the last sync
+                                        description: Wall-clock time when the snapshot
+                                          sync finished
                                         type: string
                                     required:
                                     - id
@@ -4187,6 +4188,163 @@ paths:
                     type: object
                 required:
                 - metrics
+                type: object
+            application/vnd.ceph.api.v1.0+json:
+              schema:
+                properties:
+                  metrics:
+                    description: Snapshot mirror sync metrics grouped by mirrored
+                      directory path
+                    properties:
+                      /dir_path:
+                        description: Mirror directory metrics keyed by absolute path
+                        properties:
+                          peer:
+                            description: Peer sync statistics for the mirrored directory
+                            properties:
+                              peer_uuid:
+                                description: Sync statistics keyed by peer UUID
+                                properties:
+                                  current_syncing_snap:
+                                    description: Snapshot currently being synchronized
+                                    properties:
+                                      avg_read_throughput_bytes:
+                                        description: Average read throughput
+                                        type: string
+                                      avg_write_throughput_bytes:
+                                        description: Average write throughput
+                                        type: string
+                                      bytes:
+                                        description: Byte sync progress
+                                        properties:
+                                          sync_bytes:
+                                            description: Bytes synced so far
+                                            type: string
+                                          sync_percent:
+                                            description: Sync completion percentage
+                                            type: string
+                                          total_bytes:
+                                            description: Total bytes to sync
+                                            type: string
+                                        required: *id026
+                                        type: object
+                                      crawl:
+                                        description: Directory crawl progress
+                                        properties:
+                                          duration:
+                                            description: Phase duration
+                                            type: string
+                                          state:
+                                            description: Phase state, e.g. completed,
+                                              in-progress, or waiting
+                                            type: string
+                                        required: *id027
+                                        type: object
+                                      datasync_queue_wait:
+                                        description: Data sync queue wait progress
+                                        properties:
+                                          duration:
+                                            description: Phase duration
+                                            type: string
+                                          state:
+                                            description: Phase state, e.g. completed,
+                                              in-progress, or waiting
+                                            type: string
+                                        required: *id028
+                                        type: object
+                                      eta:
+                                        description: Estimated time remaining for
+                                          the current sync
+                                        type: string
+                                      files:
+                                        description: File sync progress
+                                        properties:
+                                          sync_files:
+                                            description: Files synced so far
+                                            type: string
+                                          sync_percent:
+                                            description: Sync completion percentage
+                                            type: string
+                                          total_files:
+                                            description: Total files to sync
+                                            type: string
+                                        required: *id029
+                                        type: object
+                                      id:
+                                        description: Snapshot ID
+                                        type: integer
+                                      name:
+                                        description: Snapshot name
+                                        type: string
+                                      sync-mode:
+                                        description: 'Snapshot sync mode: full or
+                                          delta'
+                                        type: string
+                                    required: *id030
+                                    type: object
+                                  failure_reason:
+                                    description: Last sync failure reason when state
+                                      is failed
+                                    type: string
+                                  last_synced_snap:
+                                    description: Last successfully synchronized snapshot
+                                    properties:
+                                      crawl_duration:
+                                        description: Time taken to scan directory
+                                        type: string
+                                      datasync_queue_wait_duration:
+                                        description: Time in data sync queue
+                                        type: string
+                                      id:
+                                        description: Snapshot ID
+                                        type: integer
+                                      name:
+                                        description: Snapshot name
+                                        type: string
+                                      sync_bytes:
+                                        description: Bytes synced for the snapshot
+                                        type: string
+                                      sync_duration:
+                                        description: Snapshot sync duration
+                                        type: string
+                                      sync_files:
+                                        description: Number of files synced for the
+                                          snapshot
+                                        type: integer
+                                      sync_time_stamp:
+                                        description: Wall-clock time when the snapshot
+                                          sync finished
+                                        type: string
+                                    required: *id031
+                                    type: object
+                                  metrics_updated_at:
+                                    description: Wall-clock time when metrics were
+                                      last updated
+                                    type: number
+                                  snaps_deleted:
+                                    description: Total number of snapshots deleted
+                                      on the peer
+                                    type: integer
+                                  snaps_renamed:
+                                    description: Total number of snapshots renamed
+                                      on the peer
+                                    type: integer
+                                  snaps_synced:
+                                    description: Total number of snapshots synchronized
+                                    type: integer
+                                  state:
+                                    description: 'Mirror sync state: idle, syncing,
+                                      stale, or failed'
+                                    type: string
+                                required: *id032
+                                type: object
+                            required: *id033
+                            type: object
+                        required: *id034
+                        type: object
+                    required: *id035
+                    type: object
+                required: *id036
                 type: object
           description: OK
         '400':
