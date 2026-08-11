@@ -6078,6 +6078,8 @@ int NSFSMultipartUpload::list_parts(const DoutPrefixProvider *dpp, CephContext *
   int ret;
   int last_num = 0;
 
+  parts.clear();
+
   ret = load(dpp);
   if (ret < 0) {
     return ret;
