@@ -135,6 +135,7 @@ export class ServiceFormComponent extends CdForm implements OnInit {
   hostsAndLabels$: Observable<{ hosts: { content: string }[]; labels: { content: string }[] }>;
   currentCertificate: CephServiceCertificate = null;
   currentSpecCertificateSource: string = null;
+  showCertSourceChangeWarning = false;
 
   objectBrowserImage: string;
 
@@ -704,6 +705,12 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           )
         ]
       ]
+      // Certificate management (shared across services via cd-certificate-authority-form)
+      certificateType: [CertificateType.external],
+      custom_sans: [null],
+      wildcard_enabled: [false],
+      virtual_host_enabled: [false],
+      ssl_ca_cert: ['']
     });
   }
 
@@ -1840,8 +1847,21 @@ export class ServiceFormComponent extends CdForm implements OnInit {
       this.serviceForm.controls.certificateType?.value === CertificateType.external;
     const isSslEnabled = this.serviceForm.controls.ssl?.value;
 
-    const sslKeyServices = ['iscsi', 'grafana', 'oauth2-proxy', 'nvmeof', 'nfs', 'mgmt-gateway'];
+    // mgmt-gateway does not use the ssl toggle; cert upload is always shown when external
+    if (serviceType === 'mgmt-gateway') {
+      return isExternalCert;
+    }
+
+    const sslKeyServices = ['iscsi', 'grafana', 'oauth2-proxy', 'nfs'];
     return isSslEnabled && isExternalCert && sslKeyServices.includes(serviceType);
+  }
+
+  onCertificateTypeChange(type: CertificateType): void {
+    // Reset cert-related fields when the user switches between internal/external
+    if (type === CertificateType.internal) {
+      this.serviceForm.get('ssl_cert')?.setValue('');
+      this.serviceForm.get('ssl_key')?.setValue('');
+    }
   }
 
   closeModal(): void {
