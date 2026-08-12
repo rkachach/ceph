@@ -34,7 +34,7 @@ class OSDService(CephService):
     def _apply_osd_config_to_daemon(
         self,
         osd_id: str,
-        cfg: dict[str, str],
+        cfg: Optional[dict[str, str]],
     ) -> None:
         if not cfg:
             return
