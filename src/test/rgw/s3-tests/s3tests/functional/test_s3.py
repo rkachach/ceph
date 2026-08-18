@@ -19298,8 +19298,22 @@ def test_delete_objects_version_if_match_size():
     assert 200 == response['ResponseMetadata']['HTTPStatusCode']
 
 def test_cors_presigned_url_non_preflight():
-    bucket_name = _setup_bucket_acl(bucket_acl='public-read')
     client = get_client()
+    bucket_name = _setup_bucket_acl(bucket_acl='public-read')
+    key = 'foo'
+    response = client.put_object(Bucket=bucket_name, Key=key, Body='str')
+    assert response['ResponseMetadata']['HTTPStatusCode'] == 200
+
+    # Generate the presigned URL
+    presigned_url = client.generate_presigned_url(
+        ClientMethod='get_object',
+        HttpMethod='GET',
+        Params={'Bucket': bucket_name, 'Key': key},
+    )
+
+    _cors_request_and_check(requests.get, presigned_url,
+                            {'Origin':'example1.com'},
+                            200, None, None)
 
     cors_config ={
         'CORSRules': [
@@ -19310,12 +19324,13 @@ def test_cors_presigned_url_non_preflight():
     }
     client.put_bucket_cors(Bucket=bucket_name, CORSConfiguration=cors_config)
 
-    key = 'foo'
     # Generate the presigned URL
     presigned_url = client.generate_presigned_url(
-        ClientMethod="create_multipart_upload",
-        HttpMethod="POST",
-        Params={"Bucket": bucket_name, "Key": key},
+        ClientMethod='create_multipart_upload',
+        HttpMethod='POST',
+        Params={'Bucket': bucket_name, 'Key': key},
     )
 
-    _cors_request_and_check(requests.post, presigned_url, {'Origin':'example1.com', 'Access-Control-Request-Method': 'POST'}, 403, None, None)
+    _cors_request_and_check(requests.post, presigned_url,
+                            {'Origin':'example1.com'},
+                            403, None, None)
