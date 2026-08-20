@@ -237,7 +237,10 @@ def file_mode_to_str(mode: int) -> str:
 
 def md5_hash(input_value: str) -> str:
     input_str = str(input_value).encode('utf-8')
-    hash_object = hashlib.md5(input_str)
+    hash_object = hashlib.md5(
+        input_str,
+        usedforsecurity=False
+    )
     return hash_object.hexdigest()
 
 
