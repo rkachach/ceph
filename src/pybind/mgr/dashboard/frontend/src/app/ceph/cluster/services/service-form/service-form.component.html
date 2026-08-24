@@ -338,35 +338,80 @@
         <cds-checkbox id="obSsl"
                       formControlName="obSsl">
           Enable SSL
+          <cd-help-text>
+            Secure client connections by using SSL. When enabled, provide a certificate and the
+            corresponding private key.
+          </cd-help-text>
         </cds-checkbox>
       </div>
 
       <!-- ssl_cert - Only show when SSL is enabled AND certificate type is external -->
       @if (serviceForm.controls.obSsl.value) {
       <div class="form-item">
-        <ng-container *ngTemplateOutlet="fileUploaderTextarea; context: { controlName: 'obSslCert', title: 'Certificate', helperText: 'Uploaded files will populate the certificate details automatically. Or paste the PEM content directly in the text area.', description: 'Upload a .crt file, or paste the certificate PEM content directly.', invalidTemplate: invalidSslCertError, isRequired: false }"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            fileUploaderTextarea;
+            context: {
+              controlName: 'obSslCert',
+              title: 'Certificate',
+              placeholder: 'Paste the certificate in PEM format',
+              helperText:
+                'Uploaded files will populate the certificate details automatically. Or paste the PEM content directly in the text area.',
+              description: 'Upload a .crt file, or paste the certificate PEM content directly.',
+              invalidTemplate: invalidSslCertError,
+              isRequired: false
+            }
+          "
+        ></ng-container>
         <ng-template #invalidSslCertError>
           @if (serviceForm.showError('obSslCert', frm, 'required')) {
-          <span class="invalid-feedback"
-                i18n>This field is required.</span>
+            <span
+              class="invalid-feedback"
+              i18n
+              >This field is required.</span
+            >
           }
           @if (serviceForm.showError('obSslCert', frm, 'pattern')) {
-          <span class="invalid-feedback"
-                i18n>Invalid SSL certificate.</span>
+            <span
+              class="invalid-feedback"
+              i18n
+              >Invalid SSL certificate.</span
+            >
           }
         </ng-template>
       </div>
 
       <div class="form-item">
-        <ng-container *ngTemplateOutlet="fileUploaderTextarea; context: { controlName: 'obSslKey', title: 'Key', helperText: 'Uploaded files will populate the certificate details automatically. Or paste the PEM content directly in the text area.', description: 'Upload a .key file, or paste the key PEM content directly.', invalidTemplate: invalidSslKeyError, isRequired: false }"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="
+            fileUploaderTextarea;
+            context: {
+              controlName: 'obSslKey',
+              title: 'Key',
+              placeholder:
+                'Uploading a private key file automatically populates this field. Alternatively, paste the private key in PEM format.',
+              helperText:
+                'Uploaded files will populate the certificate details automatically. Or paste the PEM content directly in the text area.',
+              description: 'Upload a .key file, or paste the key PEM content directly.',
+              invalidTemplate: invalidSslKeyError,
+              isRequired: false
+            }
+          "
+        ></ng-container>
         <ng-template #invalidSslKeyError>
           @if (serviceForm.showError('obSslKey', frm, 'required')) {
-          <span class="invalid-feedback"
-                i18n>This field is required.</span>
+            <span
+              class="invalid-feedback"
+              i18n
+              >This field is required.</span
+            >
           }
           @if (serviceForm.showError('obSslKey', frm, 'pattern')) {
-          <span class="invalid-feedback"
-                i18n>Invalid SSL key.</span>
+            <span
+              class="invalid-feedback"
+              i18n
+              >Invalid SSL key.</span
+            >
           }
         </ng-template>
       </div>
@@ -1479,117 +1524,6 @@
               </option>
             </cds-select>
           </div>
-        }
-      }
-      <!-- Grafana -->
-      @if (serviceForm.controls.service_type.value === 'grafana') {
-        <div class="form-item">
-          <cds-number
-            label="Grafana port"
-            i18n-label
-            formControlName="grafana_port"
-            id="grafana_port"
-            min="1"
-            max="65535"
-            helperText="The default port used by grafana."
-            i18n-helperText
-            [invalid]="
-              serviceForm.controls.grafana_port.invalid && serviceForm.controls.grafana_port.dirty
-            "
-            [invalidText]="invalidGrafanaPortError"
-          >
-          </cds-number>
-          <ng-template #invalidGrafanaPortError>
-            @if (serviceForm.showError('grafana_port', frm, 'required')) {
-              <span
-                class="invalid-feedback"
-                i18n
-                >This field is required.</span
-              >
-            }
-            @if (serviceForm.showError('ssl_cert', frm, 'pattern')) {
-              <span
-                class="invalid-feedback"
-                i18n
-                >Invalid SSL certificate.</span
-              >
-            }
-            </ng-template>
-          </div>
-        }
-        @if (showExternalSslKey) {
-        <div class="form-item">
-          <ng-container
-            *ngTemplateOutlet="
-              fileUploaderTextarea;
-              context: {
-                controlName: 'ssl_key',
-                title: 'Private Key Input',
-                helperText:
-                  'Uploaded files will populate the private key details automatically. Or paste the PEM content directly in the text area.',
-                description: 'Upload a .key file, or paste the private key PEM content directly.',
-                invalidTemplate: invalidSslKeyError,
-                isRequired: false
-              }
-            "
-          ></ng-container>
-          <ng-template #invalidSslKeyError>
-          @if (serviceForm.showError('ssl_key', frm, 'required')) {
-          <span
-            class="invalid-feedback"
-            i18n
-            >This field is required.</span
-          >
-          }
-          @if (serviceForm.showError('ssl_key', frm, 'pattern')) {
-          <span
-            class="invalid-feedback"
-            i18n
-            >Invalid SSL private key.</span
-          >
-          }
-          </ng-template>
-        </div>
-        <!-- ssl_ca_cert - Only show for NFS when SSL is enabled AND certificate type is external -->
-        @if (
-          serviceForm.controls.ssl.value &&
-          serviceForm.controls.certificateType.value === CertificateType.external &&
-          serviceForm.controls.service_type.value === 'nfs'
-        ) {
-        <div class="form-item">
-          <ng-container
-            *ngTemplateOutlet="
-              fileUploaderTextarea;
-              context: {
-                controlName: 'ssl_ca_cert',
-                title: 'CA Certificate Input',
-                helperText:
-                  'Uploaded files will populate the CA certificate details automatically. Or paste the PEM content directly in the text area.',
-                description:
-                  'Upload a CA certificate file, or paste the CA certificate PEM content directly.',
-                invalidTemplate: invalidSslCaCertError,
-                isRequired: false
-              }
-            "
-          ></ng-container>
-          <ng-template #invalidSslCaCertError>
-            @if (serviceForm.showError('ssl_ca_cert', frm, 'required')) {
-            <span
-              class="invalid-feedback"
-              i18n
-              >This field is required.</span
-            >
-            }
-            @if (serviceForm.showError('ssl_ca_cert', frm, 'pattern')) {
-            <span
-              class="invalid-feedback"
-              i18n
-              >Invalid CA certificate.</span
-            >
-            }
-          </ng-template>
-        </div>
-        }
         }
       }
 

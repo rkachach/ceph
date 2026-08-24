@@ -1,132 +1,67 @@
 <div [formGroup]="formGroup">
 @if (editing && currentCertificate?.has_certificate) {
+
   <div class="form-item">
-    <span
-      class="cds--label cds--type-heading-compact-01"
-      i18n
-      >Current Certificate</span
-    >
-    <div
-      cdsRow
-      [condensed]="true"
-    >
-      <div
-        cdsCol
-        [columnNumbers]="[
-          ['sm', 4],
-          ['md', 4]
-        ]"
-      >
-        <div
-          cdsStack="vertical"
-          [gap]="1"
-        >
-          <span
-            class="cds--type-label-01"
-            i18n
-            >Certificate</span
-          >
-          <span class="cds--type-body-compact-01">{{ currentCertificate.cert_name }}</span>
-        </div>
+    <div cdsStack="vertical" 
+         [gap]="2">
+      <div cdsStack="vertical" 
+         [gap]="3">
+        <span
+          class="cds--label cds--type-productive-heading-01"
+          i18n
+          >Current Certificate</span>
       </div>
-      <div
-        cdsCol
-        [columnNumbers]="[
-          ['sm', 4],
-          ['md', 4]
-        ]"
-      >
-        <div
-          cdsStack="vertical"
-          [gap]="1"
-        >
-          <span
-            class="cds--type-label-01"
-            i18n
-            >Valid Until</span
-          >
-          <span class="cds--type-body-compact-01">
-            {{ currentCertificate.expiry_date | cdDate }} •
-            {{ currentCertificate.days_to_expiration }}
-            <span i18n>days left</span>
-          </span>
-        </div>
-      </div>
-    </div>
-    <div
-      cdsRow
-      [condensed]="true"
-      class="cds-mt-3"
-    >
-      <div
-        cdsCol
-        [columnNumbers]="[
-          ['sm', 4],
-          ['md', 4]
-        ]"
-      >
-        <div
-          cdsStack="vertical"
-          [gap]="1"
-        >
-          <span
-            class="cds--type-label-01"
-            i18n
-            >Status</span
-          >
-          <div
-            cdsStack="horizontal"
-            [gap]="2"
-          >
-            <cd-icon
-              [type]="statusIconMap[currentCertificate.status] || statusIconMap['default']"
-            ></cd-icon>
-            @switch (currentCertificate.status) {
-            @case ('valid') {
-            <span i18n>Valid</span>
-            }
-            @case ('expiring') {
-            <span i18n>Expiring soon</span>
-            }
-            @case ('expired') {
-            <span i18n>Expired</span>
-            }
-            @case ('not_configured') {
-            <span i18n>Not configured</span>
-            }
-            @case ('invalid') {
-            <span i18n>Invalid</span>
-            }
-            @default {
-            {{ currentCertificate.status }}
-              }
-            }
+      <br>
+      <div cdsStack="horizontal"
+           [gap]="6">
+        <div cdsStack="vertical"
+             [gap]="3">
+          <div cdsStack="vertical"
+               [gap]="1">
+            <span class="cds--type-label-01" i18n>Certificate</span>
+            <span class="cds--type-body-compact-01">{{ currentCertificate.cert_name }}</span>
+          </div>
+          <div cdsStack="vertical"
+               [gap]="1">
+            <span class="cds--type-label-01" i18n>Valid Until</span>
+            <span class="cds--type-body-compact-01">
+              {{ currentCertificate.expiry_date | cdDate }} •
+              {{ currentCertificate.days_to_expiration }}
+              <span i18n>days left</span>
+            </span>
           </div>
         </div>
-      </div>
-      <div
-        cdsCol
-        [columnNumbers]="[
-          ['sm', 4],
-          ['md', 4]
-        ]"
-      >
-        <div
-          cdsStack="vertical"
-          [gap]="1"
-        >
-          <span
-            class="cds--type-label-01"
-            i18n
-            >Issuer</span
-          >
-          <span class="cds--type-body-compact-01">
-            @if (currentCertificate.signed_by === 'cephadm') {
-            <span i18n>Internal (Cephadm CA)</span>
-            } @else {
-            {{ currentCertificate.issuer || 'External' }}
-            }
-          </span>
+        <div cdsStack="vertical"
+             [gap]="3">
+          <div cdsStack="vertical"
+               [gap]="1">
+            <span class="cds--type-label-01" i18n>Status</span>
+            <span class="cds--type-body-compact-01">
+              <cd-icon
+                [type]="statusIconMap[currentCertificate.status] || statusIconMap['default']"
+              ></cd-icon>
+              @switch (currentCertificate.status) {
+              @case ('valid') { Valid }
+              @case ('expiring') { Expiring soon }
+              @case ('expired') { Expired }
+              @case ('not_configured') { Not configured }
+              @case ('invalid') { Invalid }
+              @default { <span class="cds--type-body-compact-01">{{ currentCertificate.status }}</span> }
+              }
+              </span>
+          </div>
+
+          <div cdsStack="vertical"
+               [gap]="1">
+            <span class="cds--type-label-01" i18n>Issuer</span>
+            <span class="cds--type-body-compact-01">
+              @if (currentCertificate.signed_by === 'cephadm') {
+              <span i18n>Internal (Cephadm CA)</span>
+              } @else {
+              {{ currentCertificate.issuer || 'External' }}
+              }
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -91,7 +91,6 @@ export interface CephServiceAdditionalSpec {
   ssl_certificate_key: string;
   ssl_protocols: string[];
   ssl_ciphers: string[];
-  certificate_source: string;
   custom_sans?: string[];
   zonegroup_hostnames?: string[];
   wildcard_enabled?: boolean;
@@ -148,21 +147,3 @@ export enum QatOptions {
   none = 'none'
 }
 
-export interface CephServiceCertificate {
-  has_certificate: boolean;
-  cert_name: string;
-  expiry_date: string;
-  days_to_expiration: number;
-  status: 'valid' | 'expiring' | 'expired' | 'not_configured' | 'invalid';
-  signed_by: string;
-  issuer: string;
-}
-
-export const CERTIFICATE_STATUS_ICON_MAP: Record<string, string> = {
-  valid: 'success',
-  expiring: 'warningAlt',
-  expired: 'danger',
-  not_configured: 'warningAlt',
-  invalid: 'danger',
-  default: 'infoCircle'
-};

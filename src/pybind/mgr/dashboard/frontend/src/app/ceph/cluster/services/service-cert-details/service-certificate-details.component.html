@@ -41,15 +41,6 @@
             </span>
             <ng-container *ngTemplateOutlet="statusTemplate; context: { status: certificate?.status }"></ng-container>
           </div>
-          @if (SERVICES_SUPPORTING_CERT_EDIT.includes(serviceType)) {
-          <cds-icon-button kind="ghost"
-                           size="sm"
-                           (click)="onEdit()"
-                           class="cds-mt-5">
-            <cd-icon type="edit">
-            </cd-icon>
-          </cds-icon-button>
-          }
 
         </div>
         <div cdsStack="vertical"
@@ -95,13 +86,23 @@
     <ng-template #statusTemplate
                  let-status="status">
       <div cdsStack="horizontal"
-           [gap]="2"
+           [gap]="1"
            class="status-row">
+        <span class="cds--type-body-compact-01">
         <cd-icon
           [type]="statusIconMap[status] || statusIconMap['default']">
         </cd-icon>
         <span class="cds--type-body-compact-01">{{ formatCertificateStatus(certificate) }}</span>
-
+        @if (SERVICES_SUPPORTING_CERT_EDIT.includes(serviceType)) {
+          <cds-icon-button kind="ghost"
+                           size="sm"
+                           (click)="onEdit()"
+                           class="cds-mt-5">
+            <cd-icon type="edit">
+            </cd-icon>
+          </cds-icon-button>
+          }
+        </span>
       </div>
     </ng-template>
 

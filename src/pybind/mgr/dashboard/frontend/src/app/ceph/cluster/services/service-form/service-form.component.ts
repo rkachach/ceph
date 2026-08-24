@@ -135,7 +135,6 @@ export class ServiceFormComponent extends CdForm implements OnInit {
   hostsAndLabels$: Observable<{ hosts: { content: string }[]; labels: { content: string }[] }>;
   currentCertificate: CephServiceCertificate = null;
   currentSpecCertificateSource: string = null;
-  showCertSourceChangeWarning = false;
 
   objectBrowserImage: string;
 
@@ -248,7 +247,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           CdValidators.composeIf(
             {
               service_type: 'nvmeof',
-              enable_mtls: true
+              enable_mtls: true,
+              certificateType: CertificateType.external
             },
             [Validators.required]
           )
@@ -260,7 +260,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           CdValidators.composeIf(
             {
               service_type: 'nvmeof',
-              enable_mtls: true
+              enable_mtls: true,
+              certificateType: CertificateType.external
             },
             [Validators.required]
           )
@@ -272,7 +273,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           CdValidators.composeIf(
             {
               service_type: 'nvmeof',
-              enable_mtls: true
+              enable_mtls: true,
+              certificateType: CertificateType.external
             },
             [Validators.required]
           )
@@ -284,7 +286,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           CdValidators.composeIf(
             {
               service_type: 'nvmeof',
-              enable_mtls: true
+              enable_mtls: true,
+              certificateType: CertificateType.external
             },
             [Validators.required]
           )
@@ -296,7 +299,8 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           CdValidators.composeIf(
             {
               service_type: 'nvmeof',
-              enable_mtls: true
+              enable_mtls: true,
+              certificateType: CertificateType.external
             },
             [Validators.required]
           )
@@ -705,12 +709,6 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           )
         ]
       ]
-      // Certificate management (shared across services via cd-certificate-authority-form)
-      certificateType: [CertificateType.external],
-      custom_sans: [null],
-      wildcard_enabled: [false],
-      virtual_host_enabled: [false],
-      ssl_ca_cert: ['']
     });
   }
 
@@ -1482,7 +1480,7 @@ export class ServiceFormComponent extends CdForm implements OnInit {
     }
   }
 
-  onCertificateTypeChange(type: CertificateType) {
+  onCertificateTypeChange(type: CertificateType): void {
     this.serviceForm.get('certificateType').setValue(type);
     if (this.editing && this.currentCertificate?.has_certificate) {
       const originalSource =
@@ -1490,6 +1488,10 @@ export class ServiceFormComponent extends CdForm implements OnInit {
           ? CertificateType.internal
           : CertificateType.external;
       this.showCertSourceChangeWarning = type !== originalSource;
+    }
+    if (type === CertificateType.internal) {
+      this.serviceForm.get('ssl_cert')?.setValue('');
+      this.serviceForm.get('ssl_key')?.setValue('');
     }
   }
 
@@ -1860,14 +1862,6 @@ export class ServiceFormComponent extends CdForm implements OnInit {
 
     const sslKeyServices = ['iscsi', 'grafana', 'oauth2-proxy', 'nfs'];
     return isSslEnabled && isExternalCert && sslKeyServices.includes(serviceType);
-  }
-
-  onCertificateTypeChange(type: CertificateType): void {
-    // Reset cert-related fields when the user switches between internal/external
-    if (type === CertificateType.internal) {
-      this.serviceForm.get('ssl_cert')?.setValue('');
-      this.serviceForm.get('ssl_key')?.setValue('');
-    }
   }
 
   closeModal(): void {
