@@ -200,6 +200,8 @@ namespace rgw::dedup {
 
     uint64_t ingress_skip_filtered_bucket = 0;
     uint64_t ingress_skip_filtered_storage_class = 0;
+    uint64_t ingress_skip_no_truncate_support = 0;
+    uint64_t ingress_skip_no_truncate_support_bytes = 0;
 
     uint64_t max_bidx_record_length = 0;
     uint64_t total_bidx_record_length = 0;
@@ -257,6 +259,7 @@ namespace rgw::dedup {
     uint64_t singleton_after_purge = 0;
     uint64_t shared_manifest_after_purge = 0;
     uint64_t split_head_no_tail_placement = 0;
+    uint64_t split_head_skip_no_truncate = 0;
     uint64_t illegal_rec_id = 0;
     uint64_t missing_last_block_marker = 0;
 
