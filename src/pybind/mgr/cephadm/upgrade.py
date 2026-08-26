@@ -239,7 +239,8 @@ class UpgradeState:
                  rotated_mgr_mon_auth_key_daemons: Optional[List[str]] = None,
                  has_set_cephx_allowed_ciphers: Optional[bool] = False,
                  health_warnings_muted: Optional[bool] = False,
-                 rotated_osd_mds_keyrings: Optional[bool] = False
+                 rotated_osd_mds_keyrings: Optional[bool] = False,
+                 automatically_accept_license: Optional[bool] = False
                  ):
 
         self._target_name: str = target_name  # Use CephadmUpgrade.target_image instead.
@@ -269,6 +270,7 @@ class UpgradeState:
         self.has_set_cephx_allowed_ciphers = has_set_cephx_allowed_ciphers
         self.rotated_osd_mds_keyrings = rotated_osd_mds_keyrings
         self.health_warnings_muted = health_warnings_muted
+        self.automatically_accept_license = automatically_accept_license
 
     def to_json(self) -> dict:
         return {
@@ -296,7 +298,8 @@ class UpgradeState:
             'rotated_mgr_mon_auth_key_daemons': self.rotated_mgr_mon_auth_key_daemons,
             'has_set_cephx_allowed_ciphers': self.has_set_cephx_allowed_ciphers,
             'health_warnings_muted': self.health_warnings_muted,
-            'rotated_osd_mds_keyrings': self.rotated_osd_mds_keyrings
+            'rotated_osd_mds_keyrings': self.rotated_osd_mds_keyrings,
+            'automatically_accept_license': self.automatically_accept_license
         }
 
     @classmethod
@@ -1114,6 +1117,7 @@ class CephadmUpgrade:
             remaining_count=limit,
             crush_bucket_type=bucket_type,
             crush_bucket_name=bucket_name,
+            automatically_accept_license=automatically_accept_license,
         )
         # Set OSD flags for the duration of the upgrade (unless --no-osd-flags was requested).
         # If this fails, abort and clear upgrade_state so we don't leave a half-started upgrade around.
@@ -2886,15 +2890,22 @@ class CephadmUpgrade:
         image_info = self.mgr.wait_async(CephadmServe(self.mgr)._get_container_image_info(self.target_image))
         if image_info.image_vendor is not None and image_info.image_vendor.lower() == 'ibm':
             license = self.mgr.wait_async(CephadmServe(self.mgr)._get_container_ibm_license(self.target_image))
-            entry_key = get_license_acceptance_key_value_entry_name(image_info.ceph_version or 'unknown_release', license)
+            entry_key = get_license_acceptance_key_value_entry_name(image_info.ceph_version or 'unknown_version', license)
             license_acceptance_entry = self.mgr.get_store(entry_key, None)
             if not license_acceptance_entry:
-                self.mgr.set_health_warning(
-                    'IBM_LICENSE_NOT_ACCEPTED',
-                    'Cannot find IBM license acceptance entry',
-                    1,
-                    [f'To accept license use `ceph orch display-license --image {self.target_image}` and `ceph orch accept-license --image {self.target_image}` ']
-                )
+                if self.upgrade_state and self.upgrade_state.automatically_accept_license:
+                    logger.info(
+                        'Upgrade: Automatically accepting license for target image '
+                        'as --automatically-accept-license was set'
+                    )
+                    self.mgr.accept_license(self.target_image)
+                else:
+                    self.mgr.set_health_warning(
+                        'IBM_LICENSE_NOT_ACCEPTED',
+                        'Cannot find IBM license acceptance entry',
+                        1,
+                        [f'To accept license use `ceph orch display-license --image {self.target_image}` and `ceph orch accept-license --image {self.target_image}` ']
+                    )
             else:
                 mgr_map = self.mgr.get('mgr_map')
                 if 'call_home_agent' not in mgr_map.get('services', {}):
