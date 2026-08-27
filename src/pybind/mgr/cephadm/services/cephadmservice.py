@@ -1583,7 +1583,7 @@ class RgwService(CephService):
             if rgw_spec.rgw_frontend_extra_args:
                 frontend_parts.append(f'extra_args={rgw_spec.rgw_frontend_extra_args}')
             if frontend_parts:
-                deps.append(f'frontend:{utils.config_hash(str(frontend_parts))}')
+                deps.append(f'frontend:{utils.md5_hash(str(frontend_parts))}')
 
         parent_deps = super().get_dependencies(mgr, spec, daemon_type)
         return sorted(deps + parent_deps)
