@@ -14,6 +14,13 @@
                         spacingClass="mb-3"
                         *ngIf="showImageField"
                         i18n>Make sure to put the correct image. Passing an incorrect image can lead the cluster into an undesired state.</cd-alert-panel>
+        <cd-alert-panel type="error"
+                        spacingClass="mb-3"
+                        *ngIf="imageFetchError"
+                        alertTitle="Error in fetching image"
+                        i18n-alertTitle>
+          {{ imageFetchErrorMessage }}
+        </cd-alert-panel>
         <div *ngIf="versions"
              class="form-group row">
           <label class="cd-col-form-label"

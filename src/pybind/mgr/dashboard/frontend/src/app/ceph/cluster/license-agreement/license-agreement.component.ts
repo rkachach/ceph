@@ -38,7 +38,12 @@ export class LicenceAgreementComponent extends BaseModal implements OnInit, Afte
   private cdr = inject(ChangeDetectorRef);
   private clusterService = inject(ClusterService);
 
-  constructor(@Optional() @Inject('customImageName') private customImageName: string) {
+  constructor(
+    @Optional() @Inject('customImageName') private customImageName: string,
+    @Optional()
+    @Inject('licenseData')
+    private licenseData: { call_home_notice: string; license: string }
+  ) {
     super();
   }
 
@@ -47,32 +52,43 @@ export class LicenceAgreementComponent extends BaseModal implements OnInit, Afte
       licenceText: new FormControl(),
       accepted: new FormControl({ value: false, disabled: true }, Validators.required)
     });
-    this.fetchLicenceInfo();
+
+    // If license data was pre-fetched, use it directly
+    if (this.licenseData) {
+      this.loadLicenseData(this.licenseData);
+    } else {
+      // Otherwise fetch it
+      this.fetchLicenceInfo();
+    }
   }
 
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
   }
 
+  loadLicenseData(licenseData: { call_home_notice: string; license: string }) {
+    this.licenceForm.get('licenceText')?.setValue(licenseData.license);
+    this.loading = false;
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      const el = this.textarea?.nativeElement;
+
+      if (!el) return;
+
+      if (el.scrollHeight <= el.clientHeight) {
+        this.readingProgress = 100;
+        this.licenceForm.get('accepted')?.enable();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   fetchLicenceInfo() {
     this.clusterService.getLicense(this.customImageName).subscribe({
       next: (response: { call_home_notice: string; license: string }) => {
-        this.licenceForm.get('licenceText')?.setValue(response.license);
-        this.loading = false;
-
-        this.cdr.detectChanges();
-
-        setTimeout(() => {
-          const el = this.textarea?.nativeElement;
-
-          if (!el) return;
-
-          if (el.scrollHeight <= el.clientHeight) {
-            this.readingProgress = 100;
-            this.licenceForm.get('accepted')?.enable();
-            this.cdr.detectChanges();
-          }
-        });
+        this.loadLicenseData(response);
       },
       error: () => {
         this.licenceFetchingError = true;
