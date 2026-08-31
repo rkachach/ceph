@@ -1713,6 +1713,12 @@ class CephadmServe:
                         )
                         action = 'redeploy'
 
+                elif dd.daemon_type == 'rgw':
+                    # rgw_frontends can't be changed at runtime, so a reconfig
+                    # won't actually apply the new config. We need a full
+                    # redeploy to restart the daemon with updated settings.
+                    action = 'redeploy'
+
                 elif dd.daemon_type == 'haproxy':
                     if spec and hasattr(spec, 'backend_service'):
                         backend_spec = self.mgr.spec_store[spec.backend_service].spec
